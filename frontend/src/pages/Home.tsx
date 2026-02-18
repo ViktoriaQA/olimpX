@@ -259,7 +259,7 @@ const Home = () => {
             <Button 
               variant="outline" 
               size="lg" 
-              className="font-mono text-base px-8 py-3 border-primary/20 hover:bg-primary/5"
+              className="font-mono text-base px-8 py-3 border-primary/20 hover:bg-primary/5 hover:text-green-500"
               onClick={() => navigate("/tournaments")}
             >
               <Trophy className="h-5 w-5 mr-2" />
@@ -399,7 +399,7 @@ const Home = () => {
           <Button 
             variant="outline" 
             size="lg" 
-            className="font-mono border-primary/20 hover:bg-primary/5"
+            className="font-mono border-primary/20 hover:bg-primary/5 hover:text-green-500"
             onClick={() => navigate("/tournaments")}
           >
             {t('common.viewAllTournaments')}

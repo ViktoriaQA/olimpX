@@ -333,7 +333,7 @@ const Tournaments = () => {
               <Button 
                 variant="outline" 
                 size="lg" 
-                className="font-mono border-primary/20 hover:bg-primary/5"
+                className="font-mono border-primary/20 hover:bg-primary/5 hover:text-green-500"
                 onClick={() => navigate("/auth")}
               >
                 {t('tournaments.learnMoreAboutPlatform')}

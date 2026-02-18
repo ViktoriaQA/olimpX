@@ -106,7 +106,7 @@ export function Header({
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="font-mono text-xs h-8 px-3 border-primary/20 hover:bg-primary/5"
+                className="font-mono text-xs h-8 px-3 border-primary/20 hover:bg-primary/5 hover:text-green-500"
                 onClick={() => setShowEmailForm(true)}
               >
                 <LogIn className="h-4 w-4" />
@@ -117,7 +117,7 @@ export function Header({
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="font-mono text-xs h-8 px-3 border-primary/20 hover:bg-primary/5"
+                  className="font-mono text-xs h-8 px-3 border-primary/20 hover:bg-primary/5 hover:text-green-500"
                   onClick={() => setShowEmailForm(true)}
                 >
                   <LogIn className="h-4 w-4 mr-1" />
