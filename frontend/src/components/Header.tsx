@@ -4,9 +4,10 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Terminal, Trophy, LogIn, UserPlus, X, Mail, Lock } from "lucide-react";
+import { Terminal, Trophy, LogIn, UserPlus, X, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/components/ui/use-toast";
+import { RegistrationSheet } from "@/components/RegistrationSheet";
 
 interface HeaderProps {
   showTournamentsButton?: boolean;
@@ -24,9 +25,12 @@ export function Header({
   const isMobile = useIsMobile();
   const { toast } = useToast();
   const [showEmailForm, setShowEmailForm] = useState(false);
+  const [showRegisterSheet, setShowRegisterSheet] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +63,48 @@ export function Header({
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleRegister = async (email: string, password: string, isTrainer: boolean) => {
+    setIsRegistering(true);
+    try {
+      // TODO: Implement registration logic
+      console.log("Registering:", { email, isTrainer });
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast({
+        title: t('common.success'),
+        description: t('auth.checkEmailForRegistration'),
+      });
+      setShowRegisterSheet(false);
+      navigate("/auth");
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast({
+        title: t('common.error'),
+        description: t('auth.registrationFailed'),
+        variant: "destructive",
+      });
+    } finally {
+      setIsRegistering(false);
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    try {
+      // TODO: Implement Google auth
+      console.log("Google auth");
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setShowRegisterSheet(false);
+    } catch (error) {
+      console.error("Google auth error:", error);
+      toast({
+        title: t('common.error'),
+        description: t('auth.googleAuthFailed'),
+        variant: "destructive",
+      });
     }
   };
 
@@ -126,7 +172,7 @@ export function Header({
                 <Button 
                   size="lg" 
                   className="font-mono text-xs h-8 px-3"
-                  onClick={() => navigate("/auth")}
+                  onClick={() => setShowRegisterSheet(true)}
                 >
                   <UserPlus className="h-4 w-4 mr-1" />
                   {t('auth.register')}
@@ -180,13 +226,20 @@ export function Header({
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id={`${currentPage}-password`}
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder={t('auth.passwordPlaceholder')}
-                    className="pl-10 font-mono text-sm h-11"
+                    className="pl-10 pr-10 font-mono text-sm h-11"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={isLoading}
                   />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground transition-colors"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
 
@@ -204,7 +257,7 @@ export function Header({
                 className="text-sm text-primary hover:underline font-mono"
                 onClick={() => {
                   setShowEmailForm(false);
-                  navigate("/auth");
+                  setShowRegisterSheet(true);
                 }}
               >
                 {t('auth.noAccountRegister')}
@@ -213,6 +266,15 @@ export function Header({
           </div>
         </div>
       )}
+
+      {/* Registration Sheet */}
+      <RegistrationSheet
+        open={showRegisterSheet}
+        onOpenChange={setShowRegisterSheet}
+        onSubmit={handleRegister}
+        onGoogleAuth={handleGoogleAuth}
+        isLoading={isRegistering}
+      />
     </>
   );
 }

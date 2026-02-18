@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Terminal, Trophy, Users, Clock, Calendar, ArrowRight, Gamepad2, LogIn, UserPlus, X, Mail, Lock } from "lucide-react";
+import { Terminal, Trophy, Users, Clock, Calendar, ArrowRight, Gamepad2, Lock, Mail, Eye, EyeOff, UserPlus, LogIn, X } from "lucide-react";
 import { AuthFab } from "@/components/AuthFab";
 import { RegistrationSheet } from "@/components/RegistrationSheet";
 import { Header } from "@/components/Header";
@@ -245,13 +245,7 @@ const Home = () => {
             <Button 
               size="lg" 
               className="font-mono text-base px-8 py-3"
-              onClick={() => {
-                if (isMobile) {
-                  setShowRegisterSheet(true);
-                } else {
-                  navigate("/auth");
-                }
-              }}
+              onClick={() => setShowRegisterSheet(true)}
             >
               <UserPlus className="h-5 w-5 mr-2" />
               {t('auth.register')}
@@ -325,7 +319,7 @@ const Home = () => {
               className="border-border/50 bg-card/50 backdrop-blur-sm hover:neon-border transition-all duration-300 group cursor-pointer"
               onClick={() => {
                 if (tournament.status === "active" || tournament.status === "upcoming") {
-                  navigate("/auth");
+                  setShowRegisterSheet(true);
                 }
               }}
             >
@@ -382,7 +376,7 @@ const Home = () => {
                     className="w-full font-mono text-sm group-hover:bg-primary/90 transition-colors"
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate("/auth");
+                      setShowRegisterSheet(true);
                     }}
                   >
                     <Gamepad2 className="h-4 w-4 mr-2" />
@@ -421,13 +415,7 @@ const Home = () => {
             <Button 
               size="lg" 
               className="font-mono text-base px-8 py-3"
-              onClick={() => {
-                if (isMobile) {
-                  setShowRegisterSheet(true);
-                } else {
-                  navigate("/auth");
-                }
-              }}
+              onClick={() => setShowRegisterSheet(true)}
             >
               <UserPlus className="h-5 w-5 mr-2" />
               {t('auth.register')}
@@ -449,15 +437,13 @@ const Home = () => {
       <Footer />
 
       {/* Registration Sheet */}
-      {isMobile && (
-        <RegistrationSheet
-          open={showRegisterSheet}
-          onOpenChange={setShowRegisterSheet}
-          onSubmit={handleRegister}
-          onGoogleAuth={handleGoogleAuth}
-          isLoading={isRegistering}
-        />
-      )}
+      <RegistrationSheet
+        open={showRegisterSheet}
+        onOpenChange={setShowRegisterSheet}
+        onSubmit={handleRegister}
+        onGoogleAuth={handleGoogleAuth}
+        isLoading={isRegistering}
+      />
 
       {/* Mobile FAB */}
       <AuthFab isMobile={isMobile} />

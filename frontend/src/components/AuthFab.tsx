@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
-import { LogIn, UserPlus, Plus, X, Mail, Lock } from "lucide-react";
+import { LogIn, UserPlus, Plus, X, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { RegistrationSheet } from "@/components/RegistrationSheet";
 
@@ -18,6 +18,7 @@ export function AuthFab({ isMobile }: AuthFabProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [showRegisterSheet, setShowRegisterSheet] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -189,13 +190,20 @@ export function AuthFab({ isMobile }: AuthFabProps) {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="fab-password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder={t('auth.passwordPlaceholder')}
-                    className="pl-10 font-mono text-sm h-11"
+                    className="pl-10 pr-10 font-mono text-sm h-11"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={isLoading}
                   />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground transition-colors"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
 
@@ -213,7 +221,7 @@ export function AuthFab({ isMobile }: AuthFabProps) {
                 className="text-sm text-primary hover:underline font-mono"
                 onClick={() => {
                   setShowEmailForm(false);
-                  navigate("/auth");
+                  setShowRegisterSheet(true);
                 }}
               >
                 {t('auth.noAccountRegister')}

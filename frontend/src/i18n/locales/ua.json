@@ -47,6 +47,7 @@
     "checkEmailForLogin": "Перевірте пошту для входу",
     "checkEmailForRegistration": "Перевірте пошту для підтвердження реєстрації",
     "registrationFailed": "Не вдалося зареєструватися. Спробуйте ще раз.",
+    "googleAuthFailed": "Помилка автентифікації Google. Спробуйте ще раз.",
     "loginFailed": "Не вдалося увійти. Спробуйте ще раз.",
     "signingIn": "Вхід...",
     "registering": "Реєстрація...",

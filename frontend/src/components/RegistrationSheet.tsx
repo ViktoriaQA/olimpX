@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Mail, Lock, GraduationCap, User } from "lucide-react";
+import { Mail, Lock, GraduationCap, User, Eye, EyeOff } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface RegistrationSheetProps {
   open: boolean;
@@ -22,9 +23,16 @@ export function RegistrationSheet({
   isLoading = false 
 }: RegistrationSheetProps) {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isTrainer, setIsTrainer] = useState(false);
+
+  const sheetSide = isMobile ? "bottom" : "left";
+  const sheetClassName = isMobile 
+    ? "h-[85vh] rounded-t-2xl" 
+    : "w-[400px] overflow-y-auto p-6";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +42,7 @@ export function RegistrationSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl">
+      <SheetContent side={sheetSide} className={sheetClassName}>
         <SheetHeader className="text-left mb-6">
           <SheetTitle className="text-xl font-bold">
             {t('auth.register')}
@@ -98,13 +106,20 @@ export function RegistrationSheet({
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="register-password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder={t('auth.passwordPlaceholder')}
-                  className="pl-10 font-mono text-sm h-11"
+                  className="pl-10 pr-10 font-mono text-sm h-11"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
                 />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground transition-colors"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
             </div>
 

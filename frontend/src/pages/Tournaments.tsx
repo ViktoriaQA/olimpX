@@ -237,7 +237,7 @@ const Tournaments = () => {
                 className="border-border/50 bg-card/50 backdrop-blur-sm hover:neon-border transition-all duration-300 group cursor-pointer"
                 onClick={() => {
                   if (tournament.status === "active" || tournament.status === "upcoming") {
-                    navigate("/auth");
+                    setShowRegistrationSheet(true);
                   }
                 }}
               >
@@ -294,7 +294,7 @@ const Tournaments = () => {
                       className="w-full font-mono text-sm group-hover:bg-primary/90 transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate("/auth");
+                        setShowRegistrationSheet(true);
                       }}
                     >
                       <Gamepad2 className="h-4 w-4 mr-2" />
@@ -320,12 +320,7 @@ const Tournaments = () => {
                 size="lg" 
                 className="font-mono"
                 onClick={() => {
-                  // For mobile, open registration sheet directly
-                  if (isMobile) {
-                    setShowRegistrationSheet(true);
-                  } else {
-                    navigate("/auth");
-                  }
+                  setShowRegistrationSheet(true);
                 }}
               >
                 {t('tournaments.createAccount')}
@@ -347,15 +342,13 @@ const Tournaments = () => {
       <Footer />
 
       {/* Registration Sheet */}
-      {isMobile && (
-        <RegistrationSheet
-          open={showRegistrationSheet}
-          onOpenChange={setShowRegistrationSheet}
-          onSubmit={handleRegister}
-          onGoogleAuth={handleGoogleAuth}
-          isLoading={isRegistering}
-        />
-      )}
+      <RegistrationSheet
+        open={showRegistrationSheet}
+        onOpenChange={setShowRegistrationSheet}
+        onSubmit={handleRegister}
+        onGoogleAuth={handleGoogleAuth}
+        isLoading={isRegistering}
+      />
 
       {/* Mobile FAB */}
       <AuthFab isMobile={isMobile} />
