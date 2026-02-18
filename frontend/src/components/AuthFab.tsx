@@ -166,14 +166,14 @@ export function AuthFab({ isMobile }: AuthFabProps) {
             <form onSubmit={handleEmailLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="fab-email" className="font-mono text-sm">
-                  <span className="text-primary">$</span> email
+                  <span className="text-primary">$</span> {t('auth.email')}
                 </Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="fab-email"
                     type="email"
-                    placeholder="your@email.com"
+                    placeholder={t('auth.emailPlaceholder')}
                     className="pl-10 font-mono text-sm h-11"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -184,14 +184,14 @@ export function AuthFab({ isMobile }: AuthFabProps) {
 
               <div className="space-y-2">
                 <Label htmlFor="fab-password" className="font-mono text-sm">
-                  <span className="text-primary">$</span> пароль
+                  <span className="text-primary">$</span> {t('auth.password')}
                 </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="fab-password"
                     type="password"
-                    placeholder="•••••••••"
+                    placeholder={t('auth.passwordPlaceholder')}
                     className="pl-10 font-mono text-sm h-11"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -274,7 +274,7 @@ export function AuthFab({ isMobile }: AuthFabProps) {
                     <Input
                       id="register-email"
                       type="email"
-                      placeholder="your@email.com"
+                      placeholder={t('auth.emailPlaceholder')}
                       className="pl-10 font-mono text-sm h-11"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -292,7 +292,7 @@ export function AuthFab({ isMobile }: AuthFabProps) {
                     <Input
                       id="register-password"
                       type="password"
-                      placeholder="••••••••"
+                      placeholder={t('auth.passwordPlaceholder')}
                       className="pl-10 font-mono text-sm h-11"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}

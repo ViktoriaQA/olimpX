@@ -163,7 +163,7 @@ export function Header({
                   <Input
                     id={`${currentPage}-email`}
                     type="email"
-                    placeholder="your@email.com"
+                    placeholder={t('auth.emailPlaceholder')}
                     className="pl-10 font-mono text-sm h-11"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -181,7 +181,7 @@ export function Header({
                   <Input
                     id={`${currentPage}-password`}
                     type="password"
-                    placeholder="••••••••"
+                    placeholder={t('auth.passwordPlaceholder')}
                     className="pl-10 font-mono text-sm h-11"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}

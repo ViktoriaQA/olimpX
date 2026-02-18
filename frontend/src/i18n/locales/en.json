@@ -33,6 +33,8 @@
     "register": "Register",
     "email": "Email",
     "password": "Password",
+    "emailPlaceholder": "your@email.com",
+    "passwordPlaceholder": "•••••••••",
     "forgotPassword": "Forgot password?",
     "rememberMe": "Remember me",
     "loginTitle": "Welcome back",

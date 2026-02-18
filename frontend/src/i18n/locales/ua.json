@@ -33,6 +33,8 @@
     "register": "Реєстрація",
     "email": "Email",
     "password": "Пароль",
+    "emailPlaceholder": "your@email.com",
+    "passwordPlaceholder": "•••••••••",
     "forgotPassword": "Забули пароль?",
     "rememberMe": "Запам'ятати мене",
     "loginTitle": "Ласкаво просимо",
