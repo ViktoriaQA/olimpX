@@ -40,7 +40,20 @@
     "alreadyHaveAccount": "Already have an account?",
     "dontHaveAccount": "Don't have an account?",
     "loginSuccess": "Login successful",
-    "registerSuccess": "Registration successful"
+    "registerSuccess": "Registration successful",
+    "fillAllFields": "Please fill in all fields",
+    "checkEmailForLogin": "Check your email for login instructions",
+    "checkEmailForRegistration": "Check your email for registration confirmation",
+    "registrationFailed": "Registration failed. Please try again.",
+    "loginFailed": "Login failed. Please try again.",
+    "signingIn": "Signing in...",
+    "registering": "Registering...",
+    "noAccountRegister": "No account? Register",
+    "hasAccountLogin": "Already have an account? Login",
+    "selectRole": "Select role",
+    "student": "Student",
+    "trainer": "Trainer",
+    "continueWith": "or continue with"
   },
   "home": {
     "title": "Welcome to CodeArena",

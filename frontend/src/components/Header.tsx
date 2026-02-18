@@ -32,8 +32,8 @@ export function Header({
     e.preventDefault();
     if (!email || !password) {
       toast({
-        title: "Помилка",
-        description: "Будь ласка, заповніть всі поля",
+        title: t('common.error'),
+        description: t('auth.fillAllFields'),
         variant: "destructive",
       });
       return;
@@ -47,14 +47,14 @@ export function Header({
       
       toast({
         title: t('common.success'),
-        description: t('common.checkEmailForLogin'),
+        description: t('auth.checkEmailForLogin'),
       });
       navigate("/auth");
     } catch (error) {
       console.error("Login error:", error);
       toast({
         title: t('common.error'),
-        description: t('common.loginError'),
+        description: t('auth.loginFailed'),
         variant: "destructive",
       });
     } finally {
@@ -142,7 +142,7 @@ export function Header({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-card border border-border rounded-lg p-6 w-full max-w-sm animate-in fade-in duration-200">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-mono text-lg font-bold text-primary">Вхід</h3>
+              <h3 className="font-mono text-lg font-bold text-primary">{t('auth.login')}</h3>
               <Button
                 variant="ghost"
                 size="sm"
@@ -156,7 +156,7 @@ export function Header({
             <form onSubmit={handleEmailLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor={`${currentPage}-email`} className="font-mono text-sm">
-                  <span className="text-primary">$</span> email
+                  <span className="text-primary">$</span> {t('auth.email')}
                 </Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -174,7 +174,7 @@ export function Header({
 
               <div className="space-y-2">
                 <Label htmlFor={`${currentPage}-password`} className="font-mono text-sm">
-                  <span className="text-primary">$</span> пароль
+                  <span className="text-primary">$</span> {t('auth.password')}
                 </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -195,7 +195,7 @@ export function Header({
                 className="w-full h-11 font-mono text-sm"
                 disabled={isLoading}
               >
-                {isLoading ? t('common.signingIn') : t('auth.login')}
+                {isLoading ? t('auth.signingIn') : t('auth.login')}
               </Button>
             </form>
 
@@ -207,7 +207,7 @@ export function Header({
                   navigate("/auth");
                 }}
               >
-                Немає акаунту? Зареєструватися
+                {t('auth.noAccountRegister')}
               </button>
             </div>
           </div>

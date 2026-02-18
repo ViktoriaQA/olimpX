@@ -103,8 +103,8 @@ const Home = () => {
     e.preventDefault();
     if (!email || !password) {
       toast({
-        title: "Помилка",
-        description: "Будь ласка, заповніть всі поля",
+        title: t('common.error'),
+        description: t('auth.fillAllFields'),
         variant: "destructive",
       });
       return;
@@ -117,15 +117,15 @@ const Home = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast({
-        title: "Успіх",
-        description: "Перевірте пошту для підтвердження реєстрації",
+        title: t('common.success'),
+        description: t('auth.checkEmailForRegistration'),
       });
       navigate("/auth");
     } catch (error) {
       console.error("Registration error:", error);
       toast({
-        title: "Помилка",
-        description: "Не вдалося зареєструватися. Спробуйте ще раз.",
+        title: t('common.error'),
+        description: t('auth.registrationFailed'),
         variant: "destructive",
       });
     } finally {
@@ -397,7 +397,7 @@ const Home = () => {
           <div className="bg-card border border-border rounded-t-2xl w-full max-w-lg animate-in slide-in-from-bottom-3 duration-200">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="font-mono text-xl font-bold text-primary">Реєстрація</h3>
+                <h3 className="font-mono text-xl font-bold text-primary">{t('auth.register')}</h3>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -480,7 +480,7 @@ const Home = () => {
                     className="w-full h-11 font-mono text-sm"
                     disabled={isLoading}
                   >
-                    {isLoading ? 'Реєстрація...' : 'Зареєструватися'}
+                    {isLoading ? t('auth.registering') : t('auth.register')}
                   </Button>
                 </form>
 
@@ -489,7 +489,7 @@ const Home = () => {
                     <span className="w-full border-t border-border"></span>
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground font-mono">або продовжити з</span>
+                    <span className="bg-card px-2 text-muted-foreground font-mono">{t('auth.continueWith')}</span>
                   </div>
                 </div>
 

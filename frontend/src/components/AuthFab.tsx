@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +14,7 @@ interface AuthFabProps {
 }
 
 export function AuthFab({ isMobile }: AuthFabProps) {
+  const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [showRegisterSheet, setShowRegisterSheet] = useState(false);
@@ -27,8 +29,8 @@ export function AuthFab({ isMobile }: AuthFabProps) {
     e.preventDefault();
     if (!email || !password) {
       toast({
-        title: "Помилка",
-        description: "Будь ласка, заповніть всі поля",
+        title: t('common.error'),
+        description: t('auth.fillAllFields'),
         variant: "destructive",
       });
       return;
@@ -41,15 +43,15 @@ export function AuthFab({ isMobile }: AuthFabProps) {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast({
-        title: "Успіх",
-        description: "Перевірте пошту для входу",
+        title: t('common.success'),
+        description: t('auth.checkEmailForLogin'),
       });
       navigate("/auth");
     } catch (error) {
       console.error("Login error:", error);
       toast({
-        title: "Помилка",
-        description: "Не вдалося увійти. Спробуйте ще раз.",
+        title: t('common.error'),
+        description: t('auth.loginFailed'),
         variant: "destructive",
       });
     } finally {
@@ -61,8 +63,8 @@ export function AuthFab({ isMobile }: AuthFabProps) {
     e.preventDefault();
     if (!email || !password) {
       toast({
-        title: "Помилка",
-        description: "Будь ласка, заповніть всі поля",
+        title: t('common.error'),
+        description: t('auth.fillAllFields'),
         variant: "destructive",
       });
       return;
@@ -75,15 +77,15 @@ export function AuthFab({ isMobile }: AuthFabProps) {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast({
-        title: "Успіх",
-        description: "Перевірте пошту для підтвердження реєстрації",
+        title: t('common.success'),
+        description: t('auth.checkEmailForRegistration'),
       });
       navigate("/auth");
     } catch (error) {
       console.error("Registration error:", error);
       toast({
-        title: "Помилка",
-        description: "Не вдалося зареєструватися. Спробуйте ще раз.",
+        title: t('common.error'),
+        description: t('auth.registrationFailed'),
         variant: "destructive",
       });
     } finally {
@@ -115,7 +117,7 @@ export function AuthFab({ isMobile }: AuthFabProps) {
               setShowEmailForm(true);
               setIsExpanded(false);
             }}
-            title="Вхід"
+            title={t('auth.login')}
           >
             <LogIn className="h-4 w-4" />
           </Button>
@@ -127,7 +129,7 @@ export function AuthFab({ isMobile }: AuthFabProps) {
               setShowRegisterSheet(true);
               setIsExpanded(false);
             }}
-            title="Реєстрація"
+            title={t('auth.register')}
           >
             <UserPlus className="h-4 w-4" />
           </Button>
@@ -150,7 +152,7 @@ export function AuthFab({ isMobile }: AuthFabProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-card border border-border rounded-lg p-6 w-full max-w-sm animate-in fade-in duration-200">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-mono text-lg font-bold text-primary">Вхід</h3>
+              <h3 className="font-mono text-lg font-bold text-primary">{t('auth.login')}</h3>
               <Button
                 variant="ghost"
                 size="sm"
@@ -203,7 +205,7 @@ export function AuthFab({ isMobile }: AuthFabProps) {
                 className="w-full h-11 font-mono text-sm"
                 disabled={isLoading}
               >
-                {isLoading ? 'Вхід...' : 'Увійти'}
+                {isLoading ? t('auth.signingIn') : t('auth.login')}
               </Button>
             </form>
 
@@ -215,7 +217,7 @@ export function AuthFab({ isMobile }: AuthFabProps) {
                   navigate("/auth");
                 }}
               >
-                Немає акаунту? Зареєструватися
+                {t('auth.noAccountRegister')}
               </button>
             </div>
           </div>
@@ -228,7 +230,7 @@ export function AuthFab({ isMobile }: AuthFabProps) {
           <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl">
             <SheetHeader className="text-left mb-6">
               <SheetTitle className="text-xl font-bold">
-                Реєстрація
+                {t('auth.register')}
               </SheetTitle>
             </SheetHeader>
 
@@ -236,7 +238,7 @@ export function AuthFab({ isMobile }: AuthFabProps) {
               {/* Role Selector */}
               <div className="space-y-2">
                 <Label className="block text-sm font-mono text-muted-foreground mb-2">
-                  <span className="text-primary">$</span> оберіть роль
+                  <span className="text-primary">$</span> {t('auth.selectRole')}
                 </Label>
                 <div className="flex items-center justify-between p-0.5 bg-muted/30 rounded-lg border border-border h-9">
                   <button
@@ -247,7 +249,7 @@ export function AuthFab({ isMobile }: AuthFabProps) {
                     }`}
                   >
                     <GraduationCap className="h-3.5 w-3.5" />
-                    <span>Студент</span>
+                    <span>{t('auth.student')}</span>
                   </button>
                   <button
                     type="button"
@@ -257,7 +259,7 @@ export function AuthFab({ isMobile }: AuthFabProps) {
                     }`}
                   >
                     <User className="h-3.5 w-3.5" />
-                    <span>Тренер</span>
+                    <span>{t('auth.trainer')}</span>
                   </button>
                 </div>
               </div>
@@ -265,7 +267,7 @@ export function AuthFab({ isMobile }: AuthFabProps) {
               <form onSubmit={handleRegister} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="register-email" className="font-mono text-sm">
-                    <span className="text-primary">$</span> email
+                    <span className="text-primary">$</span> {t('auth.email')}
                   </Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -283,7 +285,7 @@ export function AuthFab({ isMobile }: AuthFabProps) {
 
                 <div className="space-y-2">
                   <Label htmlFor="register-password" className="font-mono text-sm">
-                    <span className="text-primary">$</span> пароль
+                    <span className="text-primary">$</span> {t('auth.password')}
                   </Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -304,7 +306,7 @@ export function AuthFab({ isMobile }: AuthFabProps) {
                   className="w-full h-11 font-mono text-sm"
                   disabled={isLoading}
                 >
-                  {isLoading ? 'Реєстрація...' : 'Зареєструватися'}
+                  {isLoading ? t('auth.registering') : t('auth.register')}
                 </Button>
               </form>
 
@@ -313,7 +315,7 @@ export function AuthFab({ isMobile }: AuthFabProps) {
                   <span className="w-full border-t border-border"></span>
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground font-mono">або продовжити з</span>
+                  <span className="bg-card px-2 text-muted-foreground font-mono">{t('auth.continueWith')}</span>
                 </div>
               </div>
 
@@ -340,7 +342,7 @@ export function AuthFab({ isMobile }: AuthFabProps) {
                     setShowEmailForm(true);
                   }}
                 >
-                  Вже є акаунт? Увійти
+                  {t('auth.hasAccountLogin')}
                 </button>
               </div>
             </div>

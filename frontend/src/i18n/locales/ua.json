@@ -40,7 +40,20 @@
     "alreadyHaveAccount": "Вже є акаунт?",
     "dontHaveAccount": "Немає акаунту?",
     "loginSuccess": "Вхід успішний",
-    "registerSuccess": "Реєстрація успішна"
+    "registerSuccess": "Реєстрація успішна",
+    "fillAllFields": "Будь ласка, заповніть всі поля",
+    "checkEmailForLogin": "Перевірте пошту для входу",
+    "checkEmailForRegistration": "Перевірте пошту для підтвердження реєстрації",
+    "registrationFailed": "Не вдалося зареєструватися. Спробуйте ще раз.",
+    "loginFailed": "Не вдалося увійти. Спробуйте ще раз.",
+    "signingIn": "Вхід...",
+    "registering": "Реєстрація...",
+    "noAccountRegister": "Немає акаунту? Зареєструватися",
+    "hasAccountLogin": "Вже є акаунт? Увійти",
+    "selectRole": "Оберіть роль",
+    "student": "Студент",
+    "trainer": "Тренер",
+    "continueWith": "або продовжити з"
   },
   "home": {
     "title": "Ласкаво просимо до CodeArena",
