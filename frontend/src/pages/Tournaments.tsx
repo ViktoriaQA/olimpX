@@ -30,7 +30,7 @@ const Tournaments = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { toast, signInWithGoogle } = useAuth();
+  const { toast, signInWithGoogle, signInWithDiscord } = useAuth();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
   const [showRegistrationSheet, setShowRegistrationSheet] = useState(false);
@@ -169,6 +169,15 @@ const Tournaments = () => {
       setShowRegistrationSheet(false);
     } catch (error) {
       console.error("Google auth error:", error);
+    }
+  };
+
+  const handleDiscordAuth = async () => {
+    try {
+      await signInWithDiscord();
+      setShowRegistrationSheet(false);
+    } catch (error) {
+      console.error("Discord auth error:", error);
     }
   };
 
@@ -347,6 +356,7 @@ const Tournaments = () => {
         onOpenChange={setShowRegistrationSheet}
         onSubmit={handleRegister}
         onGoogleAuth={handleGoogleAuth}
+        onDiscordAuth={handleDiscordAuth}
         isLoading={isRegistering}
       />
 

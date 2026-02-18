@@ -23,7 +23,7 @@ export function AuthFab({ isMobile }: AuthFabProps) {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { toast, signInWithGoogle } = useAuth();
+  const { toast, signInWithGoogle, signInWithDiscord } = useAuth();
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,6 +102,15 @@ export function AuthFab({ isMobile }: AuthFabProps) {
     }
   };
 
+  const handleDiscordAuth = async () => {
+    try {
+      await signInWithDiscord();
+      setShowRegisterSheet(false);
+    } catch (error) {
+      console.error("Discord auth error:", error);
+    }
+  };
+
   if (!isMobile) return null;
 
   return (
@@ -174,7 +183,7 @@ export function AuthFab({ isMobile }: AuthFabProps) {
                     id="fab-email"
                     type="email"
                     placeholder={t('auth.emailPlaceholder')}
-                    className="pl-10 font-mono text-sm h-11"
+                    className="pl-10 font-mono text-sm h-11 bg-card border-border text-foreground placeholder:text-muted-foreground"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={isLoading}
@@ -192,7 +201,7 @@ export function AuthFab({ isMobile }: AuthFabProps) {
                     id="fab-password"
                     type={showPassword ? "text" : "password"}
                     placeholder={t('auth.passwordPlaceholder')}
-                    className="pl-10 pr-10 font-mono text-sm h-11"
+                    className="pl-10 pr-10 font-mono text-sm h-11 bg-card border-border text-foreground placeholder:text-muted-foreground"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={isLoading}
@@ -237,6 +246,7 @@ export function AuthFab({ isMobile }: AuthFabProps) {
         onOpenChange={setShowRegisterSheet}
         onSubmit={handleRegister}
         onGoogleAuth={handleGoogleAuth}
+        onDiscordAuth={handleDiscordAuth}
         isLoading={isLoading}
       />
     </div>

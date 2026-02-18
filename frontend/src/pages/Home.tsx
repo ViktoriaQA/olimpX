@@ -32,11 +32,12 @@ const Home = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { toast, signInWithGoogle } = useAuth();
+  const { toast, signInWithGoogle, signInWithDiscord } = useAuth();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [showRegisterSheet, setShowRegisterSheet] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -175,6 +176,15 @@ const Home = () => {
       setShowRegisterSheet(false);
     } catch (error) {
       console.error("Google auth error:", error);
+    }
+  };
+
+  const handleDiscordAuth = async () => {
+    try {
+      await signInWithDiscord();
+      setShowRegisterSheet(false);
+    } catch (error) {
+      console.error("Discord auth error:", error);
     }
   };
 
@@ -442,6 +452,7 @@ const Home = () => {
         onOpenChange={setShowRegisterSheet}
         onSubmit={handleRegister}
         onGoogleAuth={handleGoogleAuth}
+        onDiscordAuth={handleDiscordAuth}
         isLoading={isRegistering}
       />
 
@@ -475,7 +486,7 @@ const Home = () => {
                     id="home-email"
                     type="email"
                     placeholder={t('auth.emailPlaceholder')}
-                    className="pl-10 font-mono text-sm h-11"
+                    className="pl-10 font-mono text-sm h-11 bg-card border-border text-foreground placeholder:text-muted-foreground"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={isLoading}
@@ -493,7 +504,7 @@ const Home = () => {
                     id="home-password"
                     type="password"
                     placeholder={t('auth.passwordPlaceholder')}
-                    className="pl-10 font-mono text-sm h-11"
+                    className="pl-10 font-mono text-sm h-11 bg-card border-border text-foreground placeholder:text-muted-foreground"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={isLoading}

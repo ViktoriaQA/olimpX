@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Terminal, Trophy, LogIn, UserPlus, X, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { RegistrationSheet } from "@/components/RegistrationSheet";
 
 interface HeaderProps {
@@ -23,7 +24,7 @@ export function Header({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { toast } = useToast();
+  const { toast, signInWithGoogle, signInWithDiscord } = useAuth();
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [showRegisterSheet, setShowRegisterSheet] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -93,16 +94,27 @@ export function Header({
 
   const handleGoogleAuth = async () => {
     try {
-      // TODO: Implement Google auth
-      console.log("Google auth");
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await signInWithGoogle();
       setShowRegisterSheet(false);
     } catch (error) {
       console.error("Google auth error:", error);
       toast({
         title: t('common.error'),
         description: t('auth.googleAuthFailed'),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDiscordAuth = async () => {
+    try {
+      await signInWithDiscord();
+      setShowRegisterSheet(false);
+    } catch (error) {
+      console.error("Discord auth error:", error);
+      toast({
+        title: t('common.error'),
+        description: t('auth.discordAuthFailed'),
         variant: "destructive",
       });
     }
@@ -210,7 +222,7 @@ export function Header({
                     id={`${currentPage}-email`}
                     type="email"
                     placeholder={t('auth.emailPlaceholder')}
-                    className="pl-10 font-mono text-sm h-11"
+                    className="pl-10 font-mono text-sm h-11 bg-card border-border text-foreground placeholder:text-muted-foreground"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={isLoading}
@@ -228,7 +240,7 @@ export function Header({
                     id={`${currentPage}-password`}
                     type={showPassword ? "text" : "password"}
                     placeholder={t('auth.passwordPlaceholder')}
-                    className="pl-10 pr-10 font-mono text-sm h-11"
+                    className="pl-10 pr-10 font-mono text-sm h-11 bg-card border-border text-foreground placeholder:text-muted-foreground"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={isLoading}
@@ -273,6 +285,7 @@ export function Header({
         onOpenChange={setShowRegisterSheet}
         onSubmit={handleRegister}
         onGoogleAuth={handleGoogleAuth}
+        onDiscordAuth={handleDiscordAuth}
         isLoading={isRegistering}
       />
     </>
