@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Terminal, Trophy, Users, Clock, Calendar, ArrowRight, Gamepad2 } from "lucide-react";
 import { AuthFab } from "@/components/AuthFab";
+import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -133,32 +134,7 @@ const Tournaments = () => {
   return (
     <div className="min-h-screen bg-background matrix-bg">
       {/* Header */}
-      <header className="w-full border-b border-border/40 bg-background/80 backdrop-blur-sm">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-3">
-            <div 
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-primary/30 bg-primary/5 neon-glow cursor-pointer hover:bg-primary/10 transition-colors"
-              onClick={() => navigate("/")}
-            >
-              <Terminal className="h-5 w-5 text-primary" />
-            </div>
-            <h1 
-              className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-xl font-bold text-transparent font-mono cursor-pointer hover:opacity-80 transition-opacity"
-              onClick={() => navigate("/")}
-            >
-              CodeArena
-            </h1>
-          </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="font-mono text-xs h-8 px-3 border-primary/20 hover:bg-primary/5"
-            onClick={() => navigate("/auth")}
-          >
-            {t('auth.login')}
-          </Button>
-        </div>
-      </header>
+      <Header showHomeButton={true} currentPage="tournaments" />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
@@ -170,7 +146,6 @@ const Tournaments = () => {
               <h1 className="text-3xl font-bold font-mono text-primary neon-text">
                 {t('tournaments.title')}
               </h1>
-              <Trophy className="h-8 w-8 text-primary" />
             </div>
             <p className="text-muted-foreground font-mono max-w-2xl mx-auto">
               {t('tournaments.pageSubtitle')}

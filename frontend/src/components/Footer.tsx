@@ -2,7 +2,15 @@ import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 
-export function Footer() {
+interface FooterProps {
+  showLanguageSwitcher?: boolean;
+  customContent?: React.ReactNode;
+}
+
+export function Footer({ 
+  showLanguageSwitcher = true,
+  customContent 
+}: FooterProps) {
   const currentYear = new Date().getFullYear();
   const { t } = useTranslation();
   
@@ -11,11 +19,13 @@ export function Footer() {
       <div className="container mx-auto">
         <div className="flex flex-col md:flex-row justify-center items-center gap-4">
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            
-            {/* <span>|</span> */}
-            <span>{t('footer.copyright', { year: currentYear })}</span>
-            <span>|</span>
-            <LanguageSwitcher />
+            {customContent || (
+              <>
+                <span>{t('footer.copyright', { year: currentYear })}</span>
+                <span>|</span>
+              </>
+            )}
+            {showLanguageSwitcher && <LanguageSwitcher />}
           </div>
         </div>
       </div>

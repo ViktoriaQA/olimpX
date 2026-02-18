@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Terminal, Trophy, Users, Clock, Calendar, ArrowRight, Gamepad2, LogIn, UserPlus, X, Mail, Lock, GraduationCap, User } from "lucide-react";
 import { AuthFab } from "@/components/AuthFab";
+import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/components/ui/use-toast";
@@ -33,7 +34,6 @@ const Home = () => {
   const { toast } = useToast();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showEmailForm, setShowEmailForm] = useState(false);
   const [showRegisterSheet, setShowRegisterSheet] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -98,40 +98,6 @@ const Home = () => {
       setLoading(false);
     }, 1000);
   }, []);
-
-  const handleEmailLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) {
-      toast({
-        title: "Помилка",
-        description: "Будь ласка, заповніть всі поля",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      // TODO: Implement email/password auth
-      console.log("Signing in with:", { email });
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: t('common.success'),
-        description: t('common.checkEmailForLogin'),
-      });
-      navigate("/auth");
-    } catch (error) {
-      console.error("Login error:", error);
-      toast({
-        title: t('common.error'),
-        description: t('common.loginError'),
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -212,56 +178,7 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-background matrix-bg">
       {/* Header */}
-      <header className="w-full border-b border-border/40 bg-background/80 backdrop-blur-sm">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-3">
-            <div 
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-primary/30 bg-primary/5 neon-glow cursor-pointer hover:bg-primary/10 transition-colors"
-              onClick={() => navigate("/")}
-            >
-              <Terminal className="h-5 w-5 text-primary" />
-            </div>
-            <h1 
-              className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-xl font-bold text-transparent font-mono cursor-pointer hover:opacity-80 transition-opacity"
-              onClick={() => navigate("/")}
-            >
-              CodeArena
-            </h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="font-mono text-xs h-8 px-3 hover:bg-primary/5 text-muted-foreground hover:text-primary"
-              onClick={() => navigate("/tournaments")}
-            >
-              <Trophy className="h-4 w-4 mr-1" />
-              {t('navigation.tournaments')}
-            </Button>
-            {!isMobile ? (
-              <>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="font-mono text-xs h-8 px-3 border-primary/20 hover:bg-primary/5"
-                  onClick={() => setShowEmailForm(true)}
-                >
-                  <LogIn className="h-4 w-4 mr-1" />
-                  {t('auth.login')}
-                </Button>
-                <Button 
-                  size="lg" 
-                  className="font-mono text-xs h-8 px-3"
-                  onClick={() => setShowRegisterSheet(true)}
-                >
-                  <UserPlus className="h-4 w-4 mr-1" />
-                  {t('auth.register')}
-                </Button>
-              </>
-            ) : null}
-          </div>
-        </div>
-      </header>
+      <Header showTournamentsButton={true} currentPage="home" />
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-16">
@@ -462,7 +379,7 @@ const Home = () => {
               variant="outline" 
               size="lg" 
               className="font-mono text-base px-8 py-3 border-primary/20 hover:bg-primary/5"
-              onClick={() => setShowEmailForm(true)}
+              onClick={() => navigate("/auth")}
             >
               <LogIn className="h-5 w-5 mr-2" />
               {t('auth.login')}
@@ -473,83 +390,6 @@ const Home = () => {
 
       {/* Footer */}
       <Footer />
-
-      {/* Email Form Modal */}
-      {showEmailForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-card border border-border rounded-lg p-6 w-full max-w-sm animate-in fade-in duration-200">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-mono text-lg font-bold text-primary">Вхід</h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-                onClick={() => setShowEmailForm(false)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            <form onSubmit={handleEmailLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="home-email" className="font-mono text-sm">
-                  <span className="text-primary">$</span> email
-                </Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="home-email"
-                    type="email"
-                    placeholder="your@email.com"
-                    className="pl-10 font-mono text-sm h-11"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={isLoading}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="home-password" className="font-mono text-sm">
-                  <span className="text-primary">$</span> пароль
-                </Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="home-password"
-                    type="password"
-                    placeholder="••••••••"
-                    className="pl-10 font-mono text-sm h-11"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLoading}
-                  />
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full h-11 font-mono text-sm"
-                disabled={isLoading}
-              >
-                {isLoading ? t('common.signingIn') : t('auth.login')}
-              </Button>
-            </form>
-
-            <div className="text-center mt-4">
-              <button
-                className="text-sm text-primary hover:underline font-mono"
-                onClick={() => {
-                  setShowEmailForm(false);
-                  setShowRegisterSheet(true);
-                }}
-              >
-                Немає акаунту? Зареєструватися
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Registration Sheet */}
       {showRegisterSheet && (
@@ -672,7 +512,7 @@ const Home = () => {
                     className="text-sm text-primary hover:underline font-mono"
                     onClick={() => {
                       setShowRegisterSheet(false);
-                      setShowEmailForm(true);
+                      navigate("/auth");
                     }}
                   >
                     {t('common.alreadyHaveAccountLogin')}
