@@ -46,7 +46,7 @@ const Dashboard = () => {
           &gt; Welcome, {profile?.nickname || "user"}_
         </h1>
         <p className="text-sm text-muted-foreground font-mono">
-          Role: <span className="text-accent">{role || "unassigned"}</span> | Status: <span className={profile?.subscription_status === "active" ? "text-primary" : "text-destructive"}>{profile?.subscription_status}</span>
+          Role: <span className="text-accent">{role || "unassigned"}</span> | Status: <span className={profile?.subscription_status === "active" ? "text-primary" : "text-destructive"}>{profile?.subscription_status || "inactive"}</span>
         </p>
       </div>
 
