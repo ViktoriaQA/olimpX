@@ -103,12 +103,12 @@ export function AppSidebar() {
         <div className="flex items-center gap-2">
           <Avatar className="w-8 h-8 border border-border">
             <AvatarFallback className="bg-muted text-muted-foreground font-mono text-xs">
-              {user?.first_name?.slice(0, 2).toUpperCase() ?? user?.email?.slice(0, 2).toUpperCase() ?? "?"}
+              {user?.nickname?.slice(0, 2).toUpperCase() ?? user?.first_name?.slice(0, 2).toUpperCase() ?? user?.email?.slice(0, 2).toUpperCase() ?? "?"}
             </AvatarFallback>
           </Avatar>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-mono text-sidebar-foreground truncate">{user?.first_name || user?.email || "User"}</p>
+              <p className="text-xs font-mono text-sidebar-foreground truncate">{user?.nickname || user?.first_name || user?.email || "User"}</p>
               <p className="text-xs font-mono text-muted-foreground">{user?.role || "student"}</p>
             </div>
           )}

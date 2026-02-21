@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { ValidationService } from './validationService';
 import { JWTService } from './jwtService';
 import { User, RegisterRequest, LoginRequest, AuthResponse, UserSession, SMSVerificationCode } from '../models/user';
+import { generateNicknameFromEmail, generateUniqueNickname } from '../utils/nicknameGenerator';
 
 const supabase = createClient(
   process.env.SUPABASE_URL || 'http://localhost:54321',
@@ -17,6 +18,26 @@ export class AuthService {
     // Normalize phone if provided
     if (validatedData.phone) {
       validatedData.phone = ValidationService.normalizePhone(validatedData.phone, validatedData.country_code);
+    }
+
+    // Generate nickname from email if email is provided
+    let nickname: string | undefined;
+    if (validatedData.email) {
+      try {
+        nickname = generateNicknameFromEmail(validatedData.email);
+        
+        // Check if nickname already exists and make it unique if needed
+        const { data: existingUsers } = await supabase
+          .from('custom_users')
+          .select('nickname')
+          .not('nickname', 'is', null);
+        
+        const existingNicknames = existingUsers?.map(u => u.nickname).filter(Boolean) || [];
+        nickname = generateUniqueNickname(nickname, existingNicknames);
+      } catch (error) {
+        console.error('Failed to generate nickname from email:', error);
+        // Continue without nickname if generation fails
+      }
     }
 
     // Check if user already exists
@@ -37,6 +58,7 @@ export class AuthService {
         country_code: validatedData.country_code,
         first_name: validatedData.first_name,
         last_name: validatedData.last_name,
+        nickname: nickname,
         password_hash: passwordHash,
         role: 'user',
         is_verified: false,

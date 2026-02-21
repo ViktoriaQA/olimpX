@@ -6,6 +6,7 @@ export interface User {
   password_hash?: string;
   first_name: string;
   last_name: string;
+  nickname?: string;
   role: 'user' | 'admin';
   is_verified: boolean;
   phone_verified: boolean;
