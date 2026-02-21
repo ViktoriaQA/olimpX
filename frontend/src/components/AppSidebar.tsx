@@ -1,4 +1,4 @@
-import { Trophy, BookOpen, Users, CreditCard, Shield, Settings, LogOut, Terminal, LayoutDashboard, PanelLeft } from "lucide-react";
+import { Trophy, BookOpen, Users, CreditCard, Shield, Settings, LogOut, Terminal, LayoutDashboard, PanelLeft, Menu } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -55,7 +55,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border bg-sidebar">
+    <Sidebar collapsible="icon" className="border-r border-border bg-sidebar hidden md:block">
       <SidebarHeader className="border-b border-border h-12">
         <div className="h-full flex items-center justify-between px-4">
           {!collapsed && (
@@ -68,7 +68,7 @@ export function AppSidebar() {
               </span>
             </div>
           )}
-          <div className={collapsed ? "flex justify-center w-full" : ""}>
+          <div className={collapsed ? "flex justify-center w-full" : "flex justify-end"}>
             <SidebarTrigger className="text-sidebar-foreground hover:text-primary hover:bg-sidebar-accent" />
           </div>
         </div>
