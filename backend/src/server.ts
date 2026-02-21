@@ -15,6 +15,7 @@ import userRoutes from './routes/users';
 import subscriptionRoutes from './routes/subscriptions';
 import tournamentRoutes from './routes/tournaments';
 import taskRoutes from './routes/tasks';
+import paymentRoutes from './routes/payment';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -37,9 +38,10 @@ app.get('/health', (req, res) => {
 // API routes
 app.use('/auth', authRoutes);
 app.use('/api/users', authMiddleware, userRoutes);
-app.use('/api/subscriptions', authMiddleware, subscriptionRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/tournaments', authMiddleware, tournamentRoutes);
 app.use('/api/tasks', authMiddleware, taskRoutes);
+app.use('/api/v1/payment', paymentRoutes);
 
 // Serve static files from frontend build
 app.use(express.static(path.join(__dirname, '../../frontend/dist')));

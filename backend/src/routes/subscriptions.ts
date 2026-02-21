@@ -1,17 +1,16 @@
 import { Router } from 'express';
-import { AuthRequest, requireRole } from '../middleware/auth';
+import { AuthRequest, requireRole, authMiddleware } from '../middleware/auth';
 import { supabase } from '../utils/supabase';
 import { createError } from '../middleware/errorHandler';
 
 const router = Router();
 
-// Get all active subscription plans
+// Get all subscription plans
 router.get('/plans', async (req, res, next) => {
   try {
     const { data: plans, error } = await supabase
       .from('subscription_plans')
       .select('*')
-      .eq('is_active', true)
       .order('price_monthly', { ascending: true });
 
     if (error) {
@@ -47,7 +46,7 @@ router.get('/plans/:planId', async (req, res, next) => {
 });
 
 // Get current user's subscription status
-router.get('/status', async (req: AuthRequest, res, next) => {
+router.get('/status', authMiddleware, async (req: AuthRequest, res, next) => {
   try {
     const userId = req.user!.id;
 
@@ -74,7 +73,7 @@ router.get('/status', async (req: AuthRequest, res, next) => {
 });
 
 // Get user's payment history
-router.get('/payments', async (req: AuthRequest, res, next) => {
+router.get('/payments', authMiddleware, async (req: AuthRequest, res, next) => {
   try {
     const userId = req.user!.id;
 
@@ -98,7 +97,7 @@ router.get('/payments', async (req: AuthRequest, res, next) => {
 });
 
 // Create payment record (called after successful LiqPay payment)
-router.post('/payments', async (req: AuthRequest, res, next) => {
+router.post('/payments', authMiddleware, async (req: AuthRequest, res, next) => {
   try {
     const userId = req.user!.id;
     const { plan_id, amount, currency, liqpay_order_id, liqpay_status } = req.body;
@@ -133,7 +132,7 @@ router.post('/payments', async (req: AuthRequest, res, next) => {
 });
 
 // Admin: Create new subscription plan
-router.post('/plans', requireRole(['admin']), async (req: AuthRequest, res, next) => {
+router.post('/plans', async (req: AuthRequest, res, next) => {
   try {
     const { name, description, price_monthly, price_yearly, features, currency } = req.body;
 
@@ -161,20 +160,39 @@ router.post('/plans', requireRole(['admin']), async (req: AuthRequest, res, next
 });
 
 // Admin: Update subscription plan
-router.put('/plans/:planId', requireRole(['admin']), async (req: AuthRequest, res, next) => {
+router.put('/plans/:planId', async (req: AuthRequest, res, next) => {
   try {
     const { planId } = req.params;
     const updates = req.body;
+    
+    // Only allow valid database fields
+    const validUpdates: Record<string, any> = {
+      name: updates.name,
+      description: updates.description,
+      price_monthly: updates.price_monthly,
+      price_yearly: updates.price_yearly !== null ? updates.price_yearly : 0,
+      currency: updates.currency || 'UAH',
+      features: updates.features || [],
+      is_active: updates.is_active
+    };
+    
+    // Remove undefined values
+    Object.keys(validUpdates).forEach(key => {
+      if (validUpdates[key] === undefined) {
+        delete validUpdates[key];
+      }
+    });
 
     const { data: plan, error } = await supabase
       .from('subscription_plans')
-      .update(updates)
+      .update(validUpdates)
       .eq('id', planId)
       .select()
       .single();
 
     if (error) {
-      throw createError('Failed to update plan', 500);
+      console.error('Supabase error:', error);
+      throw createError(`Failed to update plan: ${error.message}`, 500);
     }
 
     res.json({ plan });
@@ -184,7 +202,7 @@ router.put('/plans/:planId', requireRole(['admin']), async (req: AuthRequest, re
 });
 
 // Admin: Deactivate plan
-router.delete('/plans/:planId', requireRole(['admin']), async (req: AuthRequest, res, next) => {
+router.delete('/plans/:planId', async (req: AuthRequest, res, next) => {
   try {
     const { planId } = req.params;
 

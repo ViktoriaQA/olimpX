@@ -10,6 +10,8 @@ import AuthCallback from "@/pages/AuthCallback";
 import Dashboard from "@/pages/Dashboard";
 import Home from "@/pages/Home";
 import Tournaments from "@/pages/Tournaments";
+import Subscription from "@/pages/Subscription";
+import AdminSubscriptions from "@/pages/AdminSubscriptions";
 import NotFound from "@/pages/NotFound";
 import '@/i18n';
 
@@ -27,6 +29,22 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/tournaments" element={<Tournaments />} />
+            <Route
+              path="/subscription"
+              element={
+                <AppLayout>
+                  <Subscription />
+                </AppLayout>
+              }
+            />
+            <Route
+              path="/admin/subscriptions"
+              element={
+                <AppLayout>
+                  <AdminSubscriptions />
+                </AppLayout>
+              }
+            />
             <Route
               path="/dashboard"
               element={

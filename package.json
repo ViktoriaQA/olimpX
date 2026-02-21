@@ -1,5 +1,15 @@
 {
+  "scripts": {
+    "start": "chmod +x start.sh && ./start.sh",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build"
+  },
   "devDependencies": {
-    "supabase": "^2.76.12"
+    "supabase": "^2.76.12",
+    "concurrently": "^8.2.2"
   }
 }
