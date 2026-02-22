@@ -111,7 +111,7 @@ export function AppSidebar() {
           {!collapsed && (
             <div className="flex-1 min-w-0">
               <p className="text-xs font-mono text-sidebar-foreground truncate">{user?.nickname || user?.first_name || user?.email || "User"}</p>
-              <p className="text-xs font-mono text-muted-foreground">{user?.role || "student"}</p>
+              <p className="text-xs font-mono text-muted-foreground">{user?.subscription_plan || user?.role || "student"}</p>
             </div>
           )}
           {!collapsed && (

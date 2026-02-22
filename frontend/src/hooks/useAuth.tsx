@@ -17,6 +17,7 @@ type User = {
   updated_at: string;
   nickname?: string;
   subscription_status?: string;
+  subscription_plan?: string;
   onboarded?: boolean;
 };
 

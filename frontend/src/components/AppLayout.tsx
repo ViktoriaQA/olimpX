@@ -58,7 +58,7 @@ function AppLayoutContent({ children }: { children: ReactNode }) {
               )}
               <div className="ml-auto flex items-center gap-3">
                 <span className="text-xs font-mono px-2 py-1 rounded border border-primary/30 text-primary bg-primary/5">
-                  USER
+                  {user?.subscription_plan || 'USER'}
                 </span>
               </div>
             </header>

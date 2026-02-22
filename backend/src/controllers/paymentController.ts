@@ -54,11 +54,11 @@ export class PaymentController {
 
       // Calculate amount based on billing cycle
       let amount = packageDetails.price;
-      let orderType: 'one-time' | 'recurring' = 'recurring';
+      let orderType: 'one-time' | 'recurring' = 'recurring'; // Always recurring for subscriptions
       
       if (billing_cycle === 'yearly') {
         amount = packageDetails.price * 11; // 11 months for yearly (1 month free)
-        orderType = 'one-time';
+        // Keep orderType as 'recurring' for auto-renewal, even for yearly billing
       }
 
       // Generate order ID
@@ -401,7 +401,7 @@ export class PaymentController {
           price: paymentAttempt.amount,
           duration: paymentAttempt.order_type === 'recurring' ? 'місяць' : 'рік',
           payment_method: 'LiqPay',
-          auto_renewal: paymentAttempt.order_type === 'recurring',
+          auto_renewal: true, // Subscriptions always have auto-renewal enabled
         }
       };
 

@@ -20,7 +20,7 @@ interface SubscriptionDetails {
 }
 
 const SubscriptionSuccess = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, restoreSession } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [subscriptionDetails, setSubscriptionDetails] = useState<SubscriptionDetails | null>(null);
@@ -49,6 +49,8 @@ const SubscriptionSuccess = () => {
         
         if (response.success) {
           setSubscriptionDetails(response.data);
+          // Refresh user session to get updated subscription data
+          await restoreSession();
           toast({
             title: "Вітаємо!",
             description: "Підписку успішно оформлено!",
