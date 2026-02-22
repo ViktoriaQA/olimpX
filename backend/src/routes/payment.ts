@@ -44,6 +44,14 @@ router.get(
   paymentController.getReceipt.bind(paymentController)
 );
 
+// Verify subscription
+router.post(
+  '/verify-subscription',
+  authMiddleware,
+  validateRequest,
+  paymentController.verifySubscription.bind(paymentController)
+);
+
 // Cancel subscription
 router.delete(
   '/subscriptions/:subscriptionId/cancel',

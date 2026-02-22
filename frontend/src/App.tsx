@@ -11,6 +11,7 @@ import Dashboard from "@/pages/Dashboard";
 import Home from "@/pages/Home";
 import Tournaments from "@/pages/Tournaments";
 import Subscription from "@/pages/Subscription";
+import SubscriptionSuccess from "@/pages/SubscriptionSuccess";
 import AdminSubscriptions from "@/pages/AdminSubscriptions";
 import NotFound from "@/pages/NotFound";
 import '@/i18n';
@@ -34,6 +35,14 @@ const App = () => (
               element={
                 <AppLayout>
                   <Subscription />
+                </AppLayout>
+              }
+            />
+            <Route
+              path="/subscription/success"
+              element={
+                <AppLayout>
+                  <SubscriptionSuccess />
                 </AppLayout>
               }
             />

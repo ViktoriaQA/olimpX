@@ -103,7 +103,7 @@ router.get('/history', authMiddleware, async (req: AuthRequest, res, next) => {
 
     // Get payment history with plan details
     const { data: payments, error } = await supabase
-      .from('payments')
+      .from('payment_attempts')
       .select(`
         *,
         subscription_plans(name, price_monthly, price_yearly, features)
@@ -116,10 +116,10 @@ router.get('/history', authMiddleware, async (req: AuthRequest, res, next) => {
     }
 
     // Transform payment data into subscription history format
-    const subscriptionHistory = payments.map(payment => {
+    const subscriptionHistory = (payments || []).map(payment => {
       const plan = payment.subscription_plans;
-      const price = payment.billing_cycle === 'yearly' ? plan?.price_yearly : plan?.price_monthly;
-      const duration = payment.billing_cycle === 'yearly' ? 'рік' : 'місяць';
+      const price = payment.billing_period === 'year' ? plan?.price_yearly : plan?.price_monthly;
+      const duration = payment.billing_period === 'year' ? 'рік' : 'місяць';
       
       // Determine subscription status based on payment status and dates
       let status: 'active' | 'cancelled' | 'expired' | 'pending';
@@ -127,16 +127,18 @@ router.get('/history', authMiddleware, async (req: AuthRequest, res, next) => {
         status = 'pending';
       } else if (payment.status === 'failed') {
         status = 'cancelled';
-      } else {
+      } else if (payment.status === 'completed') {
         // Check if subscription is still active
         const endDate = new Date(payment.created_at);
-        endDate.setMonth(endDate.getMonth() + (payment.billing_cycle === 'yearly' ? 12 : 1));
+        endDate.setMonth(endDate.getMonth() + (payment.billing_period === 'year' ? 12 : 1));
         
         if (endDate > new Date()) {
           status = 'active';
         } else {
           status = 'expired';
         }
+      } else {
+        status = 'expired';
       }
 
       return {
@@ -145,12 +147,12 @@ router.get('/history', authMiddleware, async (req: AuthRequest, res, next) => {
         status,
         start_date: payment.created_at,
         end_date: status === 'active' ? null : new Date(new Date(payment.created_at).setMonth(
-          new Date(payment.created_at).getMonth() + (payment.billing_cycle === 'yearly' ? 12 : 1)
+          new Date(payment.created_at).getMonth() + (payment.billing_period === 'year' ? 12 : 1)
         )).toISOString(),
         price: price || 0,
         duration,
-        payment_method: 'LiqPay',
-        auto_renewal: payment.rec_token ? true : false
+        payment_method: payment.response_data?.payment_method || 'LiqPay',
+        auto_renewal: payment.response_data?.rec_token ? true : false
       };
     });
 

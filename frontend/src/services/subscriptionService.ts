@@ -253,6 +253,37 @@ class SubscriptionService {
     }
   }
 
+  async verifySubscription(sessionIdOrSubscriptionId: string): Promise<{ success: boolean; data: SubscriptionHistory }> {
+    const response = await fetch(`${config.api.baseUrl}/api/v1/payment/verify-subscription`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify({
+        session_id: sessionIdOrSubscriptionId,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to verify subscription');
+    }
+
+    const result = await response.json();
+    return {
+      success: true,
+      data: {
+        id: result.subscription?.id || sessionIdOrSubscriptionId,
+        plan_name: result.subscription?.plan_name || 'Підписка',
+        status: result.subscription?.status || 'active',
+        start_date: result.subscription?.start_date || new Date().toISOString(),
+        end_date: result.subscription?.end_date,
+        price: result.subscription?.price || 0,
+        duration: result.subscription?.duration || 'місяць',
+        payment_method: result.subscription?.payment_method,
+        auto_renewal: result.subscription?.auto_renewal || false,
+      }
+    };
+  }
+
   async getAllPlansAdmin(): Promise<SubscriptionResponse> {
     const response = await fetch(`${config.api.baseUrl}/api/subscriptions/plans`, {
       headers: this.getAuthHeaders(),

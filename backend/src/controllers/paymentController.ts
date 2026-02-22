@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import LiqPayService from '../services/liqpayService';
 import RecurringService from '../services/recurringService';
+import TelegramService from '../services/telegramService';
 import { AuthenticatedRequest } from '../types/auth';
 import { 
   InitiateSubscriptionRequest, 
@@ -16,10 +17,12 @@ import { supabase } from '../utils/supabase';
 export class PaymentController {
   private liqPayService: LiqPayService;
   private recurringService: RecurringService;
+  private telegramService: TelegramService;
 
   constructor() {
     this.liqPayService = new LiqPayService();
     this.recurringService = new RecurringService();
+    this.telegramService = new TelegramService();
   }
 
   async initiateSubscriptionPayment(req: AuthenticatedRequest, res: Response): Promise<void> {
@@ -81,9 +84,9 @@ export class PaymentController {
 
       // Store payment attempt
       const paymentAttempt: PaymentAttempt = {
-        id: this.generateId(),
+        id: this.generateId(), // Generate proper UUID
         user_id: userId,
-        order_id: orderId,
+        order_id: orderId, // Keep orderId for LiqPay
         payment_id: paymentResponse.payment_id,
         checkout_id: paymentResponse.payment_id,
         checkout_url: paymentResponse.checkout_url,
@@ -326,6 +329,89 @@ export class PaymentController {
     }
   }
 
+  async verifySubscription(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { session_id } = req.body;
+      const userId = req.user?.id;
+
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      if (!session_id) {
+        res.status(400).json({ error: 'session_id is required' });
+        return;
+      }
+
+      // Get payment attempt by order_id (session_id)
+      const paymentAttempt = await this.getPaymentAttemptByOrderId(session_id);
+      if (!paymentAttempt) {
+        res.status(404).json({ error: 'Payment not found' });
+        return;
+      }
+
+      if (paymentAttempt.user_id !== userId) {
+        res.status(403).json({ error: 'Access denied' });
+        return;
+      }
+
+      // Check real-time payment status
+      try {
+        const paymentStatus = await this.liqPayService.checkPaymentStatus(session_id);
+        const mappedStatus = this.liqPayService.mapLiqPayStatusWithResult(
+          paymentStatus.status,
+          paymentStatus.result,
+          paymentStatus.response_code
+        );
+        
+        await this.updatePaymentAttemptStatus(session_id, paymentStatus);
+        paymentAttempt.status = mappedStatus;
+      } catch (error) {
+        console.error('Error checking payment status:', error);
+      }
+
+      // Only proceed if payment is completed
+      if (paymentAttempt.status !== 'completed') {
+        res.status(400).json({ 
+          error: 'Payment not completed',
+          status: paymentAttempt.status 
+        });
+        return;
+      }
+
+      // Get package details
+      const packageDetails = await this.getPackageById(paymentAttempt.package_id!);
+      if (!packageDetails) {
+        res.status(404).json({ error: 'Package not found' });
+        return;
+      }
+
+      // Get user's subscription details
+      const subscription = await this.getUserSubscription(userId, paymentAttempt.package_id!);
+
+      const response = {
+        success: true,
+        subscription: {
+          id: paymentAttempt.subscription_id || paymentAttempt.order_id,
+          plan_name: packageDetails.name,
+          status: 'active',
+          start_date: subscription?.start_date || paymentAttempt.created_at.toISOString(),
+          end_date: subscription?.end_date,
+          price: paymentAttempt.amount,
+          duration: paymentAttempt.order_type === 'recurring' ? 'місяць' : 'рік',
+          payment_method: 'LiqPay',
+          auto_renewal: paymentAttempt.order_type === 'recurring',
+        }
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error('Error verifying subscription:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
   async cancelSubscription(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { subscriptionId } = req.params;
@@ -356,6 +442,19 @@ export class PaymentController {
         throw new Error('Payment attempt not found');
       }
 
+      // Get package details for notification
+      const packageDetails = await this.getPackageById(paymentAttempt.package_id!);
+      if (!packageDetails) {
+        throw new Error('Package not found');
+      }
+
+      // Get user email for notification
+      const { data: userData } = await supabase
+        .from('custom_users')
+        .select('email')
+        .eq('id', paymentAttempt.user_id)
+        .single();
+
       // Assign package to user
       await this.assignPackageToUserWithDuration(
         paymentAttempt.user_id,
@@ -381,10 +480,24 @@ export class PaymentController {
       // Update payment status to completed
       await this.updatePaymentAttemptStatus(callbackData.order_id, callbackData, 'completed');
 
+      // Send Telegram notification
+      await this.telegramService.sendPaymentNotification(
+        userData?.email || 'unknown@example.com',
+        packageDetails.name,
+        paymentAttempt.amount,
+        paymentAttempt.currency
+      );
+
       // Asynchronously get and store receipt
       this.storeReceiptAsync(callbackData.order_id, callbackData.payment_id, paymentAttempt.user_id);
     } catch (error) {
       console.error('Error handling successful payment:', error);
+      
+      // Send error notification to Telegram
+      await this.telegramService.sendErrorNotification(
+        error instanceof Error ? error.message : 'Unknown error',
+        'handleSuccessfulPayment'
+      );
     }
   }
 
@@ -398,7 +511,12 @@ export class PaymentController {
   }
 
   private generateId(): string {
-    return `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Generate proper UUID v4
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
   }
 
   private generateHTMLReceipt(paymentAttempt: PaymentAttempt): string {
@@ -471,43 +589,322 @@ export class PaymentController {
   }
 
   private async storePaymentAttempt(paymentAttempt: PaymentAttempt): Promise<void> {
-    // Database implementation
-    console.log('Storing payment attempt:', paymentAttempt.id);
+    try {
+      const { error } = await supabase
+        .from('payment_attempts')
+        .insert({
+          id: paymentAttempt.id,
+          user_id: paymentAttempt.user_id,
+          package_id: paymentAttempt.package_id,
+          order_id: paymentAttempt.order_id,
+          payment_id: paymentAttempt.payment_id,
+          checkout_id: paymentAttempt.checkout_id,
+          checkout_url: paymentAttempt.checkout_url,
+          amount: paymentAttempt.amount,
+          currency: paymentAttempt.currency,
+          billing_period: paymentAttempt.order_type === 'recurring' ? 'month' : 'year',
+          status: paymentAttempt.status,
+          payment_gateway: 'liqpay',
+          response_data: paymentAttempt.callback_data ? JSON.stringify(paymentAttempt.callback_data) : '{}',
+          created_at: paymentAttempt.created_at.toISOString(),
+          updated_at: paymentAttempt.updated_at.toISOString()
+        });
+
+      if (error) {
+        console.error('Error storing payment attempt:', error);
+        throw error;
+      }
+
+      console.log('Payment attempt stored successfully:', paymentAttempt.id);
+    } catch (error) {
+      console.error('Database error in storePaymentAttempt:', error);
+      throw error;
+    }
   }
 
   private async getPaymentAttemptByOrderId(orderId: string): Promise<PaymentAttempt | null> {
-    // Database implementation
-    return null;
+    try {
+      const { data, error } = await supabase
+        .from('payment_attempts')
+        .select('*')
+        .eq('order_id', orderId)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No rows returned
+          return null;
+        }
+        console.error('Error getting payment attempt:', error);
+        throw error;
+      }
+
+      if (!data) {
+        return null;
+      }
+
+      // Parse response_data if it's a string
+      let callbackData = {};
+      if (data.response_data && typeof data.response_data === 'string') {
+        try {
+          callbackData = JSON.parse(data.response_data);
+        } catch (parseError) {
+          console.error('Error parsing response_data:', parseError);
+          callbackData = {};
+        }
+      } else if (data.response_data && typeof data.response_data === 'object') {
+        callbackData = data.response_data;
+      }
+
+      // Transform to PaymentAttempt interface
+      return {
+        id: data.id,
+        user_id: data.user_id,
+        order_id: data.order_id,
+        payment_id: data.payment_id,
+        checkout_id: data.checkout_id,
+        checkout_url: data.checkout_url,
+        amount: data.amount,
+        currency: data.currency,
+        status: data.status,
+        order_type: data.billing_period === 'month' ? 'recurring' : 'one-time',
+        package_id: data.package_id,
+        subscription_id: data.subscription_id,
+        callback_data: callbackData,
+        error_message: data.error_message,
+        created_at: new Date(data.created_at),
+        updated_at: new Date(data.updated_at)
+      } as PaymentAttempt;
+    } catch (error) {
+      console.error('Database error in getPaymentAttemptByOrderId:', error);
+      return null;
+    }
   }
 
   private async updatePaymentAttemptStatus(orderId: string, data: any, status?: string): Promise<void> {
-    // Database implementation
-    console.log('Updating payment attempt status:', orderId);
+    try {
+      const updateData: any = {
+        updated_at: new Date().toISOString()
+      };
+
+      // Update status if provided
+      if (status) {
+        updateData.status = status;
+      }
+
+      // Store response data from LiqPay callback
+      if (data) {
+        const responseData = {
+          payment_id: data.payment_id,
+          status: data.status,
+          transaction_id: data.transaction_id,
+          result: data.result,
+          response_code: data.response_code,
+          rec_token: data.rec_token,
+          payment_method: data.payment_method,
+          card_type: data.card_type,
+          sender_card_mask2: data.sender_card_mask2,
+          create_date: data.create_date,
+          end_date: data.end_date
+        };
+        updateData.response_data = JSON.stringify(responseData);
+      }
+
+      const { error } = await supabase
+        .from('payment_attempts')
+        .update(updateData)
+        .eq('order_id', orderId);
+
+      if (error) {
+        console.error('Error updating payment attempt status:', error);
+        throw error;
+      }
+
+      console.log('Payment attempt status updated successfully:', orderId);
+    } catch (error) {
+      console.error('Database error in updatePaymentAttemptStatus:', error);
+      throw error;
+    }
   }
 
   private async updatePaymentAttemptCheckoutUrl(orderId: string, checkoutUrl: string): Promise<void> {
-    // Database implementation
-    console.log('Updating checkout URL:', orderId);
+    try {
+      const { error } = await supabase
+        .from('payment_attempts')
+        .update({
+          checkout_url: checkoutUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq('order_id', orderId);
+
+      if (error) {
+        console.error('Error updating checkout URL:', error);
+        throw error;
+      }
+
+      console.log('Checkout URL updated successfully:', orderId);
+    } catch (error) {
+      console.error('Database error in updatePaymentAttemptCheckoutUrl:', error);
+      throw error;
+    }
   }
 
   private async updatePaymentAttemptSubscriptionId(orderId: string, subscriptionId?: string): Promise<void> {
-    // Database implementation
-    console.log('Updating subscription ID:', orderId);
+    try {
+      const { error } = await supabase
+        .from('payment_attempts')
+        .update({
+          subscription_id: subscriptionId,
+          updated_at: new Date().toISOString()
+        })
+        .eq('order_id', orderId);
+
+      if (error) {
+        console.error('Error updating subscription ID:', error);
+        throw error;
+      }
+
+      console.log('Subscription ID updated successfully:', orderId);
+    } catch (error) {
+      console.error('Database error in updatePaymentAttemptSubscriptionId:', error);
+      throw error;
+    }
+  }
+
+  private async getUserSubscription(userId: string, packageId: string): Promise<any> {
+    // Database implementation - get user's active subscription for this package
+    try {
+      const { data, error } = await supabase
+        .from('user_subscriptions')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('package_id', packageId)
+        .eq('status', 'active')
+        .single();
+      
+      if (error || !data) {
+        return null;
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Error getting user subscription:', error);
+      return null;
+    }
   }
 
   private async assignPackageToUserWithDuration(userId: string, packageId: string, durationMonths: number): Promise<void> {
-    // Database implementation
-    console.log(`Assigning package ${packageId} to user ${userId} for ${durationMonths} months`);
+    try {
+      // Calculate end date
+      const startDate = new Date();
+      const endDate = new Date(startDate);
+      endDate.setMonth(endDate.getMonth() + durationMonths);
+
+      // First, deactivate any existing active subscriptions for this user and package
+      await supabase
+        .from('user_subscriptions')
+        .update({
+          status: 'expired',
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId)
+        .eq('package_id', packageId)
+        .eq('status', 'active');
+
+      // Create new subscription record
+      const { error } = await supabase
+        .from('user_subscriptions')
+        .insert({
+          user_id: userId,
+          package_id: packageId,
+          status: 'active',
+          start_date: startDate.toISOString(),
+          end_date: endDate.toISOString(),
+          auto_renew: durationMonths === 1, // Auto-renew for monthly subscriptions
+          created_at: startDate.toISOString(),
+          updated_at: startDate.toISOString()
+        });
+
+      if (error) {
+        console.error('Error assigning package to user:', error);
+        throw error;
+      }
+
+      // Update user profile with subscription info
+      const { data: packageData } = await supabase
+        .from('subscription_plans')
+        .select('name')
+        .eq('id', packageId)
+        .single();
+
+      // Update user's subscription status in profiles table
+      await supabase
+        .from('custom_users')
+        .update({
+          subscription_status: 'active',
+          subscription_plan: packageData?.name || 'Unknown',
+          subscription_expires_at: endDate.toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+
+      console.log(`Package ${packageId} assigned to user ${userId} for ${durationMonths} months`);
+    } catch (error) {
+      console.error('Database error in assignPackageToUserWithDuration:', error);
+      throw error;
+    }
   }
 
   private async getReceiptFromDatabase(orderId: string): Promise<any> {
-    // Database implementation
-    return null;
+    try {
+      const { data, error } = await supabase
+        .from('receipts')
+        .select('*')
+        .eq('order_id', orderId)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No rows returned
+          return null;
+        }
+        console.error('Error getting receipt:', error);
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Database error in getReceiptFromDatabase:', error);
+      return null;
+    }
   }
 
   private async storeReceiptInDatabase(orderId: string, paymentId: string, userId: string, data: Buffer, type: 'pdf' | 'html' = 'pdf'): Promise<void> {
-    // Database implementation
-    console.log(`Storing ${type} receipt for order:`, orderId);
+    try {
+      const receiptData = {
+        order_id: orderId,
+        payment_id: paymentId,
+        user_id: userId,
+        pdf_data: type === 'pdf' ? data.toString('base64') : null,
+        html_data: type === 'html' ? data.toString('utf8') : null,
+        file_path: null, // Could store file path if saving to filesystem
+        created_at: new Date().toISOString()
+      };
+
+      const { error } = await supabase
+        .from('receipts')
+        .insert(receiptData);
+
+      if (error) {
+        console.error('Error storing receipt:', error);
+        throw error;
+      }
+
+      console.log(`Receipt stored successfully for order: ${orderId}`);
+    } catch (error) {
+      console.error('Database error in storeReceiptInDatabase:', error);
+      throw error;
+    }
   }
 }
 
