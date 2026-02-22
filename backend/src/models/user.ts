@@ -7,7 +7,7 @@ export interface User {
   first_name: string;
   last_name: string;
   nickname?: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'student' | 'trainer';
   is_verified: boolean;
   phone_verified: boolean;
   email_verification_token?: string;
@@ -23,6 +23,7 @@ export interface RegisterRequest {
   first_name: string;
   last_name: string;
   password: string;
+  role?: 'user' | 'admin' | 'student' | 'trainer';
 }
 
 export interface LoginRequest {

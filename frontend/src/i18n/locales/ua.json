@@ -39,6 +39,8 @@
     "register": "Реєстрація",
     "email": "Email",
     "password": "Пароль",
+    "firstName": "Ім'я",
+    "lastName": "Прізвище",
     "emailPlaceholder": "your@email.com",
     "passwordPlaceholder": "•••••••••",
     "forgotPassword": "Забули пароль?",

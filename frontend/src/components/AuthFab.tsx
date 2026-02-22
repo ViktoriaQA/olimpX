@@ -53,7 +53,7 @@ export function AuthFab({ isMobile }: AuthFabProps) {
     }
   };
 
-  const handleRegister = async (email: string, password: string, isTrainer: boolean) => {
+  const handleRegister = async (email: string, password: string, firstName: string, lastName: string, isTrainer: boolean) => {
     if (!email || !password) {
       toast({
         title: t('common.error'),
@@ -68,8 +68,9 @@ export function AuthFab({ isMobile }: AuthFabProps) {
       await register({
         email,
         password,
-        first_name: isTrainer ? 'Trainer' : 'Student',
-        last_name: 'User'
+        first_name: firstName || (isTrainer ? 'Trainer' : 'Student'),
+        last_name: lastName || 'User',
+        role: isTrainer ? 'trainer' : 'student'
       });
       setShowRegisterSheet(false);
     } catch (error) {

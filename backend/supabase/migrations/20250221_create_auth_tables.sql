@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS custom_users (
   password_hash TEXT,
   first_name TEXT NOT NULL,
   last_name TEXT NOT NULL,
-  role TEXT DEFAULT 'user' CHECK (role IN ('user', 'admin')),
+  role TEXT DEFAULT 'user' CHECK (role IN ('user', 'admin', 'student', 'trainer')),
   is_verified BOOLEAN DEFAULT false,
   phone_verified BOOLEAN DEFAULT false,
   email_verification_token TEXT,
@@ -51,6 +51,13 @@ ALTER TABLE custom_users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sms_verification_codes ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users can view own profile" ON custom_users;
+DROP POLICY IF EXISTS "Users can update own profile" ON custom_users;
+DROP POLICY IF EXISTS "Users can view own sessions" ON user_sessions;
+DROP POLICY IF EXISTS "Users can delete own sessions" ON user_sessions;
+DROP POLICY IF EXISTS "Service role full access to sms codes" ON sms_verification_codes;
+
 -- RLS policies for custom_users table
 CREATE POLICY "Users can view own profile" ON custom_users
   FOR SELECT USING (auth.uid()::text = id::text);
@@ -79,6 +86,7 @@ END;
 $$ language 'plpgsql';
 
 -- Trigger to automatically update updated_at
+DROP TRIGGER IF EXISTS update_custom_users_updated_at ON custom_users;
 CREATE TRIGGER update_custom_users_updated_at 
   BEFORE UPDATE ON custom_users 
   FOR EACH ROW 

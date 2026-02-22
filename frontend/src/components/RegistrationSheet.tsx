@@ -84,25 +84,6 @@ export function RegistrationSheet({
             </div>
           </div>
 
-          {/* Email field */}
-          <div className="space-y-2">
-            <Label htmlFor="email" className="font-mono text-sm">
-              <span className="text-primary">$</span> {t('auth.email')}
-            </Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="email"
-                type="email"
-                placeholder={t('auth.emailPlaceholder')}
-                className="pl-10 font-mono text-sm h-11 bg-card border-border text-foreground placeholder:text-muted-foreground"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
-              />
-            </div>
-          </div>
-
           {/* First Name field */}
           <div className="space-y-2">
             <Label htmlFor="firstName" className="font-mono text-sm">
@@ -136,6 +117,25 @@ export function RegistrationSheet({
                 className="pl-10 font-mono text-sm h-11 bg-card border-border text-foreground placeholder:text-muted-foreground"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+
+          {/* Email field */}
+          <div className="space-y-2">
+            <Label htmlFor="email" className="font-mono text-sm">
+              <span className="text-primary">$</span> {t('auth.email')}
+            </Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="email"
+                type="email"
+                placeholder={t('auth.emailPlaceholder')}
+                className="pl-10 font-mono text-sm h-11 bg-card border-border text-foreground placeholder:text-muted-foreground"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
               />
             </div>
@@ -178,17 +178,7 @@ export function RegistrationSheet({
             </Button>
           </form>
 
-          <div className="space-y-4">
-            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm text-yellow-800 font-mono">
-                <span className="text-yellow-600">$</span> Email registration temporarily unavailable
-              </p>
-              <p className="text-xs text-yellow-700 mt-1">
-                Please use Google or Discord sign-in below
-              </p>
-            </div>
-          </div>
-
+          
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-border"></span>

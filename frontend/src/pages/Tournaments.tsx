@@ -146,7 +146,8 @@ const Tournaments = () => {
         email,
         password,
         first_name: firstName,
-        last_name: lastName
+        last_name: lastName,
+        role: isTrainer ? 'trainer' : 'student'
       });
       setShowRegistrationSheet(false);
     } catch (error) {

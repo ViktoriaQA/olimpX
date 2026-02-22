@@ -9,7 +9,8 @@ export const registerSchema = Joi.object({
   country_code: Joi.string().pattern(/^\+\d{1,3}$/).optional(),
   first_name: Joi.string().min(2).max(50).required(),
   last_name: Joi.string().min(2).max(50).required(),
-  password: Joi.string().min(8).pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).required()
+  password: Joi.string().min(8).pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).required(),
+  role: Joi.string().valid('user', 'admin', 'student', 'trainer').optional()
 }).custom((value, helpers) => {
   if (!value.email && !value.phone) {
     return helpers.error('custom.emailOrPhoneRequired');

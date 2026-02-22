@@ -60,7 +60,7 @@ export class AuthService {
         last_name: validatedData.last_name,
         nickname: nickname,
         password_hash: passwordHash,
-        role: 'user',
+        role: validatedData.role || 'student',
         is_verified: false,
         phone_verified: false,
         email_verification_token: validatedData.email ? JWTService.generateSecureToken() : null,
@@ -78,19 +78,6 @@ export class AuthService {
     // Generate SMS verification code if phone provided
     if (validatedData.phone) {
       await this.generateSMSVerificationCode(validatedData.phone);
-    }
-
-    // Create user role entry
-    const { error: roleError } = await supabase
-      .from('user_roles')
-      .insert({
-        user_id: user.id,
-        role: 'student' // Default role for new users
-      });
-
-    if (roleError) {
-      console.error('Failed to create user role:', roleError);
-      // Don't throw error - user can still be created
     }
 
     // Generate JWT

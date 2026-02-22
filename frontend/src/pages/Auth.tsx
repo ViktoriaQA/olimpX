@@ -113,7 +113,8 @@ const Auth = () => {
           country_code: usePhone ? countryCode : "",
           first_name: firstName,
           last_name: lastName,
-          password
+          password,
+          role: 'student'
         });
       }
     } catch (error) {

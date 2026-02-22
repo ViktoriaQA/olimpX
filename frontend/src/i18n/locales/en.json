@@ -39,6 +39,8 @@
     "register": "Register",
     "email": "Email",
     "password": "Password",
+    "firstName": "First Name",
+    "lastName": "Last Name",
     "emailPlaceholder": "your@email.com",
     "passwordPlaceholder": "•••••••••",
     "forgotPassword": "Forgot password?",
