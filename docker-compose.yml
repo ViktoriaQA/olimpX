@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Frontend build args
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8080}
+        VITE_NODE_ENV: ${VITE_NODE_ENV:-production}
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
+        VITE_UPLOAD_MAX_SIZE: ${VITE_UPLOAD_MAX_SIZE:-10485760}
+        VITE_SUPPORTED_FORMATS: ${VITE_SUPPORTED_FORMATS:-jpg,jpeg,png,gif,webp,pdf,doc,docx,txt}
+        
+        # Backend build args
+        NODE_ENV: ${NODE_ENV:-production}
+        LIQPAY_PUBLIC_KEY: ${LIQPAY_PUBLIC_KEY}
+        LIQPAY_PRIVATE_KEY: ${LIQPAY_PRIVATE_KEY}
+        LIQPAY_CALLBACK_URL: ${LIQPAY_CALLBACK_URL}
+        LIQPAY_RESULT_URL: ${LIQPAY_RESULT_URL}
+        SUPABASE_URL: ${SUPABASE_URL}
+        SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+        TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+        TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
+        JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - "8080:8080"
+    environment:
+      # Runtime environment variables
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 8080
+      LIQPAY_PUBLIC_KEY: ${LIQPAY_PUBLIC_KEY}
+      LIQPAY_PRIVATE_KEY: ${LIQPAY_PRIVATE_KEY}
+      LIQPAY_CALLBACK_URL: ${LIQPAY_CALLBACK_URL}
+      LIQPAY_RESULT_URL: ${LIQPAY_RESULT_URL}
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
+      JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL:-https://olimpxx.pp.ua}
+      PRODUCTION_FRONTEND_URL: ${PRODUCTION_FRONTEND_URL:-https://olimpxx.pp.ua}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      # Mount logs directory if needed
+      - ./logs:/app/logs
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

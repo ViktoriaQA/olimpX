@@ -1,6 +1,5 @@
-// Load environment variables FIRST
-import dotenv from 'dotenv';
-dotenv.config();
+// Environment variables are already loaded in index.ts
+// No need to load them again here
 
 import express from 'express';
 import cors from 'cors';
