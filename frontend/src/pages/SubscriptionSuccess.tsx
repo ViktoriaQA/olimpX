@@ -27,11 +27,44 @@ const SubscriptionSuccess = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('🎯 [SUCCESS] SubscriptionSuccess page loaded');
+    
     const sessionId = searchParams.get('session_id');
     const subscriptionId = searchParams.get('subscription_id');
     const orderId = searchParams.get('order_id');
+    const paymentId = searchParams.get('payment_id');
+    const transactionId = searchParams.get('transaction_id');
     
-    if (!sessionId && !subscriptionId && !orderId) {
+    // Log all URL parameters for debugging
+    console.log('📋 [SUCCESS] URL params:', {
+      sessionId,
+      subscriptionId,
+      orderId,
+      paymentId,
+      transactionId,
+      allParams: Object.fromEntries(searchParams.entries())
+    });
+    
+    // Try to find any valid payment identifier
+    let paymentIdentifier = sessionId || subscriptionId || orderId || paymentId || transactionId;
+    
+    // If no URL params, try to get from localStorage (for cases where LiqPay doesn't pass params)
+    if (!paymentIdentifier) {
+      const lastOrderId = localStorage.getItem('last_order_id');
+      const lastPaymentId = localStorage.getItem('last_payment_id');
+      paymentIdentifier = lastOrderId || lastPaymentId;
+      
+      console.log('💾 [SUCCESS] No URL params found, trying localStorage:', {
+        lastOrderId,
+        lastPaymentId,
+        paymentIdentifier
+      });
+    }
+    
+    console.log('🆔 [SUCCESS] Final payment identifier:', paymentIdentifier);
+    
+    if (!paymentIdentifier) {
+      console.log('❌ [SUCCESS] No payment identifier found');
       toast({
         title: "Помилка",
         description: "Відсутня інформація про платіж",
@@ -43,20 +76,33 @@ const SubscriptionSuccess = () => {
 
     const verifySubscription = async () => {
       try {
+        console.log('🔍 [SUCCESS] Starting subscription verification...');
+        console.log('👤 [SUCCESS] User authenticated:', isAuthenticated);
+        console.log('🆔 [SUCCESS] Verifying payment identifier:', paymentIdentifier);
+        
         setLoading(true);
         
         // Verify the subscription and get details
-        const response = await subscriptionService.verifySubscription(sessionId || subscriptionId || orderId!);
+        const response = await subscriptionService.verifySubscription(paymentIdentifier);
+        
+        console.log('📊 [SUCCESS] Verification response:', response);
         
         if (response.success) {
+          console.log('🎉 [SUCCESS] Verification successful!');
           setSubscriptionDetails(response.data);
+          // Clear localStorage after successful verification
+          localStorage.removeItem('last_order_id');
+          localStorage.removeItem('last_payment_id');
+          console.log('🧹 [SUCCESS] Cleared localStorage');
           // Refresh user session to get updated subscription data
           await restoreSession();
+          console.log('🔄 [SUCCESS] User session restored');
           toast({
             title: "Вітаємо!",
             description: "Підписку успішно оформлено!",
           });
         } else {
+          console.log('❌ [SUCCESS] Verification failed');
           toast({
             title: "Помилка",
             description: "Не вдалося підтвердити підписку",
@@ -65,7 +111,7 @@ const SubscriptionSuccess = () => {
           navigate('/subscription');
         }
       } catch (error) {
-        console.error('Subscription verification error:', error);
+        console.error('💥 [SUCCESS] Subscription verification error:', error);
         toast({
           title: "Помилка",
           description: "Не вдалося підтвердити підписку. Будь ласка, зв'яжіться з підтримкою.",

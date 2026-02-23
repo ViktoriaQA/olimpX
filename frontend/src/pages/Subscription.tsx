@@ -88,12 +88,29 @@ const Subscription = () => {
     }
 
     try {
+      console.log('🚀 [FRONTEND] Initiating subscription...');
+      console.log('📦 [FRONTEND] Plan ID:', planId);
+      
       setProcessing(planId);
       const response = await subscriptionService.initiateSubscription(planId);
       
+      console.log('✅ [FRONTEND] Payment initiation response:', response);
+      
+      // Store order_id and payment_id in localStorage for success page
+      if (response.order_id) {
+        localStorage.setItem('last_order_id', response.order_id);
+        console.log('💾 [FRONTEND] Stored order_id:', response.order_id);
+      }
+      if (response.payment_id) {
+        localStorage.setItem('last_payment_id', response.payment_id);
+        console.log('💾 [FRONTEND] Stored payment_id:', response.payment_id);
+      }
+      
       if (response.checkout_url) {
+        console.log('🔗 [FRONTEND] Redirecting to checkout:', response.checkout_url);
         window.location.href = response.checkout_url;
       } else {
+        console.log('❌ [FRONTEND] No checkout URL in response');
         toast({
           title: "Помилка",
           description: "Не вдалося створити платіж",

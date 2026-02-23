@@ -27,27 +27,33 @@ export class PaymentController {
 
   async initiateSubscriptionPayment(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
+      console.log('🚀 [PAYMENT] Initiating subscription payment...');
+      console.log('📋 [PAYMENT] Request body:', req.body);
+      
       const userId = req.user?.id;
       if (!userId) {
+        console.log('❌ [PAYMENT] Unauthorized - no user ID');
         res.status(401).json({ error: 'Unauthorized' });
         return;
       }
 
       const { package_id, billing_cycle }: InitiateSubscriptionRequest = req.body;
+      console.log('📦 [PAYMENT] Package ID:', package_id, 'Billing cycle:', billing_cycle);
 
       // Validate request
       if (!package_id || !billing_cycle) {
+        console.log('❌ [PAYMENT] Missing required fields');
         res.status(400).json({ error: 'package_id and billing_cycle are required' });
         return;
       }
 
       // Get package details
-      console.log('Looking for package with ID:', package_id);
+      console.log('🔍 [PAYMENT] Looking for package with ID:', package_id);
       const packageDetails = await this.getPackageById(package_id);
-      console.log('Found package:', packageDetails);
+      console.log('✅ [PAYMENT] Found package:', packageDetails);
       
       if (!packageDetails) {
-        console.error('Package not found with ID:', package_id);
+        console.error('❌ [PAYMENT] Package not found with ID:', package_id);
         res.status(404).json({ error: 'Package not found' });
         return;
       }
@@ -58,11 +64,13 @@ export class PaymentController {
       
       if (billing_cycle === 'yearly') {
         amount = packageDetails.price * 11; // 11 months for yearly (1 month free)
+        console.log('💰 [PAYMENT] Yearly billing - calculated amount:', amount);
         // Keep orderType as 'recurring' for auto-renewal, even for yearly billing
       }
 
       // Generate order ID
       const orderId = `sub_${userId}_${Date.now()}`;
+      console.log('🆔 [PAYMENT] Generated order ID:', orderId);
 
       // Create payment request
       const paymentRequest = {
@@ -79,8 +87,12 @@ export class PaymentController {
         product_price: amount,
       };
 
+      console.log('💳 [PAYMENT] Creating payment with LiqPay...');
+      console.log('📝 [PAYMENT] Payment request:', paymentRequest);
+
       // Create payment with LiqPay
       const paymentResponse = await this.liqPayService.createPaymentURL(paymentRequest);
+      console.log('✅ [PAYMENT] LiqPay response:', paymentResponse);
 
       // Store payment attempt
       const paymentAttempt: PaymentAttempt = {
@@ -99,7 +111,9 @@ export class PaymentController {
         updated_at: new Date(),
       };
 
+      console.log('💾 [PAYMENT] Storing payment attempt:', paymentAttempt);
       await this.storePaymentAttempt(paymentAttempt);
+      console.log('✅ [PAYMENT] Payment attempt stored successfully');
 
       // Return response
       const response: InitiateSubscriptionResponse = {
@@ -108,12 +122,14 @@ export class PaymentController {
         payment_id: paymentResponse.payment_id,
       };
 
+      console.log('🎯 [PAYMENT] Returning response:', response);
       res.json(response);
     } catch (error) {
-      console.error('Error initiating subscription payment:', error);
+      console.error('💥 [PAYMENT] Error initiating subscription payment:', error);
       
       // Return actual error message if available
       const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+      console.log('📝 [PAYMENT] Error message:', errorMessage);
       res.status(500).json({ 
         error: 'Payment initiation failed',
         details: errorMessage 
@@ -123,28 +139,36 @@ export class PaymentController {
 
   async handlePaymentCallback(req: Request, res: Response): Promise<void> {
     try {
+      console.log('🔔 [CALLBACK] Received LiqPay callback...');
+      console.log('📋 [CALLBACK] Request body:', req.body);
+      
       const { data, signature } = req.body;
 
       if (!data || !signature) {
+        console.log('❌ [CALLBACK] Missing data or signature');
         res.status(400).json({ error: 'data and signature are required' });
         return;
       }
 
       // Parse and verify callback
+      console.log('🔍 [CALLBACK] Parsing callback data...');
       const callbackData = await this.liqPayService.parseCallback(data, signature);
+      console.log('✅ [CALLBACK] Parsed callback data:', callbackData);
 
       // Update payment attempt status
+      console.log('📝 [CALLBACK] Updating payment attempt status...');
       await this.updatePaymentAttemptStatus(callbackData.order_id, callbackData);
 
       // Get real checkout URL if needed
       if (callbackData.status === 'processing') {
         try {
+          console.log('⏳ [CALLBACK] Payment is processing, checking status...');
           const paymentStatus = await this.liqPayService.checkPaymentStatus(callbackData.order_id);
           if (paymentStatus.checkout_url) {
             await this.updatePaymentAttemptCheckoutUrl(callbackData.order_id, paymentStatus.checkout_url);
           }
         } catch (error) {
-          console.error('Error checking payment status:', error);
+          console.error('❌ [CALLBACK] Error checking payment status:', error);
         }
       }
 
@@ -154,14 +178,18 @@ export class PaymentController {
         callbackData.result,
         callbackData.response_code
       );
+      
+      console.log('📊 [CALLBACK] Mapped status:', mappedStatus);
 
       if (mappedStatus === 'completed') {
+        console.log('🎉 [CALLBACK] Payment completed successfully!');
         await this.handleSuccessfulPayment(callbackData);
       }
 
+      console.log('✅ [CALLBACK] Callback processed successfully');
       res.status(200).send('OK');
     } catch (error) {
-      console.error('Error handling payment callback:', error);
+      console.error('💥 [CALLBACK] Error handling payment callback:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -331,33 +359,46 @@ export class PaymentController {
 
   async verifySubscription(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
+      console.log('🔍 [VERIFY] Verifying subscription...');
+      console.log('📋 [VERIFY] Request body:', req.body);
+      
       const { session_id } = req.body;
       const userId = req.user?.id;
 
+      console.log('👤 [VERIFY] User ID:', userId, 'Session ID:', session_id);
+
       if (!userId) {
+        console.log('❌ [VERIFY] Unauthorized - no user ID');
         res.status(401).json({ error: 'Unauthorized' });
         return;
       }
 
       if (!session_id) {
+        console.log('❌ [VERIFY] Missing session_id');
         res.status(400).json({ error: 'session_id is required' });
         return;
       }
 
       // Get payment attempt by order_id (session_id)
+      console.log('🔎 [VERIFY] Looking for payment attempt with order_id:', session_id);
       const paymentAttempt = await this.getPaymentAttemptByOrderId(session_id);
       if (!paymentAttempt) {
+        console.log('❌ [VERIFY] Payment attempt not found');
         res.status(404).json({ error: 'Payment not found' });
         return;
       }
 
+      console.log('✅ [VERIFY] Found payment attempt:', paymentAttempt);
+
       if (paymentAttempt.user_id !== userId) {
+        console.log('❌ [VERIFY] Access denied - user mismatch');
         res.status(403).json({ error: 'Access denied' });
         return;
       }
 
       // Check real-time payment status
       try {
+        console.log('🔄 [VERIFY] Checking real-time payment status...');
         const paymentStatus = await this.liqPayService.checkPaymentStatus(session_id);
         const mappedStatus = this.liqPayService.mapLiqPayStatusWithResult(
           paymentStatus.status,
@@ -365,14 +406,18 @@ export class PaymentController {
           paymentStatus.response_code
         );
         
+        console.log('📊 [VERIFY] LiqPay status:', paymentStatus);
+        console.log('📈 [VERIFY] Mapped status:', mappedStatus);
+        
         await this.updatePaymentAttemptStatus(session_id, paymentStatus);
         paymentAttempt.status = mappedStatus;
       } catch (error) {
-        console.error('Error checking payment status:', error);
+        console.error('❌ [VERIFY] Error checking payment status:', error);
       }
 
       // Only proceed if payment is completed
       if (paymentAttempt.status !== 'completed') {
+        console.log('⏳ [VERIFY] Payment not completed, current status:', paymentAttempt.status);
         res.status(400).json({ 
           error: 'Payment not completed',
           status: paymentAttempt.status 
@@ -380,15 +425,23 @@ export class PaymentController {
         return;
       }
 
+      console.log('🎉 [VERIFY] Payment completed successfully!');
+
       // Get package details
+      console.log('📦 [VERIFY] Getting package details...');
       const packageDetails = await this.getPackageById(paymentAttempt.package_id!);
       if (!packageDetails) {
+        console.log('❌ [VERIFY] Package not found');
         res.status(404).json({ error: 'Package not found' });
         return;
       }
 
+      console.log('✅ [VERIFY] Package details:', packageDetails);
+
       // Get user's subscription details
+      console.log('👥 [VERIFY] Getting user subscription details...');
       const subscription = await this.getUserSubscription(userId, paymentAttempt.package_id!);
+      console.log('📋 [VERIFY] User subscription:', subscription);
 
       const response = {
         success: true,
@@ -405,9 +458,10 @@ export class PaymentController {
         }
       };
 
+      console.log('🎯 [VERIFY] Returning response:', response);
       res.json(response);
     } catch (error) {
-      console.error('Error verifying subscription:', error);
+      console.error('💥 [VERIFY] Error verifying subscription:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   }
