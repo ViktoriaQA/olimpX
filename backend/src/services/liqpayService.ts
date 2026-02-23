@@ -224,31 +224,39 @@ export class LiqPayService {
   }
 
   mapLiqPayStatusWithResult(status: string, result?: string, responseCode?: string): 'completed' | 'failed' | 'processing' {
+    console.log('🔍 [LIQPAY] Mapping status:', { status, result, responseCode });
+    
     // Approved or successful payments
     if (status === 'approved' || status === 'success') {
+      console.log('✅ [LIQPAY] Status mapped to completed');
       return 'completed';
     }
 
     // Failed payments
     if (status === 'failed' || status === 'error' || status === 'expired') {
+      console.log('❌ [LIQPAY] Status mapped to failed');
       return 'failed';
     }
 
     // Processing payments
     if (status === 'processing' || status === 'wait_secure' || status === 'wait_accept') {
+      console.log('⏳ [LIQPAY] Status mapped to processing');
       return 'processing';
     }
 
     // Check result and response_code for additional validation
     if (result === 'ok' && responseCode === 'ok') {
+      console.log('✅ [LIQPAY] Result mapped to completed');
       return 'completed';
     }
 
     if (result === 'error' || responseCode === 'error') {
+      console.log('❌ [LIQPAY] Result mapped to failed');
       return 'failed';
     }
 
     // Default to processing for unknown statuses
+    console.log('⏳ [LIQPAY] Default mapping to processing');
     return 'processing';
   }
 }

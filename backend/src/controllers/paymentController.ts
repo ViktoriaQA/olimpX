@@ -159,19 +159,6 @@ export class PaymentController {
       console.log('📝 [CALLBACK] Updating payment attempt status...');
       await this.updatePaymentAttemptStatus(callbackData.order_id, callbackData);
 
-      // Get real checkout URL if needed
-      if (callbackData.status === 'processing') {
-        try {
-          console.log('⏳ [CALLBACK] Payment is processing, checking status...');
-          const paymentStatus = await this.liqPayService.checkPaymentStatus(callbackData.order_id);
-          if (paymentStatus.checkout_url) {
-            await this.updatePaymentAttemptCheckoutUrl(callbackData.order_id, paymentStatus.checkout_url);
-          }
-        } catch (error) {
-          console.error('❌ [CALLBACK] Error checking payment status:', error);
-        }
-      }
-
       // Check if payment is successful
       const mappedStatus = this.liqPayService.mapLiqPayStatusWithResult(
         callbackData.status,
@@ -181,8 +168,10 @@ export class PaymentController {
       
       console.log('📊 [CALLBACK] Mapped status:', mappedStatus);
 
+      // Update status to completed if payment is successful
       if (mappedStatus === 'completed') {
         console.log('🎉 [CALLBACK] Payment completed successfully!');
+        await this.updatePaymentAttemptStatus(callbackData.order_id, callbackData, 'completed');
         await this.handleSuccessfulPayment(callbackData);
       }
 

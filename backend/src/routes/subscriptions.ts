@@ -99,57 +99,51 @@ router.get('/payments', authMiddleware, async (req: AuthRequest, res, next) => {
 // Get user's subscription history
 router.get('/history', authMiddleware, async (req: AuthRequest, res, next) => {
   try {
+    console.log('📋 [HISTORY] Fetching subscription history for user...');
     const userId = req.user!.id;
 
-    // Get only COMPLETED payment history with plan details
-    const { data: payments, error } = await supabase
-      .from('payment_attempts')
+    // Get subscription history from user_subscriptions table
+    const { data: subscriptions, error } = await supabase
+      .from('user_subscriptions')
       .select(`
         *,
         subscription_plans(name, price_monthly, price_yearly, features)
       `)
       .eq('user_id', userId)
-      .eq('status', 'completed') // Only show completed payments
       .order('created_at', { ascending: false });
 
     if (error) {
+      console.error('❌ [HISTORY] Error fetching subscriptions:', error);
       throw createError('Failed to fetch subscription history', 500);
     }
 
-    // Transform payment data into subscription history format
-    const subscriptionHistory = (payments || []).map(payment => {
-      const plan = payment.subscription_plans;
-      const price = payment.billing_period === 'year' ? plan?.price_yearly : plan?.price_monthly;
-      const duration = payment.billing_period === 'year' ? 'рік' : 'місяць';
-      
-      // Determine subscription status based on payment dates
-      let status: 'active' | 'cancelled' | 'expired' | 'pending';
-      
-      // Check if subscription is still active
-      const endDate = new Date(payment.created_at);
-      endDate.setMonth(endDate.getMonth() + (payment.billing_period === 'year' ? 12 : 1));
-      
-      if (endDate > new Date()) {
-        status = 'active';
-      } else {
-        status = 'expired';
-      }
+    console.log('✅ [HISTORY] Found subscriptions:', subscriptions);
 
+    // Transform subscription data into expected format
+    const subscriptionHistory = (subscriptions || []).map(subscription => {
+      const plan = subscription.subscription_plans;
+      const price = plan?.price_monthly || 0; // Default to monthly price
+      
+      // Determine duration based on end_date
+      const startDate = new Date(subscription.start_date);
+      const endDate = subscription.end_date ? new Date(subscription.end_date) : null;
+      const monthsDiff = endDate ? Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30)) : 1;
+      const duration = monthsDiff >= 12 ? 'рік' : 'місяць';
+      
       return {
-        id: payment.id,
+        id: subscription.id,
         plan_name: plan?.name || 'Невідомий план',
-        status,
-        start_date: payment.created_at,
-        end_date: status === 'active' ? null : new Date(new Date(payment.created_at).setMonth(
-          new Date(payment.created_at).getMonth() + (payment.billing_period === 'year' ? 12 : 1)
-        )).toISOString(),
-        price: price || 0,
+        status: subscription.status,
+        start_date: subscription.start_date,
+        end_date: subscription.end_date,
+        price: price,
         duration,
-        payment_method: payment.response_data?.payment_method || 'LiqPay',
-        auto_renewal: true // All subscriptions have auto-renewal enabled
+        payment_method: 'LiqPay',
+        auto_renewal: subscription.auto_renew
       };
     });
 
+    console.log('📊 [HISTORY] Transformed history:', subscriptionHistory);
     res.json({ subscriptionHistory });
   } catch (error) {
     next(error);

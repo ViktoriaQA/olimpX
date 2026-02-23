@@ -25,8 +25,15 @@ const SubscriptionSuccess = () => {
   const [searchParams] = useSearchParams();
   const [subscriptionDetails, setSubscriptionDetails] = useState<SubscriptionDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isVerified, setIsVerified] = useState(false); // Prevent double verification
 
   useEffect(() => {
+    // Skip if already verified
+    if (isVerified) {
+      console.log('⏭️ [SUCCESS] Already verified, skipping...');
+      return;
+    }
+    
     console.log('🎯 [SUCCESS] SubscriptionSuccess page loaded');
     
     const sessionId = searchParams.get('session_id');
@@ -48,13 +55,13 @@ const SubscriptionSuccess = () => {
     // Try to find any valid payment identifier
     let paymentIdentifier = sessionId || subscriptionId || orderId || paymentId || transactionId;
     
-    // If no URL params, try to get from localStorage (for cases where LiqPay doesn't pass params)
+    // If no URL params, try to get from sessionStorage (for cases where LiqPay doesn't pass params)
     if (!paymentIdentifier) {
-      const lastOrderId = localStorage.getItem('last_order_id');
-      const lastPaymentId = localStorage.getItem('last_payment_id');
+      const lastOrderId = sessionStorage.getItem('last_order_id');
+      const lastPaymentId = sessionStorage.getItem('last_payment_id');
       paymentIdentifier = lastOrderId || lastPaymentId;
       
-      console.log('💾 [SUCCESS] No URL params found, trying localStorage:', {
+      console.log('💾 [SUCCESS] No URL params found, trying sessionStorage:', {
         lastOrderId,
         lastPaymentId,
         paymentIdentifier
@@ -90,10 +97,11 @@ const SubscriptionSuccess = () => {
         if (response.success) {
           console.log('🎉 [SUCCESS] Verification successful!');
           setSubscriptionDetails(response.data);
-          // Clear localStorage after successful verification
-          localStorage.removeItem('last_order_id');
-          localStorage.removeItem('last_payment_id');
-          console.log('🧹 [SUCCESS] Cleared localStorage');
+          setIsVerified(true); // Mark as verified
+          // Clear sessionStorage after successful verification
+          sessionStorage.removeItem('last_order_id');
+          sessionStorage.removeItem('last_payment_id');
+          console.log('🧹 [SUCCESS] Cleared sessionStorage');
           // Refresh user session to get updated subscription data
           await restoreSession();
           console.log('🔄 [SUCCESS] User session restored');

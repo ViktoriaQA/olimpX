@@ -61,12 +61,14 @@ const Subscription = () => {
   const fetchSubscriptionHistory = async () => {
     if (!isAuthenticated) return;
     
+    console.log('📋 [FRONTEND] Fetching subscription history...');
     setHistoryLoading(true);
     try {
       const response = await subscriptionService.getSubscriptionHistory();
+      console.log('✅ [FRONTEND] Subscription history response:', response);
       setSubscriptionHistory(response.data);
     } catch (error) {
-      console.error('Failed to fetch subscription history:', error);
+      console.error('❌ [FRONTEND] Failed to fetch subscription history:', error);
       toast({
         title: "Помилка",
         description: "Не вдалося завантажити історію підписок",
@@ -96,14 +98,14 @@ const Subscription = () => {
       
       console.log('✅ [FRONTEND] Payment initiation response:', response);
       
-      // Store order_id and payment_id in localStorage for success page
+      // Store order_id and payment_id in sessionStorage for success page
       if (response.order_id) {
-        localStorage.setItem('last_order_id', response.order_id);
-        console.log('💾 [FRONTEND] Stored order_id:', response.order_id);
+        sessionStorage.setItem('last_order_id', response.order_id);
+        console.log('💾 [FRONTEND] Stored order_id in sessionStorage:', response.order_id);
       }
       if (response.payment_id) {
-        localStorage.setItem('last_payment_id', response.payment_id);
-        console.log('💾 [FRONTEND] Stored payment_id:', response.payment_id);
+        sessionStorage.setItem('last_payment_id', response.payment_id);
+        console.log('💾 [FRONTEND] Stored payment_id in sessionStorage:', response.payment_id);
       }
       
       if (response.checkout_url) {
