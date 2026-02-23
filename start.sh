@@ -13,12 +13,35 @@ fi
 echo "Building frontend..."
 cd frontend
 npm install
+npm audit fix --audit-level=moderate
 npm run build
+
+# Verify frontend build completed successfully
+if [ ! -d "dist" ]; then
+    echo "❌ Frontend build failed - dist directory not found"
+    exit 1
+fi
+
+if [ ! -f "dist/index.html" ]; then
+    echo "❌ Frontend build failed - index.html not found"
+    exit 1
+fi
+
+echo "✅ Frontend build completed successfully"
 
 echo "Building backend..."
 cd ../backend
 npm install
+npm audit fix --audit-level=moderate
 npm run build
+
+# Verify backend build completed successfully
+if [ ! -d "dist" ]; then
+    echo "❌ Backend build failed - dist directory not found"
+    exit 1
+fi
+
+echo "✅ Backend build completed successfully"
 
 echo "Starting backend server..."
 npm start

@@ -36,6 +36,14 @@ router.get(
   paymentController.getPublicPaymentStatus.bind(paymentController)
 );
 
+// Check payment status directly with LiqPay
+router.get(
+  '/check-status/:orderId',
+  authMiddleware,
+  validateRequest,
+  paymentController.checkPaymentStatusWithLiqPay.bind(paymentController)
+);
+
 // Get receipt
 router.get(
   '/receipt/:orderId',

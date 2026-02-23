@@ -478,6 +478,51 @@ export class PaymentController {
     }
   }
 
+  async checkPaymentStatusWithLiqPay(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      console.log('🔍 [LIQPAY_CHECK] Checking payment status with LiqPay...');
+      const { orderId } = req.params;
+      const userId = req.user?.id;
+
+      if (!userId) {
+        console.log('❌ [LIQPAY_CHECK] Unauthorized');
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      console.log('🆔 [LIQPAY_CHECK] Order ID:', orderId);
+
+      // Check payment status directly with LiqPay
+      const paymentStatus = await this.liqPayService.checkPaymentStatus(orderId);
+      console.log('📊 [LIQPAY_CHECK] LiqPay status:', paymentStatus);
+
+      // Map LiqPay status to our status
+      const mappedStatus = this.liqPayService.mapLiqPayStatusWithResult(
+        paymentStatus.status,
+        paymentStatus.result,
+        paymentStatus.response_code
+      );
+
+      console.log('📈 [LIQPAY_CHECK] Mapped status:', mappedStatus);
+
+      // Update payment attempt in our database
+      await this.updatePaymentAttemptStatus(orderId, paymentStatus, mappedStatus);
+
+      res.json({
+        success: true,
+        status: mappedStatus,
+        liqpayStatus: paymentStatus.status,
+        result: paymentStatus.result
+      });
+    } catch (error) {
+      console.error('💥 [LIQPAY_CHECK] Error checking payment status:', error);
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to check payment status' 
+      });
+    }
+  }
+
   private async handleSuccessfulPayment(callbackData: LiqPayCallbackData): Promise<void> {
     try {
       const paymentAttempt = await this.getPaymentAttemptByOrderId(callbackData.order_id);

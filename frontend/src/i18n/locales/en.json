@@ -64,7 +64,8 @@
     "selectRole": "Select role",
     "student": "Student",
     "trainer": "Trainer",
-    "continueWith": "or continue with"
+    "continueWith": "or continue with",
+    "orContinueWith": "or"
   },
   "home": {
     "title": "Welcome to CodeArena",

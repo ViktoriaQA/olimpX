@@ -40,7 +40,14 @@ app.use(express.urlencoded({ extended: true }));
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+  const frontendPath = path.join(__dirname, '../../frontend/dist');
+  const frontendReady = require('fs').existsSync(frontendPath);
+  
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    frontend: frontendReady ? 'ready' : 'building'
+  });
 });
 
 // API routes
@@ -50,6 +57,9 @@ app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/tournaments', authMiddleware, tournamentRoutes);
 app.use('/api/tasks', authMiddleware, taskRoutes);
 app.use('/api/v1/payment', paymentRoutes);
+
+// Direct LiqPay callback route (without /api/v1 prefix)
+app.use('/payment', paymentRoutes);
 
 // Serve static files from frontend build
 app.use(express.static(path.join(__dirname, '../../frontend/dist')));

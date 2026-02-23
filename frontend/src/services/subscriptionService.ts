@@ -253,7 +253,7 @@ class SubscriptionService {
     }
   }
 
-  async verifySubscription(sessionIdOrSubscriptionId: string): Promise<{ success: boolean; data: SubscriptionHistory }> {
+  async verifySubscription(sessionIdOrSubscriptionId: string): Promise<{ success: boolean; data?: SubscriptionHistory; error?: string }> {
     const response = await fetch(`${config.api.baseUrl}/api/v1/payment/verify-subscription`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
@@ -264,7 +264,10 @@ class SubscriptionService {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Failed to verify subscription');
+      return {
+        success: false,
+        error: error.error || error.message || 'Failed to verify subscription'
+      };
     }
 
     const result = await response.json();

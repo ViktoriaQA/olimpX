@@ -64,7 +64,8 @@
     "selectRole": "Оберіть роль",
     "student": "Студент",
     "trainer": "Тренер",
-    "continueWith": "або продовжити з"
+    "continueWith": "або продовжити з",
+    "orContinueWith": "або"
   },
   "home": {
     "title": "Ласкаво просимо до CodeArena",

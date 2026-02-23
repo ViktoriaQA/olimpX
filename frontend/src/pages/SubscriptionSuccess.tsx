@@ -89,10 +89,36 @@ const SubscriptionSuccess = () => {
         
         setLoading(true);
         
-        // Verify the subscription and get details
-        const response = await subscriptionService.verifySubscription(paymentIdentifier);
+        // First try to verify with our backend
+        let response = await subscriptionService.verifySubscription(paymentIdentifier);
+        console.log('📊 [SUCCESS] Backend verification response:', response);
         
-        console.log('📊 [SUCCESS] Verification response:', response);
+        // If backend verification fails, try to check payment status directly with LiqPay
+        if (!response.success && response.error?.includes('Payment not found')) {
+          console.log('🔄 [SUCCESS] Backend verification failed, trying direct LiqPay check...');
+          
+          try {
+            // Check payment status directly with LiqPay
+            const liqpayResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/payment/check-status/${paymentIdentifier}`, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                'Content-Type': 'application/json'
+              }
+            });
+            
+            const liqpayData = await liqpayResponse.json();
+            console.log('🔍 [SUCCESS] Direct LiqPay check response:', liqpayData);
+            
+            if (liqpayData.success && liqpayData.status === 'completed') {
+              // If LiqPay shows completed, try backend verification again
+              response = await subscriptionService.verifySubscription(paymentIdentifier);
+              console.log('📊 [SUCCESS] Second backend verification response:', response);
+            }
+          } catch (liqpayError) {
+            console.error('❌ [SUCCESS] Direct LiqPay check failed:', liqpayError);
+          }
+        }
         
         if (response.success) {
           console.log('🎉 [SUCCESS] Verification successful!');
@@ -113,7 +139,7 @@ const SubscriptionSuccess = () => {
           console.log('❌ [SUCCESS] Verification failed');
           toast({
             title: "Помилка",
-            description: "Не вдалося підтвердити підписку",
+            description: response.error || "Не вдалося підтвердити підписку",
             variant: "destructive",
           });
           navigate('/subscription');

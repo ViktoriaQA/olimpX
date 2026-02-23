@@ -13,7 +13,9 @@ export class TelegramService {
     this.chatId = process.env.TELEGRAM_CHAT_ID || '';
     
     if (!this.botToken || !this.chatId) {
-      console.warn('Telegram service not configured. Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID');
+      console.log('📱 Telegram service disabled - missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID');
+    } else {
+      console.log('📱 Telegram service initialized');
     }
   }
 
