@@ -4,14 +4,13 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Terminal, Trophy, Users, Clock, Calendar, ArrowRight, Gamepad2, ArrowLeft } from "lucide-react";
-import { AuthFab } from "@/components/AuthFab";
-import { RegistrationSheet } from "@/components/RegistrationSheet";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
+import { Terminal, Trophy, Users, Clock, Calendar, ArrowRight, Gamepad2 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useAuth } from "@/hooks/useAuth";
+import { AuthFab } from "@/components/AuthFab";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 interface Tournament {
   id: string;
@@ -26,16 +25,14 @@ interface Tournament {
   prize?: string;
 }
 
-const Tournaments = () => {
+const PublicTournaments = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { loginWithGoogle, register } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showRegistrationSheet, setShowRegistrationSheet] = useState(false);
-  const [isRegistering, setIsRegistering] = useState(false);
 
   useEffect(() => {
     // Mock data for tournaments
@@ -87,6 +84,18 @@ const Tournaments = () => {
         endDate: "2024-03-19",
         difficulty: "medium",
         prize: "Merchandise + Premium features"
+      },
+      {
+        id: "5",
+        name: "Data Structures Marathon",
+        description: "Comprehensive tournament covering all major data structures and their applications.",
+        status: "upcoming",
+        participants: 8,
+        maxParticipants: 40,
+        startDate: "2024-04-01",
+        endDate: "2024-04-05",
+        difficulty: "hard",
+        prize: "Advanced course access"
       }
     ];
 
@@ -130,50 +139,13 @@ const Tournaments = () => {
     return t(`tournaments.difficultyLevel.${difficulty}`);
   };
 
-  const handleRegister = async (email: string, password: string, firstName: string, lastName: string, isTrainer: boolean) => {
-    if (!email || !password) {
-      toast({
-        title: t('common.error'),
-        description: t('auth.fillAllFields'),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsRegistering(true);
-    try {
-      await register({
-        email,
-        password,
-        first_name: firstName,
-        last_name: lastName,
-        role: isTrainer ? 'trainer' : 'student'
-      });
-      setShowRegistrationSheet(false);
-    } catch (error) {
-      console.error("❌ Registration error:", error);
-      // Error handling is done in auth context
-    } finally {
-      setIsRegistering(false);
-    }
-  };
-
-  const handleGoogleAuth = async () => {
-    try {
-      await loginWithGoogle();
-      setShowRegistrationSheet(false);
-    } catch (error) {
-      console.error("Google auth error:", error);
-    }
-  };
-
-  const handleDiscordAuth = async () => {
-    try {
-      // Discord auth not implemented yet
-      console.log("Discord auth not implemented");
-      setShowRegistrationSheet(false);
-    } catch (error) {
-      console.error("Discord auth error:", error);
+  const handleTournamentClick = (tournamentId: string) => {
+    if (user) {
+      // If user is logged in, navigate to tournament detail
+      navigate(`/tournaments/${tournamentId}`);
+    } else {
+      // If user is not logged in, redirect to auth
+      navigate("/auth");
     }
   };
 
@@ -188,35 +160,23 @@ const Tournaments = () => {
   return (
     <div className="min-h-screen bg-background matrix-bg">
       {/* Header */}
-      <Header showHomeButton={false} showTournamentsButton={false} currentPage="tournaments" />
+      <Header showTournamentsButton={false} showMyTournamentsButton={!!user} currentPage="tournaments" />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="space-y-8">
           {/* Page Title */}
-          <div className="text-center space-y-4 relative">
+          <div className="text-center space-y-4">
             <div className="flex items-center justify-center gap-3">
-              <div className="absolute left-0">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="font-mono text-xs h-8 px-3 bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20 hover:text-green-300 hover:border-green-500/30 transition-all"
-                  onClick={() => navigate("/")}
-                >
-                  <ArrowLeft className="h-4 w-4 mr-1" />
-                  {t('navigation.home')}
-                </Button>
-              </div>
               <Trophy className="h-8 w-8 text-primary" />
               <h1 className="text-3xl font-bold font-mono text-primary neon-text">
                 {t('tournaments.title')}
               </h1>
             </div>
             <p className="text-muted-foreground font-mono max-w-2xl mx-auto">
-              {t('tournaments.pageSubtitle')}
+              {t('tournaments.publicPageSubtitle')}
             </p>
           </div>
-
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
             <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
@@ -251,11 +211,7 @@ const Tournaments = () => {
               <Card 
                 key={tournament.id} 
                 className="border-border/50 bg-card/50 backdrop-blur-sm hover:neon-border transition-all duration-300 group cursor-pointer"
-                onClick={() => {
-                  if (tournament.status === "active" || tournament.status === "upcoming") {
-                    setShowRegistrationSheet(true);
-                  }
-                }}
+                onClick={() => handleTournamentClick(tournament.id)}
               >
                 <CardHeader className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -310,11 +266,11 @@ const Tournaments = () => {
                       className="w-full font-mono text-sm group-hover:bg-primary/90 transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setShowRegistrationSheet(true);
+                        handleTournamentClick(tournament.id);
                       }}
                     >
                       <Gamepad2 className="h-4 w-4 mr-2" />
-                      {tournament.status === "active" ? t('tournaments.join') : t('tournaments.register')}
+                      {t('tournaments.join')}
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
                   )}
@@ -323,54 +279,44 @@ const Tournaments = () => {
             ))}
           </div>
 
-          {/* Call to Action */}
-          <div className="text-center space-y-4 pt-8">
-            <h2 className="text-xl font-bold font-mono text-primary">
-              {t('tournaments.readyToChallenge')}
-            </h2>
-            <p className="text-muted-foreground font-mono">
-              {t('tournaments.createAccountToJoin')}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                size="lg" 
-                className="font-mono"
-                onClick={() => {
-                  setShowRegistrationSheet(true);
-                }}
-              >
-                {t('tournaments.createAccount')}
-              </Button>
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="font-mono border-primary/20 hover:bg-primary/5 hover:text-green-500"
-                onClick={() => navigate("/auth")}
-              >
-                {t('tournaments.learnMoreAboutPlatform')}
-              </Button>
+          {/* Call to Action for non-logged users */}
+          {!user && (
+            <div className="text-center space-y-4 pt-8">
+              <h2 className="text-xl font-bold font-mono text-primary">
+                {t('tournaments.readyToChallenge')}
+              </h2>
+              <p className="text-muted-foreground font-mono">
+                {t('tournaments.createAccountToJoin')}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button 
+                  size="lg" 
+                  className="font-mono"
+                  onClick={() => navigate("/auth")}
+                >
+                  {t('tournaments.createAccount')}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="font-mono border-primary/20 hover:bg-primary/5 hover:text-green-500"
+                  onClick={() => navigate("/auth")}
+                >
+                  {t('tournaments.signIn')}
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
 
-      {/* Footer */}
-      <Footer />
-
-      {/* Registration Sheet */}
-      <RegistrationSheet
-        open={showRegistrationSheet}
-        onOpenChange={setShowRegistrationSheet}
-        onSubmit={handleRegister}
-        onGoogleAuth={handleGoogleAuth}
-        onDiscordAuth={handleDiscordAuth}
-        isLoading={isRegistering}
-      />
-
       {/* Mobile FAB */}
       <AuthFab isMobile={isMobile} />
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };
 
-export default Tournaments;
+export default PublicTournaments;

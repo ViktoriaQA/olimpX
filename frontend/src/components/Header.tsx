@@ -14,12 +14,14 @@ import { AuthButtons } from "@/components/AuthButtons";
 interface HeaderProps {
   showTournamentsButton?: boolean;
   showHomeButton?: boolean;
+  showMyTournamentsButton?: boolean;
   currentPage?: "home" | "tournaments";
 }
 
 export function Header({ 
   showTournamentsButton = true, 
   showHomeButton = false,
+  showMyTournamentsButton = false,
   currentPage = "home" 
 }: HeaderProps) {
   const { t } = useTranslation();
@@ -147,6 +149,17 @@ export function Header({
               >
                 {currentPage === "home" && <Trophy className="h-4 w-4 mr-1" />}
                 <span className="hidden md:inline">{t('navigation.tournaments')}</span>
+              </Button>
+            )}
+            {showMyTournamentsButton && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="font-mono text-xs h-8 px-3 hover:bg-primary/5 text-muted-foreground hover:text-primary"
+                onClick={() => navigate("/my-tournaments")}
+              >
+                <Trophy className="h-4 w-4 mr-1" />
+                <span className="hidden md:inline">{t('tournaments.myTournaments')}</span>
               </Button>
             )}
             {isMobile ? (

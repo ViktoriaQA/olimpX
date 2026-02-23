@@ -10,6 +10,8 @@ import AuthCallback from "@/pages/AuthCallback";
 import Dashboard from "@/pages/Dashboard";
 import Home from "@/pages/Home";
 import Tournaments from "@/pages/Tournaments";
+import TournamentsAuth from "@/pages/TournamentsAuth";
+import MyTournaments from "@/pages/MyTournaments";
 import Subscription from "@/pages/Subscription";
 import SubscriptionSuccess from "@/pages/SubscriptionSuccess";
 import Progress from "@/pages/Progress";
@@ -30,7 +32,18 @@ const App = () => (
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/tournaments" element={<Tournaments />} />
+            <Route
+              path="/tournaments"
+              element={<Tournaments />}
+            />
+            <Route
+              path="/my-tournaments"
+              element={
+                <AppLayout>
+                  <MyTournaments />
+                </AppLayout>
+              }
+            />
             <Route
               path="/subscription"
               element={

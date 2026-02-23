@@ -291,14 +291,7 @@ const SubscriptionSuccess = () => {
               </div>
             </div>
 
-            {subscriptionDetails.payment_method && (
-              <div className="mt-6 pt-6 border-t border-gray-700">
-                <p className="text-sm text-gray-400">
-                  Спосіб оплати: {subscriptionDetails.payment_method}
-                </p>
-              </div>
-            )}
-
+            
             <div className="mt-6 p-4 bg-green-900/20 border border-green-700 rounded-lg">
               <p className="text-green-400 text-sm">
                 ✓ Підписка активна • Ви можете користуватися всіма перевагами вашого плану

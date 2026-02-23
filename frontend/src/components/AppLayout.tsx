@@ -42,10 +42,10 @@ function AppLayoutContent({ children }: { children: ReactNode }) {
     <SidebarProvider>
       <div className="min-h-screen flex flex-col w-full bg-background matrix-bg">
         <div className="flex flex-1">
-          <AppSidebar />
-          <main className="flex-1 flex flex-col min-w-0">
+          {isAuthenticated && <AppSidebar />}
+          <main className={`flex-1 flex flex-col min-w-0 ${!isAuthenticated ? 'w-full' : ''}`}>
             <header className="h-12 flex-shrink-0 flex items-center border-b border-border px-4 bg-card/50 backdrop-blur-sm">
-              {isMobile && (
+              {isMobile && isAuthenticated && (
                 <Button
                   variant="ghost"
                   size="icon"
@@ -57,9 +57,11 @@ function AppLayoutContent({ children }: { children: ReactNode }) {
                 </Button>
               )}
               <div className="ml-auto flex items-center gap-3">
-                <span className="text-xs font-mono px-2 py-1 rounded border border-primary/30 text-primary bg-primary/5">
-                  {user?.subscription_plan || 'USER'}
-                </span>
+                {isAuthenticated && (
+                  <span className="text-xs font-mono px-2 py-1 rounded border border-primary/30 text-primary bg-primary/5">
+                    {user?.subscription_plan || 'USER'}
+                  </span>
+                )}
               </div>
             </header>
             <div className="flex-1 overflow-auto">
@@ -70,12 +72,14 @@ function AppLayoutContent({ children }: { children: ReactNode }) {
         <Footer />
       </div>
       
-      {/* Mobile Sidebar */}
-      <Sheet open={openMobile} onOpenChange={setOpenMobile}>
-        <SheetContent side="left" className="w-64 p-0 bg-sidebar border-r border-border">
-          <MobileSidebar />
-        </SheetContent>
-      </Sheet>
+      {/* Mobile Sidebar - only for authenticated users */}
+      {isAuthenticated && (
+        <Sheet open={openMobile} onOpenChange={setOpenMobile}>
+          <SheetContent side="left" className="w-64 p-0 bg-sidebar border-r border-border">
+            <MobileSidebar />
+          </SheetContent>
+        </Sheet>
+      )}
     </SidebarProvider>
   );
 }

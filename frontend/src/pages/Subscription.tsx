@@ -380,12 +380,7 @@ const Subscription = () => {
                           </div>
                         </div>
                       </div>
-                      {subscription.payment_method && (
-                        <div className="mt-4 pt-4 border-t border-gray-700">
-                          <p className="text-sm text-gray-400">Спосіб оплати: {subscription.payment_method}</p>
-                        </div>
-                      )}
-                    </CardContent>
+                                          </CardContent>
                   </Card>
                 ))}
               </div>
