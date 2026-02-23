@@ -23,13 +23,15 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.FRONTEND_URL?.split(',') || [
+  origin: [
+    ...(process.env.FRONTEND_URL?.split(',') || []),
+    ...(process.env.PRODUCTION_FRONTEND_URL?.split(',') || []),
     'http://localhost:5173', 
     'http://localhost:5174',
     'http://172.23.0.1:5173',
     'http://127.0.0.1:5173',
     'https://olimpxx.pp.ua'
-  ],
+  ].filter(Boolean),
   credentials: true
 }));
 app.use(morgan('combined'));
