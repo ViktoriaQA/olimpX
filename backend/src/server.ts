@@ -39,13 +39,16 @@ app.use(express.urlencoded({ extended: true }));
 
 // Health check
 app.get('/health', (req, res) => {
-  const frontendPath = path.join(__dirname, '../../frontend/dist');
-  const frontendReady = require('fs').existsSync(frontendPath);
+  const staticPath = process.env.NODE_ENV === 'production' 
+    ? path.join(__dirname, '../static')
+    : path.join(__dirname, '../../frontend/dist');
+  const frontendReady = require('fs').existsSync(staticPath);
   
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
-    frontend: frontendReady ? 'ready' : 'building'
+    frontend: frontendReady ? 'ready' : 'building',
+    static_path: staticPath
   });
 });
 
@@ -61,11 +64,18 @@ app.use('/api/v1/payment', paymentRoutes);
 app.use('/payment', paymentRoutes);
 
 // Serve static files from frontend build
-app.use(express.static(path.join(__dirname, '../../frontend/dist')));
+const staticPath = process.env.NODE_ENV === 'production' 
+  ? path.join(__dirname, '../static')  // In Docker: /app/static
+  : path.join(__dirname, '../../frontend/dist'); // In development
+console.log('Serving static files from:', staticPath);
+app.use(express.static(staticPath));
 
 // Catch all handler for SPA (must be after API routes)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'));
+  const indexPath = process.env.NODE_ENV === 'production'
+    ? path.join(__dirname, '../static/index.html')  // In Docker: /app/static/index.html
+    : path.join(__dirname, '../../frontend/dist/index.html'); // In development
+  res.sendFile(indexPath);
 });
 
 // Error handling middleware (must be last)
