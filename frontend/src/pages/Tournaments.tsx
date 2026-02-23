@@ -204,7 +204,6 @@ const Tournaments = () => {
                   onClick={() => navigate("/")}
                 >
                   <ArrowLeft className="h-4 w-4 mr-1" />
-                  {t('navigation.home')}
                 </Button>
               </div>
               <Trophy className="h-8 w-8 text-primary" />
