@@ -233,7 +233,7 @@ const Home = () => {
       <Header showTournamentsButton={true} currentPage="home" />
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-16">
+      <section className="container mx-auto px-4 py-16 pt-20">
         <div className="text-center space-y-6 max-w-4xl mx-auto">
           <div className="flex items-center justify-center gap-4">
             <Trophy className="h-12 w-12 text-primary animate-pulse-glow" />

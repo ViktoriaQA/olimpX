@@ -48,7 +48,7 @@ function AppLayoutContent({ children }: { children: ReactNode }) {
         <div className="flex flex-1">
           {isAuthenticated && !isMobile && <AppSidebar />}
           <main className={`flex-1 flex flex-col min-w-0 ${!isAuthenticated ? 'w-full' : ''}`}>
-            <header className="h-12 flex-shrink-0 flex items-center border-b border-border px-4 bg-card/50 backdrop-blur-sm">
+            <header className="h-12 flex-shrink-0 flex items-center border-b border-border px-4 bg-card/50 backdrop-blur-sm sticky top-0 z-10">
               {isMobile && isAuthenticated && (
                 <Button
                   variant="ghost"
