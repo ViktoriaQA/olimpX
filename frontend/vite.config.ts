@@ -42,6 +42,16 @@ export default defineConfig(({ mode }) => ({
     }),
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+  define: {
+    ...(mode === 'development' && {
+      __CSP_HTML__: `<meta http-equiv="Content-Security-Policy" 
+          content="default-src 'self';
+                   script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://googletagmanager.com https://accounts.google.com https://static.cloudflareinsights.com https://static.liqpay.ua https://www.google-analytics.com;
+                   connect-src 'self' ws://localhost:8080 wss://olimpxx.pp.ua:8080 https://accounts.google.com https://olimpx-production.up.railway.app https://olimpxx-production.up.railway.app https://www.google-analytics.com http://localhost:3001;
+                   style-src 'self' 'unsafe-inline';
+                   img-src 'self' data: https:;">`
+    })
+  },
   resolve: {
     alias: {
       "@": new URL("./src", import.meta.url).pathname,
