@@ -48,11 +48,11 @@ export class AuthService {
       ...options,
     });
 
-    console.log('API Response:', { 
-      status: response.status, 
-      ok: response.ok,
-      url: response.url 
-    });
+    // console.log('API Response:', { 
+    //   status: response.status, 
+    //   ok: response.ok,
+    //   url: response.url 
+    // });
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
