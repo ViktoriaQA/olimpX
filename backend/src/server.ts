@@ -21,15 +21,16 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(helmet({
-  contentSecurityPolicy: {
+  contentSecurityPolicy: process.env.NODE_ENV === 'production' ? {
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'", "https://www.googletagmanager.com", "https://googletagmanager.com", "https://accounts.google.com", "https://static.cloudflareinsights.com", "https://static.liqpay.ua", "https://www.google-analytics.com"],
-      connectSrc: ["'self'", "ws://localhost:8080", "wss://olimpxx.pp.ua:8080", "https://accounts.google.com", "https://olimpx-production.up.railway.app", "https://olimpx-production.up.railway.app", "https://www.google-analytics.com", "http://localhost:3001"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
+      connectSrc: ["'self'", "ws://localhost:8080", "wss://olimpxx.pp.ua:8080", "https://accounts.google.com", "https://olimpx-production.up.railway.app", "https://olimpxx-production.up.railway.app", "https://www.google-analytics.com", "http://localhost:3001"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"]
     }
-  }
+  } : false
 }));
 app.use(cors({
   origin: [
