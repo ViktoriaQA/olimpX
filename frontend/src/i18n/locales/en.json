@@ -40,6 +40,20 @@
     "analytics": "Analytics",
     "navigationLabel": "Navigation"
   },
+  "certificates": {
+    "title": "My Certificates",
+    "description": "View and download your tournament certificates",
+    "proRequired": "PRO Subscription Required",
+    "proRequiredDescription": "Certificates are available for PRO subscribers only. Upgrade to access all your achievements.",
+    "upgradeToPro": "Upgrade to PRO",
+    "noCertificates": "No Certificates Yet",
+    "noCertificatesDescription": "Participate in tournaments and earn top positions to receive certificates.",
+    "browseTournaments": "Browse Tournaments",
+    "score": "Score",
+    "participants": "Participants",
+    "issued": "Issued",
+    "download": "Download Certificate"
+  },
   "auth": {
     "login": "Login",
     "register": "Register",

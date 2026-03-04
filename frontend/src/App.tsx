@@ -21,6 +21,7 @@ import AdminSubscriptions from "@/pages/AdminSubscriptions";
 import CodeExecutionPage from "@/pages/CodeExecutionPage";
 import TournamentTasks from "@/pages/TournamentTasks";
 import TaskSolve from "@/pages/TaskSolve";
+import Certificates from "@/pages/Certificates";
 import Students from "@/pages/Students";
 import NotFound from "@/pages/NotFound";
 import Profile from "@/pages/Profile";
@@ -161,6 +162,14 @@ const App = () => (
               element={
                 <AppLayout>
                   <Ratings />
+                </AppLayout>
+              }
+            />
+            <Route
+              path="/certificates"
+              element={
+                <AppLayout>
+                  <Certificates />
                 </AppLayout>
               }
             />

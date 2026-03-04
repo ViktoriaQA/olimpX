@@ -41,6 +41,20 @@
     "codeExecution": "Редактор коду",
     "navigationLabel": "Навігація"
   },
+  "certificates": {
+    "title": "Мої Сертифікати",
+    "description": "Перегляньте та завантажте сертифікати турнірів",
+    "proRequired": "Потрібна PRO підписка",
+    "proRequiredDescription": "Сертифікати доступні лише для PRO підписників. Оновіть підписку для доступу до всіх досягнень.",
+    "upgradeToPro": "Оновити до PRO",
+    "noCertificates": "Ще немає сертифікатів",
+    "noCertificatesDescription": "Беріть участь у турнірах та займайте призові місця, щоб отримувати сертифікати.",
+    "browseTournaments": "Переглянути турніри",
+    "score": "Результат",
+    "participants": "Учасники",
+    "issued": "Видано",
+    "download": "Завантажити"
+  },
   "auth": {
     "login": "Увійти",
     "register": "Реєстрація",
