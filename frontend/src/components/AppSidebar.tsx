@@ -44,14 +44,13 @@ export function AppSidebar() {
 
   const commonItems: MenuItem[] = [
     { title: t('navigation.dashboard'), url: "/dashboard", icon: LayoutDashboard },
-    { title: t('navigation.codeExecution'), url: "/code-execution", icon: Code },
     { title: t('navigation.subscription'), url: "/subscription", icon: CreditCard },
+    { title: t('navigation.codeExecution'), url: "/code-execution", icon: Code },
   ];
 
   const studentItems: MenuItem[] = [
     { title: t('navigation.dashboard'), url: "/dashboard", icon: LayoutDashboard },
     { title: t('navigation.myTournamentsMenu'), url: "/my-tournaments", icon: Trophy },
-    { title: t('navigation.codeExecution'), url: "/code-execution", icon: Code },
     { title: t('navigation.myProgress'), url: "/progress", icon: TrendingUp, requiresPro: true },
     { title: t('navigation.rating'), url: "/rating", icon: Star, requiresPro: true },
     { 
@@ -61,28 +60,29 @@ export function AppSidebar() {
       requiresPro: true 
     },
     { title: t('navigation.subscription'), url: "/subscription", icon: CreditCard },
+    { title: t('navigation.codeExecution'), url: "/code-execution", icon: Code },
   ];
 
   const trainerItems: MenuItem[] = [
     { title: t('navigation.dashboard'), url: "/dashboard", icon: LayoutDashboard },
     { title: t('navigation.myTournamentsMenu'), url: "/my-tournaments", icon: Trophy },
-    { title: t('navigation.codeExecution'), url: "/code-execution", icon: Code },
     { title: t('navigation.taskLibrary'), url: "/tasks", icon: BookOpen },
     { title: t('navigation.students'), url: "/students", icon: Users },
     { title: t('navigation.myProgress'), url: "/progress", icon: TrendingUp, requiresPro: true },
     { title: t('navigation.analytics'), url: "/analytics", icon: History },
     { title: t('navigation.subscription'), url: "/subscription", icon: CreditCard },
+    { title: t('navigation.codeExecution'), url: "/code-execution", icon: Code },
   ];
 
   const adminItems: MenuItem[] = [
     { title: t('navigation.dashboard'), url: "/dashboard", icon: LayoutDashboard },
     { title: t('navigation.myTournamentsMenu'), url: "/my-tournaments", icon: Trophy },
-    { title: t('navigation.codeExecution'), url: "/code-execution", icon: Code },
     { title: t('navigation.taskLibrary'), url: "/tasks", icon: BookOpen },
     { title: t('navigation.students'), url: "/students", icon: Users },
     { title: t('navigation.analytics'), url: "/analytics", icon: History },
     { title: t('navigation.admin'), url: "/admin", icon: Shield },
     { title: t('navigation.subscription'), url: "/subscription", icon: CreditCard },
+    { title: t('navigation.codeExecution'), url: "/code-execution", icon: Code },
   ];
 
   const items = user?.role === "admin" ? adminItems : user?.role === "trainer" ? trainerItems : studentItems;

@@ -405,7 +405,6 @@ const TaskSolve = () => {
                         <section>
                           <h3 className="font-mono font-semibold mb-2">
                             {t("tasks.inputFormat", "Вхідні дані")}
-                            {t("tasks.inputFormat", "Вхідні дані")}
                           </h3>
                           <p className="text-muted-foreground whitespace-pre-line">
                             {task.inputFormat}

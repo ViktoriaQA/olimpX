@@ -281,11 +281,15 @@ int main() {
                   <SelectValue placeholder="Оберіть мову" />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableLanguages.map((lang, index) => (
-                    <SelectItem key={`lang-${lang.name}-${index}`} value={lang.name}>
-                      {lang.name.charAt(0).toUpperCase() + lang.name.slice(1)}
-                    </SelectItem>
-                  ))}
+                  {availableLanguages
+                    .filter((lang, index, self) => 
+                      self.findIndex(l => l.name === lang.name) === index
+                    )
+                    .map((lang) => (
+                      <SelectItem key={`lang-${lang.name}`} value={lang.name}>
+                        {lang.name.charAt(0).toUpperCase() + lang.name.slice(1)}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
