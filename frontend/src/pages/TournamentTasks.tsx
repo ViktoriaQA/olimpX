@@ -308,10 +308,12 @@ const TournamentTasks = () => {
             <BookOpen className="h-4 w-4 mr-2" />
             {t('tasks.tasks', 'Задачі')}
           </TabsTrigger>
-          <TabsTrigger value="progress" className="font-mono">
-            <TrendingUp className="h-4 w-4 mr-2" />
-            {t('tournaments.progress', 'Прогрес')}
-          </TabsTrigger>
+          {canAddTasks && isTournamentCreator && (
+            <TabsTrigger value="progress" className="font-mono">
+              <TrendingUp className="h-4 w-4 mr-2" />
+              {t('tournaments.progress', 'Прогрес')}
+            </TabsTrigger>
+          )}
           {canAddTasks && isTournamentCreator && (
             <TabsTrigger value="students" className="font-mono">
               <Users className="h-4 w-4 mr-2" />
@@ -418,113 +420,115 @@ const TournamentTasks = () => {
         </TabsContent>
 
         {/* Progress Tab */}
-        <TabsContent value="progress" className="space-y-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-mono font-semibold text-primary">
-              {t('tournaments.progress', 'Прогрес студентів')}
-            </h3>
-          </div>
-          
-          {loadingProgress ? (
-            <div className="flex items-center justify-center h-32">
-              <div className="animate-pulse-glow text-primary font-mono">{t('common.loading')}</div>
+        {canAddTasks && isTournamentCreator && (
+          <TabsContent value="progress" className="space-y-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-mono font-semibold text-primary">
+                {t('tournaments.progress', 'Прогрес студентів')}
+              </h3>
             </div>
-          ) : progressData.length === 0 ? (
-            <Card className="border-border/60 bg-card/60">
-              <CardContent className="p-8 text-center">
-                <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-mono font-semibold mb-2">
-                  {t('tournaments.noProgressYet', 'Ще немає даних про прогрес')}
-                </h3>
-                <p className="text-sm text-muted-foreground font-mono">
-                  {t('tournaments.progressDescription', 'Студенти ще не виконували задачі цього турніру')}
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="border-border/60 bg-card/60">
-              <CardContent className="p-4">
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="border-b border-border/60">
-                        <th className="text-left p-3 font-mono text-sm font-semibold text-primary sticky left-0 bg-card/60">
-                          {t('tournaments.student', 'Студент')}
-                        </th>
-                        {tasks.map((task) => (
-                          <th key={task.id} className="text-center p-3 font-mono text-xs font-semibold min-w-[80px]">
-                            <div className="space-y-1">
-                              <div className="text-primary">{task.title}</div>
-                              <Badge className={`${difficultyColor[task.difficulty]} text-[10px]`}>
-                                {task.maxScore} {t('common.points', 'балів')}
-                              </Badge>
-                            </div>
+            
+            {loadingProgress ? (
+              <div className="flex items-center justify-center h-32">
+                <div className="animate-pulse-glow text-primary font-mono">{t('common.loading')}</div>
+              </div>
+            ) : progressData.length === 0 ? (
+              <Card className="border-border/60 bg-card/60">
+                <CardContent className="p-8 text-center">
+                  <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-mono font-semibold mb-2">
+                    {t('tournaments.noProgressYet', 'Ще немає даних про прогрес')}
+                  </h3>
+                  <p className="text-sm text-muted-foreground font-mono">
+                    {t('tournaments.progressDescription', 'Студенти ще не виконували задачі цього турніру')}
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="border-border/60 bg-card/60">
+                <CardContent className="p-4">
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="border-b border-border/60">
+                          <th className="text-left p-3 font-mono text-sm font-semibold text-primary sticky left-0 bg-card/60">
+                            {t('tournaments.student', 'Студент')}
                           </th>
-                        ))}
-                        <th className="text-center p-3 font-mono text-sm font-semibold text-primary sticky right-0 bg-card/60">
-                          {t('tournaments.total', 'Всього')}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {progressData.map((student, index) => (
-                        <tr key={student.userId} className={`border-b border-border/30 hover:bg-primary/5 ${index % 2 === 0 ? 'bg-card/30' : ''}`}>
-                          <td className="p-3 sticky left-0 bg-card/60">
-                            <div className="space-y-1">
-                              <div className="font-mono text-sm font-medium text-primary">
-                                {student.userName}
+                          {tasks.map((task) => (
+                            <th key={task.id} className="text-center p-3 font-mono text-xs font-semibold min-w-[80px]">
+                              <div className="space-y-1">
+                                <div className="text-primary">{task.title}</div>
+                                <Badge className={`${difficultyColor[task.difficulty]} text-[10px]`}>
+                                  {task.maxScore} {t('common.points', 'балів')}
+                                </Badge>
                               </div>
-                              <div className="font-mono text-xs text-muted-foreground">
-                                {student.userEmail}
-                              </div>
-                            </div>
-                          </td>
-                          {tasks.map((task) => {
-                            const score = student.taskScores[task.id] || 0;
-                            const percentage = task.maxScore > 0 ? (score / task.maxScore) * 100 : 0;
-                            
-                            return (
-                              <td key={task.id} className="text-center p-3">
-                                <div className="space-y-1">
-                                  <div className={`font-mono text-sm font-medium ${
-                                    score === 0 ? 'text-muted-foreground' : 
-                                    score === task.maxScore ? 'text-green-500' : 'text-yellow-500'
-                                  }`}>
-                                    {score}/{task.maxScore}
-                                  </div>
-                                  {score > 0 && (
-                                    <div className="w-full bg-border/60 rounded-full h-1">
-                                      <div 
-                                        className={`h-1 rounded-full ${
-                                          score === task.maxScore ? 'bg-green-500' : 'bg-yellow-500'
-                                        }`}
-                                        style={{ width: `${Math.min(percentage, 100)}%` }}
-                                      />
-                                    </div>
-                                  )}
-                                </div>
-                              </td>
-                            );
-                          })}
-                          <td className="text-center p-3 sticky right-0 bg-card/60">
-                            <div className="space-y-1">
-                              <div className="font-mono text-sm font-bold text-primary">
-                                {student.totalScore}
-                              </div>
-                              <div className="font-mono text-xs text-muted-foreground">
-                                /{tasks.reduce((sum, task) => sum + task.maxScore, 0)}
-                              </div>
-                            </div>
-                          </td>
+                            </th>
+                          ))}
+                          <th className="text-center p-3 font-mono text-sm font-semibold text-primary sticky right-0 bg-card/60">
+                            {t('tournaments.total', 'Всього')}
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
+                      </thead>
+                      <tbody>
+                        {progressData.map((student, index) => (
+                          <tr key={student.userId} className={`border-b border-border/30 hover:bg-primary/5 ${index % 2 === 0 ? 'bg-card/30' : ''}`}>
+                            <td className="p-3 sticky left-0 bg-card/60">
+                              <div className="space-y-1">
+                                <div className="font-mono text-sm font-medium text-primary">
+                                  {student.userName}
+                                </div>
+                                <div className="font-mono text-xs text-muted-foreground">
+                                  {student.userEmail}
+                                </div>
+                              </div>
+                            </td>
+                            {tasks.map((task) => {
+                              const score = student.taskScores[task.id] || 0;
+                              const percentage = task.maxScore > 0 ? (score / task.maxScore) * 100 : 0;
+                              
+                              return (
+                                <td key={task.id} className="text-center p-3">
+                                  <div className="space-y-1">
+                                    <div className={`font-mono text-sm font-medium ${
+                                      score === 0 ? 'text-muted-foreground' : 
+                                      score === task.maxScore ? 'text-green-500' : 'text-yellow-500'
+                                    }`}>
+                                      {score}/{task.maxScore}
+                                    </div>
+                                    {score > 0 && (
+                                      <div className="w-full bg-border/60 rounded-full h-1">
+                                        <div 
+                                          className={`h-1 rounded-full ${
+                                            score === task.maxScore ? 'bg-green-500' : 'bg-yellow-500'
+                                          }`}
+                                          style={{ width: `${Math.min(percentage, 100)}%` }}
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
+                                </td>
+                              );
+                            })}
+                            <td className="text-center p-3 sticky right-0 bg-card/60">
+                              <div className="space-y-1">
+                                <div className="font-mono text-sm font-bold text-primary">
+                                  {student.totalScore}
+                                </div>
+                                <div className="font-mono text-xs text-muted-foreground">
+                                  /{tasks.reduce((sum, task) => sum + task.maxScore, 0)}
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        )}
 
         {canAddTasks && isTournamentCreator && (
           <TabsContent value="students" className="space-y-4">

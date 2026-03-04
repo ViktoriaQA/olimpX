@@ -281,9 +281,9 @@ const TasksCreate = () => {
             </CardTitle>
           </div>
           <div className="flex items-center gap-2">
-            <Badge className="font-mono text-[10px]">
+            {/* <Badge className="font-mono text-[10px]">
               {t("tasks.trainerOnly", "Для тренерів")}
-            </Badge>
+            </Badge> */}
             {isEditing && (
               <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                 <AlertDialogTrigger asChild>
@@ -295,7 +295,6 @@ const TasksCreate = () => {
                     disabled={submitting}
                   >
                     <Trash2 className="h-3 w-3 mr-1" />
-                    {t("common.delete", "Видалити")}
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>

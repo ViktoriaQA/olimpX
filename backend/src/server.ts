@@ -14,6 +14,7 @@ import userRoutes from './routes/users';
 import subscriptionRoutes from './routes/subscriptions';
 import tournamentRoutes from './routes/tournaments';
 import taskRoutes from './routes/tasks';
+import studentRoutes from './routes/students';
 import paymentRoutes from './routes/payment';
 import codeExecutionRoutes from './routes/codeExecutionRoutes';
 
@@ -70,6 +71,7 @@ app.use('/api/users', authMiddleware, userRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/tournaments', authMiddleware, tournamentRoutes);
 app.use('/api/tasks', authMiddleware, taskRoutes);
+app.use('/api/students', authMiddleware, studentRoutes);
 app.use('/api/v1/payment', paymentRoutes);
 app.use('/api/code-execution', codeExecutionRoutes);
 

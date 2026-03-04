@@ -33,10 +33,11 @@
     "rating": "Рейтинг",
     "certificates": "Сертифікати",
     "requiresPro": "доступно з підпискою PRO",
-    "taskLibrary": "Бібліотека завдань",
+    "taskLibrary": "База задач",
     "students": "Студенти",
     "admin": "Адміністратор",
     "analytics": "Аналітика",
+    "codeExecution": "Редактор коду",
     "navigationLabel": "Навігація"
   },
   "auth": {
@@ -131,7 +132,7 @@
     "createAccountToJoin": "Створіть акаунт, щоб приєднатися до турнірів та відстежувати свій прогрес",
     "createAccount": "Створити акаунт",
     "learnMoreAboutPlatform": "Детальніше про платформу",
-    "myTournaments": "Мої турніри",
+    "myTournaments": "Турніри",
     "allTournaments": "Всі турніри",
     "noMyTournaments": "Ви ще не приєдналися до жодного турніру",
     "joinTournamentsToSee": "Приєднуйтесь до турнірів, щоб побачити їх тут",
@@ -158,7 +159,7 @@
     "tournaments": "Турніри",
     "myProgress": "Мій прогрес",
     "subscription": "Підписка",
-    "taskLibrary": "Бібліотека завдань",
+    "taskLibrary": "База задач",
     "students": "Студенти",
     "adminPanel": "Панель адміністратора",
     "browseJoinTournaments": "Переглядайте та приєднуйтесь до активних турнірів",
@@ -171,5 +172,26 @@
     "upgradeToCreate": "Оновіть для створення",
     "manageUsersPlatform": "Керуйте користувачами та платформою",
     "loading": "Завантаження..."
+  },
+  "students": {
+    "title": "Студенти в турнірах",
+    "description": "Перегляньте всіх студентів, які беруть участь у турнірах, та їхню продуктивність",
+    "loading": "Завантаження студентів...",
+    "fetchError": "Не вдалося завантажити студентів",
+    "retry": "Повторити",
+    "accessDenied": "Доступ заборонено",
+    "trainerOnlyAccess": "Лише тренери та адміністратори можуть переглядати студентів.",
+    "noStudents": "Студентів не знайдено",
+    "noStudentsDescription": "Наразі немає студентів, які беруть участь у турнірах.",
+    "totalStudents": "Всього студентів",
+    "totalParticipations": "Всього участей",
+    "totalPoints": "Всього балів",
+    "averageScore": "Середній бал",
+    "tournaments": "Турніри",
+    "totalScore": "Загальний бал",
+    "average": "Середній",
+    "bestRank": "Найкращий рейтинг",
+    "recentTournaments": "Останні турніри",
+    "more": "більше"
   }
 }

@@ -21,6 +21,7 @@ import AdminSubscriptions from "@/pages/AdminSubscriptions";
 import CodeExecutionPage from "@/pages/CodeExecutionPage";
 import TournamentTasks from "@/pages/TournamentTasks";
 import TaskSolve from "@/pages/TaskSolve";
+import Students from "@/pages/Students";
 import NotFound from "@/pages/NotFound";
 import '@/i18n';
 
@@ -134,6 +135,14 @@ const App = () => (
               element={
                 <AppLayout>
                   <CodeExecutionPage />
+                </AppLayout>
+              }
+            />
+            <Route
+              path="/students"
+              element={
+                <AppLayout>
+                  <Students />
                 </AppLayout>
               }
             />

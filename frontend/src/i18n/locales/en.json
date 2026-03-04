@@ -171,5 +171,26 @@
     "upgradeToCreate": "Upgrade to create",
     "manageUsersPlatform": "Manage users and platform",
     "loading": "Loading..."
+  },
+  "students": {
+    "title": "Students in Tournaments",
+    "description": "View all students participating in tournaments and their performance",
+    "loading": "Loading students...",
+    "fetchError": "Failed to fetch students",
+    "retry": "Retry",
+    "accessDenied": "Access Denied",
+    "trainerOnlyAccess": "Only trainers and administrators can view students.",
+    "noStudents": "No Students Found",
+    "noStudentsDescription": "No students are currently participating in tournaments.",
+    "totalStudents": "Total Students",
+    "totalParticipations": "Total Participations",
+    "totalPoints": "Total Points",
+    "averageScore": "Average Score",
+    "tournaments": "Tournaments",
+    "totalScore": "Total Score",
+    "average": "Average",
+    "bestRank": "Best Rank",
+    "recentTournaments": "Recent Tournaments",
+    "more": "more"
   }
 }

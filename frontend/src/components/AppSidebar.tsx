@@ -44,13 +44,13 @@ export function AppSidebar() {
 
   const commonItems: MenuItem[] = [
     { title: t('navigation.dashboard'), url: "/dashboard", icon: LayoutDashboard },
-    { title: "Виконання коду", url: "/code-execution", icon: Code },
+    { title: t('navigation.codeExecution'), url: "/code-execution", icon: Code },
     { title: t('navigation.subscription'), url: "/subscription", icon: CreditCard },
   ];
 
   const studentItems: MenuItem[] = [
     { title: t('navigation.dashboard'), url: "/dashboard", icon: LayoutDashboard },
-    { title: "Виконання коду", url: "/code-execution", icon: Code },
+    { title: t('navigation.codeExecution'), url: "/code-execution", icon: Code },
     { title: t('navigation.tournaments'), url: "/my-tournaments", icon: Trophy },
     { title: t('navigation.myProgress'), url: "/progress", icon: TrendingUp },
     { title: t('navigation.rating'), url: "/rating", icon: Star, requiresPro: true },
@@ -65,17 +65,18 @@ export function AppSidebar() {
 
   const trainerItems: MenuItem[] = [
     { title: t('navigation.dashboard'), url: "/dashboard", icon: LayoutDashboard },
-    { title: "Виконання коду", url: "/code-execution", icon: Code },
+    { title: t('navigation.codeExecution'), url: "/code-execution", icon: Code },
     { title: t('navigation.taskLibrary'), url: "/tasks", icon: BookOpen },
     { title: t('navigation.students'), url: "/students", icon: Users },
     { title: t('tournaments.myTournaments'), url: "/my-tournaments", icon: Trophy },
+    { title: t('navigation.myProgress'), url: "/progress", icon: TrendingUp },
     { title: t('navigation.analytics'), url: "/analytics", icon: History },
     { title: t('navigation.subscription'), url: "/subscription", icon: CreditCard },
   ];
 
   const adminItems: MenuItem[] = [
     { title: t('navigation.dashboard'), url: "/dashboard", icon: LayoutDashboard },
-    { title: "Виконання коду", url: "/code-execution", icon: Code },
+    { title: t('navigation.codeExecution'), url: "/code-execution", icon: Code },
     { title: t('navigation.taskLibrary'), url: "/tasks", icon: BookOpen },
     { title: t('navigation.students'), url: "/students", icon: Users },
     { title: t('navigation.analytics'), url: "/analytics", icon: History },
