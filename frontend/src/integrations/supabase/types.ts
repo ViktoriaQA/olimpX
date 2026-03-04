@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      custom_users: {
+        Row: {
+          id: string
+          email: string | null
+          phone: string | null
+          country_code: string | null
+          first_name: string
+          last_name: string
+          nickname: string | null
+          password_hash: string
+          role: Database["public"]["Enums"]["app_role"]
+          is_verified: boolean
+          phone_verified: boolean
+          email_verification_token: string | null
+          verification_token_expires_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          email?: string | null
+          phone?: string | null
+          country_code?: string | null
+          first_name: string
+          last_name: string
+          nickname?: string | null
+          password_hash: string
+          role?: Database["public"]["Enums"]["app_role"]
+          is_verified?: boolean
+          phone_verified?: boolean
+          email_verification_token?: string | null
+          verification_token_expires_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          email?: string | null
+          phone?: string | null
+          country_code?: string | null
+          first_name?: string
+          last_name?: string
+          nickname?: string | null
+          password_hash?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          is_verified?: boolean
+          phone_verified?: boolean
+          email_verification_token?: string | null
+          verification_token_expires_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -133,36 +187,12 @@ export type Database = {
         }
         Relationships: []
       }
-      user_roles: {
-        Row: {
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
       app_role: "student" | "trainer" | "admin"

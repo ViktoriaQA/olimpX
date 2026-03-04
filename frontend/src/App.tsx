@@ -12,10 +12,15 @@ import Home from "@/pages/Home";
 import Tournaments from "@/pages/Tournaments";
 import TournamentsAuth from "@/pages/TournamentsAuth";
 import MyTournaments from "@/pages/MyTournaments";
+import Tasks from "@/pages/Tasks";
+import TasksCreate from "@/pages/TasksCreate";
 import Subscription from "@/pages/Subscription";
 import SubscriptionSuccess from "@/pages/SubscriptionSuccess";
 import Progress from "@/pages/Progress";
 import AdminSubscriptions from "@/pages/AdminSubscriptions";
+import CodeExecutionPage from "@/pages/CodeExecutionPage";
+import TournamentTasks from "@/pages/TournamentTasks";
+import TaskSolve from "@/pages/TaskSolve";
 import NotFound from "@/pages/NotFound";
 import '@/i18n';
 
@@ -37,10 +42,50 @@ const App = () => (
               element={<Tournaments />}
             />
             <Route
+              path="/tournaments/:tournamentId"
+              element={
+                <AppLayout>
+                  <TournamentTasks />
+                </AppLayout>
+              }
+            />
+            <Route
+              path="/tournaments/:tournamentId/tasks/:taskId"
+              element={
+                <AppLayout>
+                  <TaskSolve />
+                </AppLayout>
+              }
+            />
+            <Route
               path="/my-tournaments"
               element={
                 <AppLayout>
                   <MyTournaments />
+                </AppLayout>
+              }
+            />
+            <Route
+              path="/tasks"
+              element={
+                <AppLayout>
+                  <Tasks />
+                </AppLayout>
+              }
+            />
+            <Route
+              path="/tasks/create"
+              element={
+                <AppLayout>
+                  <TasksCreate />
+                </AppLayout>
+              }
+            />
+            <Route
+              path="/tasks/:id/edit"
+              element={
+                <AppLayout>
+                  <TasksCreate />
                 </AppLayout>
               }
             />
@@ -81,6 +126,14 @@ const App = () => (
               element={
                 <AppLayout>
                   <Dashboard />
+                </AppLayout>
+              }
+            />
+            <Route
+              path="/code-execution"
+              element={
+                <AppLayout>
+                  <CodeExecutionPage />
                 </AppLayout>
               }
             />

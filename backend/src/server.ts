@@ -15,22 +15,23 @@ import subscriptionRoutes from './routes/subscriptions';
 import tournamentRoutes from './routes/tournaments';
 import taskRoutes from './routes/tasks';
 import paymentRoutes from './routes/payment';
+import codeExecutionRoutes from './routes/codeExecutionRoutes';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(helmet({
-  contentSecurityPolicy: process.env.NODE_ENV === 'production' ? {
+  contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://www.googletagmanager.com", "https://googletagmanager.com", "https://accounts.google.com", "https://static.cloudflareinsights.com", "https://static.liqpay.ua", "https://www.google-analytics.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://www.googletagmanager.com", "https://googletagmanager.com", "https://accounts.google.com", "https://static.cloudflareinsights.com", "https://static.liqpay.ua", "https://www.google-analytics.com", "https://cdn.jsdelivr.net"],
       connectSrc: ["'self'", "ws://localhost:8080", "wss://olimpxx.pp.ua:8080", "https://accounts.google.com", "https://olimpx-production.up.railway.app", "https://olimpxx-production.up.railway.app", "https://www.google-analytics.com", "http://localhost:3001"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"]
     }
-  } : false
+  }
 }));
 app.use(cors({
   origin: [
@@ -70,6 +71,7 @@ app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/tournaments', authMiddleware, tournamentRoutes);
 app.use('/api/tasks', authMiddleware, taskRoutes);
 app.use('/api/v1/payment', paymentRoutes);
+app.use('/api/code-execution', codeExecutionRoutes);
 
 // Direct LiqPay callback route (without /api/v1 prefix)
 app.use('/payment', paymentRoutes);

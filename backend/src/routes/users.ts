@@ -58,17 +58,17 @@ router.get('/role', async (req: AuthRequest, res, next) => {
   try {
     const userId = req.user!.id;
 
-    const { data: roleData, error } = await supabase
-      .from('user_roles')
+    const { data: user, error } = await supabase
+      .from('custom_users')
       .select('role')
-      .eq('user_id', userId)
+      .eq('id', userId)
       .single();
 
     if (error) {
       throw createError('Role not found', 404);
     }
 
-    res.json({ role: roleData.role });
+    res.json({ role: user.role });
   } catch (error) {
     next(error);
   }
@@ -82,10 +82,9 @@ router.get('/', requireRole(['admin']), async (req: AuthRequest, res, next) => {
     const offset = (page - 1) * limit;
 
     const { data: users, error, count } = await supabase
-      .from('profiles')
+      .from('custom_users')
       .select(`
-        *,
-        user_roles!inner(role)
+        id, email, first_name, last_name, nickname, role, is_verified, phone_verified, created_at, updated_at
       `, { count: 'exact' })
       .range(offset, offset + limit - 1);
 
@@ -117,17 +116,18 @@ router.put('/:userId/role', requireRole(['admin']), async (req: AuthRequest, res
       throw createError('Invalid role', 400);
     }
 
-    const { data: roleData, error } = await supabase
-      .from('user_roles')
-      .upsert({ user_id: userId, role })
-      .select()
+    const { data: user, error } = await supabase
+      .from('custom_users')
+      .update({ role })
+      .eq('id', userId)
+      .select('id, role')
       .single();
 
     if (error) {
       throw createError('Failed to update role', 500);
     }
 
-    res.json({ role: roleData });
+    res.json({ user });
   } catch (error) {
     next(error);
   }
@@ -137,12 +137,11 @@ router.put('/:userId/role', requireRole(['admin']), async (req: AuthRequest, res
 router.get('/students', requireRole(['trainer', 'admin']), async (req: AuthRequest, res, next) => {
   try {
     const { data: students, error } = await supabase
-      .from('profiles')
+      .from('custom_users')
       .select(`
-        *,
-        user_roles!inner(role)
+        id, email, first_name, last_name, nickname, role, is_verified, phone_verified, created_at, updated_at
       `)
-      .eq('user_roles.role', 'student');
+      .eq('role', 'student');
 
     if (error) {
       throw createError('Failed to fetch students', 500);

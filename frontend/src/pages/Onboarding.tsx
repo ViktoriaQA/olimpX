@@ -53,8 +53,9 @@ const Onboarding = () => {
     }
 
     const { error: roleError } = await supabase
-      .from("user_roles")
-      .insert({ user_id: user.id, role: selectedRole });
+      .from("custom_users")
+      .update({ role: selectedRole })
+      .eq("id", user.id);
 
     if (roleError) {
       toast.error("Failed to assign role");

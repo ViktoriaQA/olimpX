@@ -30,6 +30,7 @@ type AuthContextType = {
   loginWithGoogle: () => Promise<void>;
   logout: () => void;
   restoreSession: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
   isAuthenticated: boolean;
   profile: User | null;
   role: string | null;
@@ -146,6 +147,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     navigate('/');
   };
 
+  const refreshProfile = async () => {
+    if (!token) return;
+    
+    try {
+      const response = await AuthService.getCurrentUser(token);
+      setUser(response.user);
+    } catch (error) {
+      console.error('Failed to refresh profile:', error);
+    }
+  };
+
   // Check for Google OAuth callback
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -174,6 +186,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loginWithGoogle,
     logout,
     restoreSession,
+    refreshProfile,
     isAuthenticated: !!user && !!token,
     profile: user,
     role: user?.role || null,
