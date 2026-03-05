@@ -1,4 +1,4 @@
-import { Trophy, BookOpen, Users, CreditCard, Shield, Settings, LogOut, Terminal, Star, Award, Lock, TrendingUp } from "lucide-react";
+import { Trophy, BookOpen, Users, CreditCard, Shield, Settings, LogOut, Terminal, Star, Award, Lock, TrendingUp, History, Code } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -37,13 +37,16 @@ export function MobileSidebar() {
     ...commonItems,
     { title: t('navigation.taskLibrary'), url: "/tasks", icon: BookOpen },
     { title: t('navigation.students'), url: "/students", icon: Users },
+    { title: t('navigation.myProgress'), url: "/progress", icon: TrendingUp, requiresPro: true },
+    { title: t('navigation.analytics'), url: "/analytics", icon: History, requiresPro: true },
     { title: t('navigation.subscription'), url: "/subscription", icon: CreditCard },
   ];
 
   const adminItems: MenuItem[] = [
     ...trainerItems,
     { title: t('navigation.admin'), url: "/admin", icon: Shield },
-    { title: t('navigation.subscription'), url: "/subscription", icon: CreditCard },
+    { title: t('navigation.adminTournaments'), url: "/admin/tournaments", icon: Trophy },
+    { title: t('navigation.codeExecution'), url: "/code-execution", icon: Code },
   ];
 
   const items = user?.role === "admin" ? adminItems : user?.role === "trainer" ? trainerItems : studentItems;
