@@ -690,30 +690,43 @@ const MyTournaments = () => {
         </div>
 
         {showJoinButton && (tournament.status === "active" || tournament.status === "upcoming") && (
-          <Button 
-            className="w-full font-mono text-sm group-hover:bg-primary/90 transition-colors"
-            disabled={!tournament.isJoined && isUserFreeSubscription()}
-            onClick={() => {
-              if (tournament.isJoined) {
-                handleTournamentClick(tournament.id);
-              } else {
-                handleJoinTournament(tournament.id);
-              }
-            }}
-            variant={tournament.isJoined ? "default" : "default"}
-          >
-            {tournament.isJoined ? (
-              <>
-                <Gamepad2 className="h-4 w-4 mr-2" />
-                {t('tournaments.view')}
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </>
-            ) : (
-              <>
-                {isUserFreeSubscription() ? (
-                  <>
+          <>
+            {isUserFreeSubscription() && !tournament.isJoined ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    className="w-full font-mono text-sm group-hover:bg-primary/90 transition-colors opacity-75 cursor-not-allowed"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                    variant="default"
+                  >
                     <Lock className="h-4 w-4 mr-2" />
                     {t('tournaments.join')}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-xs">Доступно з підпискою Basic</p>
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <Button 
+                className="w-full font-mono text-sm group-hover:bg-primary/90 transition-colors"
+                onClick={() => {
+                  if (tournament.isJoined) {
+                    handleTournamentClick(tournament.id);
+                  } else {
+                    handleJoinTournament(tournament.id);
+                  }
+                }}
+                variant="default"
+              >
+                {tournament.isJoined ? (
+                  <>
+                    <Gamepad2 className="h-4 w-4 mr-2" />
+                    {t('tournaments.view')}
+                    <ArrowRight className="h-4 w-4 ml-2" />
                   </>
                 ) : (
                   <>
@@ -722,9 +735,9 @@ const MyTournaments = () => {
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </>
                 )}
-              </>
+              </Button>
             )}
-          </Button>
+          </>
         )}
       </CardContent>
     </Card>
