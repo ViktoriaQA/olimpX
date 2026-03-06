@@ -5,6 +5,7 @@ import { JWTService } from './jwtService';
 import { User, RegisterRequest, LoginRequest, AuthResponse, UserSession, SMSVerificationCode } from '../models/user';
 import { generateNicknameFromEmail, generateUniqueNickname } from '../utils/nicknameGenerator';
 import { OAuth2Client } from 'google-auth-library';
+import axios from 'axios';
 
 const supabase = createClient(
   process.env.SUPABASE_URL || 'http://localhost:54321',
@@ -506,6 +507,151 @@ const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${process.env.FRONTEND_U
     } catch (error) {
       console.error('Google OAuth callback error:', error);
       throw new Error('Failed to authenticate with Google');
+    }
+  }
+
+  static async getDiscordAuthUrl(): Promise<{ auth_url: string }> {
+    if (!process.env.DISCORD_CLIENT_ID) {
+      throw new Error('Discord OAuth is not configured');
+    }
+
+    const scopes = ['identify', 'email'];
+    const redirectUri = process.env.DISCORD_REDIRECT_URI || `${process.env.FRONTEND_URL || 'http://localhost:3001'}/auth/discord/callback`;
+    
+    const authUrl = `https://discord.com/api/oauth2/authorize?` +
+      `client_id=${process.env.DISCORD_CLIENT_ID}&` +
+      `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+      `response_type=code&` +
+      `scope=${scopes.join('%20')}`;
+
+    return { auth_url: authUrl };
+  }
+
+  static async handleDiscordCallback(code: string): Promise<AuthResponse> {
+    try {
+      const redirectUri = process.env.DISCORD_REDIRECT_URI || `${process.env.FRONTEND_URL || 'http://localhost:3001'}/auth/discord/callback`;
+      
+      // Exchange code for access token
+      const tokenResponse = await axios.post('https://discord.com/api/oauth2/token', 
+        new URLSearchParams({
+          client_id: process.env.DISCORD_CLIENT_ID!,
+          client_secret: process.env.DISCORD_CLIENT_SECRET!,
+          grant_type: 'authorization_code',
+          code: code,
+          redirect_uri: redirectUri
+        }),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        }
+      );
+
+      const { access_token } = tokenResponse.data;
+
+      // Get user info from Discord
+      const discordUserResponse = await axios.get('https://discord.com/api/users/@me', {
+        headers: {
+          'Authorization': `Bearer ${access_token}`
+        }
+      });
+
+      const discordUser = discordUserResponse.data;
+      
+      if (!discordUser.email) {
+        throw new Error('Discord user email is required');
+      }
+
+      const discordEmail = discordUser.email;
+      const discordUsername = discordUser.username;
+      const discordDiscriminator = discordUser.discriminator;
+      const discordAvatar = discordUser.avatar;
+
+      // Check if user already exists
+      let user = await this.findUserByEmailOrPhone(discordEmail);
+
+      if (!user) {
+        // Create new user
+        let nickname: string | undefined;
+        try {
+          nickname = `${discordUsername}#${discordDiscriminator}`;
+          
+          // Check if nickname already exists and make it unique if needed
+          const { data: existingUsers } = await supabase
+            .from('custom_users')
+            .select('nickname')
+            .not('nickname', 'is', null);
+          
+          const existingNicknames = existingUsers?.map(u => u.nickname).filter(Boolean) || [];
+          nickname = generateUniqueNickname(nickname, existingNicknames);
+        } catch (error) {
+          console.error('Failed to generate nickname from Discord:', error);
+        }
+
+        // Create user in database
+        const { data: newUser, error } = await supabase
+          .from('custom_users')
+          .insert({
+            email: discordEmail,
+            nickname: nickname,
+            role: 'student',
+            is_verified: true, // Discord users are pre-verified
+            phone_verified: false,
+            avatar_url: discordAvatar ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordAvatar}.png` : null,
+            created_at: new Date(),
+            updated_at: new Date()
+          })
+          .select()
+          .single();
+
+        if (error || !newUser) {
+          throw new Error('Failed to create Discord user');
+        }
+
+        user = newUser;
+      } else {
+        // Update existing user's Discord info
+        const { data: updatedUser, error } = await supabase
+          .from('custom_users')
+          .update({
+            nickname: user.nickname || `${discordUsername}#${discordDiscriminator}`,
+            is_verified: true, // Mark as verified if using Discord
+            avatar_url: discordAvatar ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordAvatar}.png` : user.avatar_url,
+            updated_at: new Date()
+          })
+          .eq('id', user.id)
+          .select()
+          .single();
+
+        if (error || !updatedUser) {
+          throw new Error('Failed to update Discord user');
+        }
+
+        user = updatedUser;
+      }
+
+      // Ensure user is not null at this point
+      if (!user) {
+        throw new Error('User initialization failed');
+      }
+
+      // Generate JWT
+      const token = JWTService.generateJWT(user.id, user.email!, user.role);
+
+      // Save session
+      await this.saveUserSession(user.id, token);
+
+      // Return user without sensitive data
+      const { password_hash: _, email_verification_token: __, ...finalUserResponse } = user;
+      
+      return {
+        user: finalUserResponse,
+        token
+      };
+
+    } catch (error) {
+      console.error('Discord OAuth callback error:', error);
+      throw new Error('Failed to authenticate with Discord');
     }
   }
 }

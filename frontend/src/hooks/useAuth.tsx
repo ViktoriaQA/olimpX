@@ -29,6 +29,7 @@ type AuthContextType = {
   register: (data: RegisterData) => Promise<void>;
   login: (data: LoginData) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
+  loginWithDiscord: () => Promise<void>;
   logout: () => void;
   restoreSession: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -140,6 +141,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const loginWithDiscord = async () => {
+    try {
+      const response = await AuthService.getDiscordAuthUrl();
+      window.location.href = response.auth_url;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Discord login failed';
+      toast({
+        title: "Discord login failed",
+        description: message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const logout = () => {
     clearAuthData();
     toast({
@@ -165,13 +180,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Initialize session
   useEffect(() => {
-    // Check for Google OAuth callback first
+    // Check for OAuth callback first (Google or Discord)
     const urlParams = new URLSearchParams(window.location.search);
     const callbackToken = urlParams.get('token');
     
     if (callbackToken && !isInitialized) {
-      // Handle Google OAuth callback
-      const handleGoogleCallback = async () => {
+      // Handle OAuth callback (Google or Discord)
+      const handleOAuthCallback = async () => {
         try {
           // Get user data using the token
           const response = await AuthService.getCurrentUser(callbackToken);
@@ -190,7 +205,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           window.history.replaceState({}, document.title, window.location.pathname);
           navigate('/dashboard');
         } catch (error) {
-          console.error('Failed to handle Google callback:', error);
+          console.error('Failed to handle OAuth callback:', error);
           // If failed, clear token and redirect to auth
           localStorage.removeItem(config.auth.tokenKey);
           setIsInitialized(true);
@@ -200,7 +215,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       };
       
-      handleGoogleCallback();
+      handleOAuthCallback();
     } else if (!isInitialized) {
       // Normal session restoration
       restoreSession().then(() => {
@@ -216,6 +231,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     register,
     login,
     loginWithGoogle,
+    loginWithDiscord,
     logout,
     restoreSession,
     refreshProfile,

@@ -28,7 +28,7 @@ export function Header({
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { toast } = useToast();
-  const { loginWithGoogle, register, login } = useAuth();
+  const { loginWithGoogle, loginWithDiscord, register, login } = useAuth();
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [showRegisterSheet, setShowRegisterSheet] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -98,8 +98,7 @@ export function Header({
 
   const handleDiscordAuth = async () => {
     try {
-      // Discord auth not implemented yet
-      console.log("Discord auth not implemented");
+      await loginWithDiscord();
       setShowRegisterSheet(false);
     } catch (error) {
       console.error("Discord auth error:", error);

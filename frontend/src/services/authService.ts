@@ -109,6 +109,10 @@ export class AuthService {
     return this.apiCall<{ auth_url: string }>('/auth/google/login');
   }
 
+  static async getDiscordAuthUrl(): Promise<{ auth_url: string }> {
+    return this.apiCall<{ auth_url: string }>('/auth/discord/login');
+  }
+
   static async handleGoogleCallback(): Promise<AuthResponse> {
     // This would be handled by the callback route
     throw new Error('Google OAuth callback should be handled by the callback route');

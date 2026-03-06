@@ -11,7 +11,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { AuthButtons } from "@/components/AuthButtons";
 
 const Auth = () => {
-  const { isAuthenticated, loading, login, register, loginWithGoogle } = useAuth();
+  const { isAuthenticated, loading, login, register, loginWithGoogle, loginWithDiscord } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -343,7 +343,7 @@ const Auth = () => {
 
             <AuthButtons
               onGoogleAuth={loginWithGoogle}
-              onDiscordAuth={async () => {}} // TODO: implement Discord
+              onDiscordAuth={loginWithDiscord}
               isLoading={isLoading}
               variant="login"
             />

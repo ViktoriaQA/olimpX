@@ -12,6 +12,7 @@ export interface User {
   phone_verified: boolean;
   email_verification_token?: string;
   verification_token_expires_at?: Date;
+  avatar_url?: string;
   created_at: Date;
   updated_at: Date;
 }

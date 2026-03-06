@@ -28,4 +28,8 @@ router.post('/resend-sms/:phone', AuthController.resendSMS);
 router.get('/google/login', AuthController.googleLogin);
 router.get('/google/callback', AuthController.googleCallback);
 
+// Discord OAuth
+router.get('/discord/login', AuthController.discordLogin);
+router.get('/discord/callback', AuthController.discordCallback);
+
 export default router;

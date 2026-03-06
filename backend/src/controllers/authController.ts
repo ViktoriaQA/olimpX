@@ -133,6 +133,36 @@ export class AuthController {
     }
   }
 
+  static async discordLogin(req: Request, res: Response) {
+    try {
+      const result = await AuthService.getDiscordAuthUrl();
+      res.status(200).json(result);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Discord login failed';
+      res.status(500).json({ error: message });
+    }
+  }
+
+  static async discordCallback(req: Request, res: Response) {
+    try {
+      const { code } = req.query;
+      
+      if (!code || typeof code !== 'string') {
+        return res.status(400).json({ error: 'Authorization code is required' });
+      }
+
+      const result = await AuthService.handleDiscordCallback(code);
+      
+      // Redirect to frontend with token
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      res.redirect(`${frontendUrl}?token=${result.token}`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Discord callback failed';
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      res.redirect(`${frontendUrl}?error=${encodeURIComponent(message)}`);
+    }
+  }
+
   static async updateProfile(req: Request, res: Response) {
     try {
       const authHeader = req.headers.authorization;
