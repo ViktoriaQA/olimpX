@@ -209,7 +209,7 @@ const Auth = () => {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email/Phone toggle */}
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label className="block text-sm font-mono text-muted-foreground mb-2">
                   <span className="text-primary">$</span> contact method
                 </Label>
@@ -231,7 +231,7 @@ const Auth = () => {
                     <span>Phone</span>
                   </button>
                 </div>
-              </div>
+              </div> */}
 
               {/* Email/Phone field */}
               <div className="space-y-2">
