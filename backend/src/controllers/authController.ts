@@ -115,7 +115,13 @@ export class AuthController {
 
   static async googleCallback(req: Request, res: Response) {
     try {
-      const { code } = req.query;
+      const { code, error } = req.query;
+      
+      // Handle cancelled authentication
+      if (error === 'access_denied') {
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        return res.redirect(`${frontendUrl}/`);
+      }
       
       if (!code || typeof code !== 'string') {
         return res.status(400).json({ error: 'Authorization code is required' });
@@ -145,7 +151,13 @@ export class AuthController {
 
   static async discordCallback(req: Request, res: Response) {
     try {
-      const { code } = req.query;
+      const { code, error } = req.query;
+      
+      // Handle cancelled authentication
+      if (error === 'access_denied') {
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        return res.redirect(`${frontendUrl}/`);
+      }
       
       if (!code || typeof code !== 'string') {
         return res.status(400).json({ error: 'Authorization code is required' });
