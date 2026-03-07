@@ -352,44 +352,46 @@ const TaskSolve = () => {
 
                 {/* Вкладка: редактор коду */}
                 <TabsContent value="editor" className="h-full mt-2">
-                  <div className="h-full border border-border/70 rounded-md bg-background/40 flex flex-col">
-                    <Tabs defaultValue="local" className="h-full flex flex-col">
-                      <div className="px-3 pt-3 pb-2 border-b border-border/60">
-                        <TabsList className="w-full">
-                          <TabsTrigger value="local" className="flex-1 text-xs">
-                            {t("tasks.localEditor", "Редактор")}
-                          </TabsTrigger>
-                          <TabsTrigger value="onecompiler" className="flex-1 text-xs">
-                            OneCompiler IDE
-                          </TabsTrigger>
-                        </TabsList>
-                      </div>
-                      
-                      <TabsContent value="local" className="flex-1 mt-0">
-                        <div className="h-full px-3 pb-3">
-                          <CodeEditor examples={task?.examples || []} />
+                  <div className="h-full border border-border/70 rounded-md bg-background/40">
+                    <ScrollArea className="h-full px-3 py-3">
+                      <Tabs defaultValue="local" className="h-full flex flex-col">
+                        <div className="px-0 pt-0 pb-2 border-b border-border/60">
+                          <TabsList className="w-full">
+                            <TabsTrigger value="local" className="flex-1 text-xs">
+                              {t("tasks.localEditor", "Виконання")}
+                            </TabsTrigger>
+                            <TabsTrigger value="onecompiler" className="flex-1 text-xs">
+                              {t("tasks.onecompiler", "Тестування")}
+                            </TabsTrigger>
+                          </TabsList>
                         </div>
-                      </TabsContent>
-                      
-                      <TabsContent value="onecompiler" className="flex-1 mt-0">
-                        <div className="h-full px-3 pb-3">
-                          <div className="h-full border rounded-lg overflow-hidden bg-white">
-                            <iframe
-                              src="https://onecompiler.com/embed/javascript?theme=dark"
-                              width="100%"
-                              height="100%"
-                              style={{ 
-                                border: 'none',
-                                minHeight: '400px'
-                              }}
-                              title="OneCompiler JavaScript Editor"
-                              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
-                              loading="lazy"
-                            />
+                        
+                        <TabsContent value="local" className="flex-1 mt-0">
+                          <div className="h-full px-0 pb-0">
+                            <CodeEditor examples={task?.examples || []} />
                           </div>
-                        </div>
-                      </TabsContent>
-                    </Tabs>
+                        </TabsContent>
+                        
+                        <TabsContent value="onecompiler" className="flex-1 mt-0">
+                          <div className="h-full px-0 pb-0">
+                            <div className="h-full border rounded-lg overflow-hidden bg-white">
+                              <iframe
+                                src="https://onecompiler.com/embed/javascript?theme=dark"
+                                width="100%"
+                                height="100%"
+                                style={{ 
+                                  border: 'none',
+                                  minHeight: '400px'
+                                }}
+                                title="OneCompiler JavaScript Editor"
+                                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
+                                loading="lazy"
+                              />
+                            </div>
+                          </div>
+                        </TabsContent>
+                      </Tabs>
+                    </ScrollArea>
                   </div>
                 </TabsContent>
 

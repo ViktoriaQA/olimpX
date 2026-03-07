@@ -45,7 +45,6 @@ export function AppSidebar() {
   const commonItems: MenuItem[] = [
     { title: t('navigation.dashboard'), url: "/dashboard", icon: LayoutDashboard },
     { title: t('navigation.subscription'), url: "/subscription", icon: CreditCard },
-    { title: t('navigation.codeExecution'), url: "/code-execution", icon: Code },
   ];
 
   const studentItems: MenuItem[] = [
@@ -59,7 +58,6 @@ export function AppSidebar() {
       icon: Award,
       requiresPro: true 
     },
-    { title: t('navigation.codeExecution'), url: "/code-execution", icon: Code },
     { title: t('navigation.subscription'), url: "/subscription", icon: CreditCard },
   ];
 

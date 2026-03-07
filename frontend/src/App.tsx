@@ -19,7 +19,6 @@ import SubscriptionSuccess from "@/pages/SubscriptionSuccess";
 import Progress from "@/pages/Progress";
 import AdminSubscriptions from "@/pages/AdminSubscriptions";
 import AdminTournaments from "@/pages/AdminTournaments";
-import CodeExecutionPage from "@/pages/CodeExecutionPage";
 import TournamentTasks from "@/pages/TournamentTasks";
 import TaskSolve from "@/pages/TaskSolve";
 import Certificates from "@/pages/Certificates";
@@ -140,14 +139,6 @@ const App = () => (
               element={
                 <AppLayout>
                   <Dashboard />
-                </AppLayout>
-              }
-            />
-            <Route
-              path="/code-execution"
-              element={
-                <AppLayout>
-                  <CodeExecutionPage />
                 </AppLayout>
               }
             />
