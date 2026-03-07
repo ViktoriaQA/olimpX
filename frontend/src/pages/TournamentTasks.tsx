@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, ArrowRight, ListChecks, Timer, BarChart3, Plus, BookOpen, Users, UserPlus, TrendingUp } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/components/ui/use-toast";
+import { useSidebar } from "@/components/ui/sidebar";
 import AddTaskFromLibraryModal from "@/components/AddTaskFromLibraryModal";
 import AddStudentModal from "@/components/AddStudentModal";
 
@@ -79,6 +80,7 @@ const TournamentTasks = () => {
   const { tournamentId } = useParams<{ tournamentId: string }>();
   const { profile, role } = useAuth();
   const { toast } = useToast();
+  const { setOpenMobile, setOpen } = useSidebar();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
@@ -228,6 +230,26 @@ const TournamentTasks = () => {
   const canAddTasks = role === 'trainer' || role === 'admin';
   const isTournamentCreator = tournament?.creator?.id === profile?.id || role === 'admin';
 
+  // Функція для обробки кліку на "Розв'язати"
+  const handleSolveTask = (e: React.MouseEvent, taskId: string) => {
+    e.stopPropagation();
+    
+    // Автоматично згортаємо меню при кліку на "розв'язати задачу"
+    setOpenMobile(false);
+    setOpen(false);
+    
+    navigate(`/tournaments/${tournamentId ?? "1"}/tasks/${taskId}`);
+  };
+
+  // Функція для обробки кліку на картку задачі
+  const handleTaskCardClick = (taskId: string) => {
+    // Автоматично згортаємо меню при кліку на картку задачі
+    setOpenMobile(false);
+    setOpen(false);
+    
+    navigate(`/tournaments/${tournamentId ?? "1"}/tasks/${taskId}`);
+  };
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -371,9 +393,7 @@ const TournamentTasks = () => {
                 <Card
                   key={task.id}
                   className="border-border/60 bg-card/70 hover:border-primary/70 hover:shadow-lg transition-all cursor-pointer"
-                  onClick={() =>
-                    navigate(`/tournaments/${tournamentId ?? "1"}/tasks/${task.id}`)
-                  }
+                  onClick={() => handleTaskCardClick(task.id)}
                 >
                   <CardHeader className="space-y-3">
                     <div className="flex items-center justify-between gap-2">
@@ -404,10 +424,7 @@ const TournamentTasks = () => {
                     <Button
                       size="sm"
                       className="font-mono text-xs"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/tournaments/${tournamentId ?? "1"}/tasks/${task.id}`);
-                      }}
+                      onClick={(e) => handleSolveTask(e, task.id)}
                     >
                       {t("tasks.solve", "Розв'язати")}
                       <ArrowRight className="h-3 w-3 ml-1" />

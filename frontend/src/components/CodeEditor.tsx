@@ -271,7 +271,7 @@ int main() {
   };
 
   return (
-    <div className="w-full h-full flex flex-col overflow-hidden">
+    <div className="w-full h-full min-h-[600px] flex flex-col overflow-hidden">
       <Card className="flex-1 flex flex-col overflow-hidden">
         <CardHeader className="flex-shrink-0">
           <CardTitle className="flex items-center gap-2">
@@ -338,9 +338,9 @@ int main() {
           </div>
 
           {/* Редактор коду */}
-          <div className="border rounded-lg overflow-hidden relative flex-1 min-h-0">
+          <div className="border rounded-lg overflow-hidden relative flex-1 min-h-[300px]">
             <Editor
-              height="100%"
+              height="400px"
               language={getMonacoLanguage(selectedLanguage)}
               value={code}
               onChange={(value) => setCode(value || '')}
