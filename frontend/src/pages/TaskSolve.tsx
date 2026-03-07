@@ -375,7 +375,7 @@ const TaskSolve = () => {
                         <div className="h-full px-3 pb-3">
                           <div className="h-full border rounded-lg overflow-hidden bg-white">
                             <iframe
-                              src="https://onecompiler.com/embed/javascript"
+                              src="https://onecompiler.com/embed/javascript?theme=dark"
                               width="100%"
                               height="100%"
                               style={{ 
@@ -528,7 +528,7 @@ const TaskSolve = () => {
                           <div className="h-full p-4">
                             <div className="h-full border rounded-lg overflow-hidden bg-white">
                               <iframe
-                                src="https://onecompiler.com/embed/javascript"
+                                src="https://onecompiler.com/embed/javascript?theme=dark"
                                 width="100%"
                                 height="100%"
                                 style={{ 
