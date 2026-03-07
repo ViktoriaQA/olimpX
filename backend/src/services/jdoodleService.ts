@@ -31,7 +31,7 @@ export class JDoodleService implements CodeExecutionService {
   
   private axiosInstance: AxiosInstance;
   private config: JDoodleConfig;
-  private readonly rate_limit_delay = 1000; // 1 секунда між запитами
+  private readonly rate_limit_delay = 10000; // 10 секунд між запитами
   private last_request_time = 0;
 
   // Мапінг мов для JDoodle

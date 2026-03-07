@@ -71,7 +71,7 @@ export class OneCompilerService implements CodeExecutionService {
       timeout: 30000,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.config.api_key}`
+        'X-API-Key': this.config.api_key
       },
     });
 
@@ -132,7 +132,7 @@ export class OneCompilerService implements CodeExecutionService {
     try {
       console.log(`🔧 Executing ${request.language} code with OneCompiler`);
       
-      const response = await this.axiosInstance.post<OneCompilerResponse>('/execute', payload);
+      const response = await this.axiosInstance.post<OneCompilerResponse>('/v1/run', payload);
       
       const result = response.data;
       

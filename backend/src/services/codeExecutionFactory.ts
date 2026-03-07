@@ -1,6 +1,8 @@
 import { codeExecutionManager } from './codeExecutionService';
 import { JDoodleService } from './jdoodleService';
 import { OneCompilerService } from './oneCompilerService';
+import { GlotService } from './glotService';
+import { OnlineCompilerService } from './onlineCompilerService';
 
 /**
  * Фабрика для ініціалізації сервісів виконання коду
@@ -35,6 +37,24 @@ export class CodeExecutionFactory {
       console.log('✅ OneCompiler service added');
     } else {
       console.log('⚠️ OneCompiler service disabled (missing API key)');
+    }
+
+    // Ініціалізуємо Glot
+    const glotService = new GlotService();
+    if (glotService.is_available) {
+      codeExecutionManager.addService(glotService);
+      console.log('✅ Glot service added');
+    } else {
+      console.log('⚠️ Glot service disabled (missing API token)');
+    }
+
+    // Ініціалізуємо MyCompiler
+    const myCompilerService = new OnlineCompilerService();
+    if (myCompilerService.is_available) {
+      codeExecutionManager.addService(myCompilerService);
+      console.log('✅ MyCompiler service added');
+    } else {
+      console.log('⚠️ MyCompiler service disabled (missing API key)');
     }
 
     // Перевіряємо здоров'я сервісів
