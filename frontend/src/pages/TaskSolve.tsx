@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { CodeEditor } from "@/components/CodeEditor";
-import { ArrowLeft, BookOpenText, Flame, Clock3, ListChecks } from "lucide-react";
+import { ArrowLeft, BookOpenText, Flame, Clock3, ListChecks, Monitor } from "lucide-react";
 import { TestResultsDisplay } from "@/components/TestResultsDisplay";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -353,17 +353,43 @@ const TaskSolve = () => {
                 {/* Вкладка: редактор коду */}
                 <TabsContent value="editor" className="h-full mt-2">
                   <div className="h-full border border-border/70 rounded-md bg-background/40 flex flex-col">
-                    <div className="px-3 pt-3 pb-2 border-b border-border/60 flex items-center justify-between">
-                      <span className="text-xs font-mono text-muted-foreground">
-                        {t(
-                          "tasks.editorTitle",
-                          "Редактор коду — пишіть рішення та запускайте його на власних даних."
-                        )}
-                      </span>
-                    </div>
-                    <div className="flex-1 overflow-hidden">
-                      <CodeEditor examples={task?.examples || []} />
-                    </div>
+                    <Tabs defaultValue="local" className="h-full flex flex-col">
+                      <div className="px-3 pt-3 pb-2 border-b border-border/60">
+                        <TabsList className="w-full">
+                          <TabsTrigger value="local" className="flex-1 text-xs">
+                            {t("tasks.localEditor", "Редактор")}
+                          </TabsTrigger>
+                          <TabsTrigger value="onecompiler" className="flex-1 text-xs">
+                            OneCompiler IDE
+                          </TabsTrigger>
+                        </TabsList>
+                      </div>
+                      
+                      <TabsContent value="local" className="flex-1 mt-0">
+                        <div className="h-full px-3 pb-3">
+                          <CodeEditor examples={task?.examples || []} />
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="onecompiler" className="flex-1 mt-0">
+                        <div className="h-full px-3 pb-3">
+                          <div className="h-full border rounded-lg overflow-hidden bg-white">
+                            <iframe
+                              src="https://onecompiler.com/embed/javascript"
+                              width="100%"
+                              height="100%"
+                              style={{ 
+                                border: 'none',
+                                minHeight: '400px'
+                              }}
+                              title="OneCompiler JavaScript Editor"
+                              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
+                              loading="lazy"
+                            />
+                          </div>
+                        </div>
+                      </TabsContent>
+                    </Tabs>
                   </div>
                 </TabsContent>
 
@@ -480,7 +506,43 @@ const TaskSolve = () => {
                 <div className="h-full bg-background/40">
                   <div className="h-full flex flex-col">
                     <div className="flex-1 overflow-auto">
-                      <CodeEditor examples={task?.examples || []} />
+                      <Tabs defaultValue="local" className="h-full flex flex-col">
+                        <div className="border-b border-border/60 px-4 pt-4 pb-2">
+                          <TabsList className="w-full">
+                            <TabsTrigger value="local" className="flex-1">
+                              {t("tasks.localEditor", "Редактор")}
+                            </TabsTrigger>
+                            <TabsTrigger value="onecompiler" className="flex-1">
+                              OneCompiler IDE
+                            </TabsTrigger>
+                          </TabsList>
+                        </div>
+                        
+                        <TabsContent value="local" className="flex-1 mt-0">
+                          <div className="h-full">
+                            <CodeEditor examples={task?.examples || []} />
+                          </div>
+                        </TabsContent>
+                        
+                        <TabsContent value="onecompiler" className="flex-1 mt-0">
+                          <div className="h-full p-4">
+                            <div className="h-full border rounded-lg overflow-hidden bg-white">
+                              <iframe
+                                src="https://onecompiler.com/embed/javascript"
+                                width="100%"
+                                height="100%"
+                                style={{ 
+                                  border: 'none',
+                                  minHeight: '500px'
+                                }}
+                                title="OneCompiler JavaScript Editor"
+                                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
+                                loading="lazy"
+                              />
+                            </div>
+                          </div>
+                        </TabsContent>
+                      </Tabs>
                     </div>
                   </div>
                 </div>

@@ -292,13 +292,7 @@ int main() {
 
   return (
     <div className="w-full h-full min-h-[600px] flex flex-col overflow-hidden">
-      <Card className="flex-1 flex flex-col overflow-hidden">
-        <CardHeader className="flex-shrink-0">
-          <CardTitle className="flex items-center gap-2">
-            <Code className="w-5 h-5" />
-            Редактор коду
-          </CardTitle>
-        </CardHeader>
+      <Card className="flex-1 flex flex-col overflow-hidden border-0">
         <CardContent className="flex-1 flex flex-col overflow-hidden space-y-4 p-3 sm:p-4">
           {/* Панель налаштувань */}
           <div className="flex flex-wrap gap-3 sm:gap-4 items-center flex-shrink-0">
@@ -334,10 +328,10 @@ int main() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem key="time-5000" value="5000">5 секунд</SelectItem>
-                  <SelectItem key="time-10000" value="10000">10 секунд</SelectItem>
-                  <SelectItem key="time-30000" value="30000">30 секунд</SelectItem>
-                  <SelectItem key="time-60000" value="60000">60 секунд</SelectItem>
+                  <SelectItem key="time-5000" value="5000">5с</SelectItem>
+                  <SelectItem key="time-10000" value="10000">10с</SelectItem>
+                  <SelectItem key="time-30000" value="30000">30с</SelectItem>
+                  <SelectItem key="time-60000" value="60000">60с</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -358,7 +352,7 @@ int main() {
           </div>
 
           {/* Редактор коду */}
-          <div className="border rounded-lg overflow-hidden relative flex-1 min-h-[300px]">
+          <div className="rounded-lg overflow-hidden relative flex-1 min-h-[300px]">
             <Editor
               height="400px"
               language={getMonacoLanguage(selectedLanguage)}

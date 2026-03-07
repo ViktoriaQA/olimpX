@@ -1,4 +1,4 @@
-import { Trophy, BookOpen, Users, CreditCard, Shield, Settings, LogOut, Terminal, LayoutDashboard, PanelLeft, Menu, Timer, Target, ListTodo, Code, History, Star, User, Award, Lock, TrendingUp } from "lucide-react";
+import { Trophy, BookOpen, Users, CreditCard, Shield, Settings, LogOut, Terminal, LayoutDashboard, PanelLeft, Menu, Timer, Target, ListTodo, Code, History, Star, User, Award, Lock, TrendingUp, Monitor } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -59,8 +59,8 @@ export function AppSidebar() {
       icon: Award,
       requiresPro: true 
     },
-    { title: t('navigation.subscription'), url: "/subscription", icon: CreditCard },
     { title: t('navigation.codeExecution'), url: "/code-execution", icon: Code },
+    { title: t('navigation.subscription'), url: "/subscription", icon: CreditCard },
   ];
 
   const trainerItems: MenuItem[] = [
@@ -71,7 +71,6 @@ export function AppSidebar() {
     { title: t('navigation.myProgress'), url: "/progress", icon: TrendingUp, requiresPro: true },
     { title: t('navigation.analytics'), url: "/analytics", icon: History, requiresPro: true },
     { title: t('navigation.subscription'), url: "/subscription", icon: CreditCard },
-    { title: t('navigation.codeExecution'), url: "/code-execution", icon: Code },
   ];
 
   const adminItems: MenuItem[] = [
@@ -83,7 +82,6 @@ export function AppSidebar() {
     { title: t('navigation.admin'), url: "/admin", icon: Shield },
     { title: t('navigation.adminTournaments'), url: "/admin/tournaments", icon: Trophy },
     { title: t('navigation.subscription'), url: "/subscription", icon: CreditCard },
-    { title: t('navigation.codeExecution'), url: "/code-execution", icon: Code },
   ];
 
   const items = user?.role === "admin" ? adminItems : user?.role === "trainer" ? trainerItems : studentItems;
