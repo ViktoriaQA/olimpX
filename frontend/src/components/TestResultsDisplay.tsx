@@ -107,21 +107,7 @@ export const TestResultsDisplay: React.FC<{
   }
 
   if (!results) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5" />
-            Результати тестів
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <p>Запустіть код для перегляду результатів тестів</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return null;
   }
 
   const successRate = results.total_tests > 0 

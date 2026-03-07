@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
-import { pistonService, ExecutionRequest } from '../services/pistonService';
+import { codeExecutionManager, CodeExecutionRequest } from '../services/codeExecutionService';
+import { CodeExecutionFactory } from '../services/codeExecutionFactory';
 
 console.log('📝 CodeExecutionController loaded');
 
@@ -16,12 +17,18 @@ export class CodeExecutionController {
   async getLanguages(req: Request, res: Response): Promise<void> {
     try {
       console.log('🔍 Getting languages...');
-      const languages = await pistonService().getAvailableLanguages();
+      
+      // Переконуємось, що сервіси ініціалізовані
+      if (!CodeExecutionFactory.isInitialized()) {
+        await CodeExecutionFactory.initialize();
+      }
+
+      const languages = await codeExecutionManager.getSupportedLanguages();
       console.log(`✅ Got ${languages.length} languages`);
       
-      // Фільтруємо тільки потрібні мови (JS, TS, Python, C++)
+      // Фільтруємо тільки потрібні мови (JS, TS, Python, Go)
       const supportedLanguages = languages.filter(lang => 
-        ['javascript', 'typescript', 'python', 'cpp', 'c++'].includes(lang.name.toLowerCase())
+        ['javascript', 'typescript', 'python', 'go'].includes(lang.name.toLowerCase())
       );
 
       // Сортуємо мови для кращого UX
@@ -60,43 +67,27 @@ export class CodeExecutionController {
         return;
       }
 
-      const { language, version, code, stdin, time_limit, memory_limit } = req.body;
-
-      // Якщо версія не вказана, отримуємо рекомендовану
-      let finalVersion = version;
-      if (!finalVersion) {
-        finalVersion = await pistonService().getRecommendedVersion(language);
-        if (!finalVersion) {
-          res.status(400).json({
-            success: false,
-            message: `Не вдалося знайти версію для мови ${language}`
-          });
-          return;
-        }
+      // Переконуємось, що сервіси ініціалізовані
+      if (!CodeExecutionFactory.isInitialized()) {
+        await CodeExecutionFactory.initialize();
       }
 
-      // Перевіряємо, чи підтримується мова з версією
-      const isSupported = await pistonService().isLanguageSupported(language, finalVersion);
-      if (!isSupported) {
-        res.status(400).json({
-          success: false,
-          message: `Мова ${language} (${finalVersion}) не підтримується`
-        });
-        return;
-      }
+      const { language, code, stdin, time_limit, memory_limit } = req.body;
 
       // Формуємо запит на виконання
-      const executionRequest: ExecutionRequest = {
+      const executionRequest: CodeExecutionRequest = {
         language,
-        version: finalVersion,
         code,
         stdin: stdin || '',
         time_limit: time_limit || 10000, // 10 секунд за замовчуванням
         memory_limit: memory_limit || 128 * 1024 * 1024, // 128MB за замовчуванням
+        client_id: req.ip || 'anonymous'
       };
 
-      // Виконуємо код
-      const result = await pistonService().executeCode(executionRequest);
+      console.log(`🔧 Executing ${language} code...`);
+
+      // Виконуємо код через менеджер
+      const result = await codeExecutionManager.executeCode(executionRequest);
 
       // Формуємо відповідь
       const response = {
@@ -105,21 +96,24 @@ export class CodeExecutionController {
           language: result.language,
           version: result.version,
           output: {
-            stdout: result.run.stdout,
-            stderr: result.run.stderr,
-            exit_code: result.run.exit_code,
-            time: result.run.time,
-            memory: result.run.memory,
-            signal: result.run.signal,
-            compile_output: result.run.compile_output,
+            stdout: result.output.stdout,
+            stderr: result.output.stderr,
+            exit_code: result.output.exit_code,
+            time: result.output.time,
+            memory: result.output.memory,
+            signal: result.output.signal,
+            compile_output: result.output.compile_output,
           },
-          execution_time_ms: Math.round(result.run.time * 1000),
-          memory_used_mb: Math.round(result.run.memory / 1024 / 1024),
-          status: this.getExecutionStatus(result.run.exit_code, result.run.signal),
+          execution_time_ms: result.execution_time_ms,
+          memory_used_mb: result.memory_used_mb,
+          status: result.status,
+          service: result.service,
+          request_time_ms: result.request_time_ms,
         },
         message: 'Код виконано успішно'
       };
 
+      console.log(`✅ Code executed via ${result.service} (${result.execution_time_ms}ms)`);
       res.json(response);
     } catch (error) {
       console.error('Помилка виконання коду:', error);
@@ -129,25 +123,6 @@ export class CodeExecutionController {
         error: error instanceof Error ? error.message : 'Невідома помилка'
       });
     }
-  }
-
-  /**
-   * Перевірити статус виконання коду
-   * @param exitCode Код виходу
-   * @param signal Сигнал завершення
-   * @returns Статус виконання
-   * @private
-   */
-  private getExecutionStatus(exitCode: number, signal: string | null): string {
-    if (signal) {
-      return 'terminated';
-    }
-    
-    if (exitCode === 0) {
-      return 'success';
-    }
-    
-    return 'error';
   }
 
   /**
@@ -167,8 +142,12 @@ export class CodeExecutionController {
         return;
       }
 
-      const isSupported = await pistonService().isLanguageSupported(language);
-      const recommendedVersion = await pistonService().getRecommendedVersion(language);
+      // Переконуємось, що сервіси ініціалізовані
+      if (!CodeExecutionFactory.isInitialized()) {
+        await CodeExecutionFactory.initialize();
+      }
+
+      const isSupported = await codeExecutionManager.isLanguageSupported(language);
 
       if (!isSupported) {
         res.status(404).json({
@@ -178,12 +157,17 @@ export class CodeExecutionController {
         return;
       }
 
+      // Отримуємо детальну інформацію про мову
+      const languages = await codeExecutionManager.getSupportedLanguages();
+      const langInfo = languages.find(lang => lang.name.toLowerCase() === language.toLowerCase());
+
       res.json({
         success: true,
         data: {
           language,
           supported: true,
-          recommended_version: recommendedVersion,
+          versions: langInfo?.versions || ['latest'],
+          supported_services: langInfo?.supported_services || [],
         },
         message: 'Інформацію про мову отримано успішно'
       });
@@ -192,6 +176,58 @@ export class CodeExecutionController {
       res.status(500).json({
         success: false,
         message: 'Не вдалося отримати інформацію про мову',
+        error: error instanceof Error ? error.message : 'Невідома помилка'
+      });
+    }
+  }
+
+  /**
+   * Отримати статистику системи виконання коду
+   * @param req Express Request
+   * @param res Express Response
+   */
+  async getStats(req: Request, res: Response): Promise<void> {
+    try {
+      // Переконуємось, що сервіси ініціалізовані
+      if (!CodeExecutionFactory.isInitialized()) {
+        await CodeExecutionFactory.initialize();
+      }
+
+      const stats = codeExecutionManager.getStats();
+
+      res.json({
+        success: true,
+        data: stats,
+        message: 'Статистику системи отримано успішно'
+      });
+    } catch (error) {
+      console.error('Помилка отримання статистики:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Не вдалося отримати статистику',
+        error: error instanceof Error ? error.message : 'Невідома помилка'
+      });
+    }
+  }
+
+  /**
+   * Очистити кеш системи виконання коду
+   * @param req Express Request
+   * @param res Express Response
+   */
+  async clearCache(req: Request, res: Response): Promise<void> {
+    try {
+      CodeExecutionFactory.clearCache();
+
+      res.json({
+        success: true,
+        message: 'Кеш успішно очищено'
+      });
+    } catch (error) {
+      console.error('Помилка очищення кешу:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Не вдалося очистити кеш',
         error: error instanceof Error ? error.message : 'Невідома помилка'
       });
     }

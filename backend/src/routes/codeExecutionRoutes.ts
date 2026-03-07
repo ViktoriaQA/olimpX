@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import { codeExecutionController } from '../controllers/codeExecutionController';
-import { executeCodeValidation } from '../middleware/codeExecutionValidation';
+import { executeCodeValidation, validateRequest, codeExecutionRateLimit } from '../middleware/codeExecutionValidation';
 
 /**
- * Маршрути для виконання коду через Piston API
+ * Маршрути для виконання коду через JDoodle та OneCompiler API
  */
 const router = Router();
 
@@ -20,17 +20,33 @@ router.get('/languages', codeExecutionController.getLanguages);
 router.get('/languages/:language', codeExecutionController.getLanguageInfo);
 
 /**
+ * GET /api/code-execution/stats
+ * Отримати статистику системи виконання коду
+ */
+router.get('/stats', codeExecutionController.getStats);
+
+/**
+ * DELETE /api/code-execution/cache
+ * Очистити кеш системи виконання коду
+ */
+router.delete('/cache', codeExecutionController.clearCache);
+
+/**
  * POST /api/code-execution/execute
  * Виконати код користувача
  * Body: {
  *   language: string,
- *   version?: string,
  *   code: string,
  *   stdin?: string,
  *   time_limit?: number,
  *   memory_limit?: number
  * }
  */
-router.post('/execute', executeCodeValidation, codeExecutionController.executeCode);
+router.post('/execute', 
+  codeExecutionRateLimit,
+  executeCodeValidation,
+  validateRequest,
+  codeExecutionController.executeCode
+);
 
 export default router;

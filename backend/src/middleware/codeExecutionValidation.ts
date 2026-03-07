@@ -1,4 +1,5 @@
-import { body } from 'express-validator';
+import { body, validationResult } from 'express-validator';
+import { Request, Response, NextFunction } from 'express';
 
 /**
  * Правила валідації для запиту на виконання коду
@@ -10,16 +11,8 @@ export const executeCodeValidation = [
     .trim()
     .notEmpty()
     .withMessage('Мова програмування є обов\'язковою')
-    .isIn(['javascript', 'typescript', 'python', 'cpp', 'c++'])
-    .withMessage('Підтримуються тільки мови: javascript, typescript, python, cpp'),
-
-  // Валідація версії (необов'язкова, якщо не вказано - буде використано рекомендовану)
-  body('version')
-    .optional({ checkFalsy: true })
-    .isString()
-    .trim()
-    .notEmpty()
-    .withMessage('Версія повинна бути непорожнім рядком'),
+    .isIn(['javascript', 'typescript', 'python', 'go'])
+    .withMessage('Підтримуються тільки мови: javascript, typescript, python, go'),
 
   // Валідація коду
   body('code')
@@ -50,3 +43,38 @@ export const executeCodeValidation = [
     .isInt({ min: 1048576, max: 1073741824 }) // 1MB - 1GB
     .withMessage('Обмеження пам\'яті повинно бути числом від 1MB до 1GB'),
 ];
+
+/**
+ * Middleware для перевірки результатів валідації
+ */
+export const validateRequest = (req: Request, res: Response, next: NextFunction): void => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({
+      success: false,
+      message: 'Помилка валідації вхідних даних',
+      errors: errors.array().map(error => ({
+        field: 'param' in error ? error.param : 'unknown',
+        message: error.msg,
+        value: 'value' in error ? error.value : undefined
+      }))
+    });
+    return;
+  }
+  next();
+};
+
+/**
+ * Rate limiting middleware для виконання коду
+ */
+export const codeExecutionRateLimit = (req: Request, res: Response, next: NextFunction): void => {
+  // Простий rate limiting по IP (можна замінити на Redis)
+  const clientIp = req.ip || 'unknown';
+  const now = Date.now();
+  
+  // В реальному додатку тут була б перевірка в Redis/базі даних
+  // Поки що просто логуємо запит
+  console.log(`🔍 Code execution request from ${clientIp} at ${new Date(now).toISOString()}`);
+  
+  next();
+};

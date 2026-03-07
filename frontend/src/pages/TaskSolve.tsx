@@ -184,8 +184,8 @@ const TaskSolve = () => {
   }
 
   return (
-    <div className="h-full p-2 sm:p-4">
-      <Card className="h-full border-border/70 bg-card/70">
+    <div className="h-screen p-2 sm:p-4 flex flex-col overflow-hidden">
+      <Card className="flex-1 border-border/70 bg-card/70 flex flex-col overflow-hidden">
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 border-b border-border/60 pb-3">
           <div className="flex items-center gap-3">
             <Button
@@ -237,7 +237,7 @@ const TaskSolve = () => {
           </div> */}
         </CardHeader>
 
-        <CardContent className="p-0 h-[calc(100vh-8rem)]">
+        <CardContent className="p-0 flex-1 overflow-hidden">
           {/* Мобільний лейаут: контент у вкладках */}
           {isMobile ? (
             <Tabs defaultValue="editor" className="h-full flex flex-col">
@@ -361,7 +361,7 @@ const TaskSolve = () => {
                         )}
                       </span>
                     </div>
-                    <div className="flex-1 overflow-auto">
+                    <div className="flex-1 overflow-hidden">
                       <CodeEditor />
                     </div>
                   </div>
@@ -370,14 +370,6 @@ const TaskSolve = () => {
                 {/* Вкладка: тести */}
                 <TabsContent value="tests" className="h-full mt-2">
                   <div className="h-full border border-border/70 rounded-md bg-background/40 flex flex-col">
-                    <div className="px-3 pt-3 pb-2 border-b border-border/60 flex items-center justify-between">
-                      <span className="text-xs font-mono text-muted-foreground">
-                        {t(
-                          "tasks.testsTitle",
-                          "Блок тестування — тут відображатимуться результати автоматичних тестів."
-                        )}
-                      </span>
-                    </div>
                     <div className="flex-1 overflow-auto p-3">
                       <TestResultsDisplay results={null} />
                     </div>
@@ -483,51 +475,15 @@ const TaskSolve = () => {
 
               <ResizableHandle withHandle />
 
-              {/* Right: editor (top) + tests (bottom) */}
-              <ResizablePanel defaultSize={60} minSize={40}>
-                <ResizablePanelGroup direction="vertical" className="h-full">
-                  {/* Top right: code editor */}
-                  <ResizablePanel defaultSize={65} minSize={45}>
-                    <div className="h-full border-b border-border/70 bg-background/40">
-                      <div className="h-full flex flex-col">
-                        <div className="px-4 pt-3 pb-2 border-b border-border/60 flex items-center justify-between">
-                          <span className="text-xs font-mono text-muted-foreground">
-                            {t(
-                              "tasks.editorTitle",
-                              "Редактор коду — пишіть рішення та запускайте його на власних даних."
-                            )}
-                          </span>
-                        </div>
-                        <div className="flex-1 overflow-hidden">
-                          <CodeEditor />
-                        </div>
-                      </div>
+              {/* Right: editor */}
+              <ResizablePanel defaultSize={55} minSize={40}>
+                <div className="h-full bg-background/40">
+                  <div className="h-full flex flex-col">
+                    <div className="flex-1 overflow-auto">
+                      <CodeEditor />
                     </div>
-                  </ResizablePanel>
-
-                  <ResizableHandle withHandle />
-
-                  {/* Bottom right: tests & output */}
-                  <ResizablePanel defaultSize={35} minSize={25}>
-                    <div className="h-full bg-background/40">
-                      <div className="h-full flex flex-col">
-                        <div className="px-4 pt-3 pb-2 border-b border-border/60 flex items-center justify-between">
-                          <span className="text-xs font-mono text-muted-foreground">
-                            {t(
-                              "tasks.testsTitle",
-                              "Блок тестування — тут відображатимуться результати автоматичних тестів."
-                            )}
-                          </span>
-                        </div>
-                        <div className="flex-1 overflow-auto p-3">
-                          {/* Поки що показуємо порожній компонент з підказкою;
-                              пізніше тут можна під'єднати реальні результати тестів */}
-                          <TestResultsDisplay results={null} />
-                        </div>
-                      </div>
-                    </div>
-                  </ResizablePanel>
-                </ResizablePanelGroup>
+                  </div>
+                </div>
               </ResizablePanel>
             </ResizablePanelGroup>
           )}
