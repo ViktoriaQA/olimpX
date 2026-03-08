@@ -262,52 +262,14 @@ int main() {
   const handleEditorDidMount = (editor: any, monaco: any) => {
     editorRef.current = editor;
     
-    // Детектуємо реальний мобільний пристрій
-    const isRealMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && 'ontouchstart' in window;
-    
     // Налаштування теми та розміру шрифту
     monaco.editor.setTheme('vs-dark');
-    
-    const baseOptions = {
+    editor.updateOptions({
       fontSize: 14,
       minimap: { enabled: false },
       scrollBeyondLastLine: false,
       automaticLayout: true,
-    };
-    
-    // Спеціальні налаштування для реальних мобільних пристроїв
-    if (isRealMobile) {
-      editor.updateOptions({
-        ...baseOptions,
-        // Вимикаємо всі features які можуть викликати textarea fallback
-        accessibilitySupport: 'off',
-        glyphMargin: false,
-        folding: false,
-        lineDecorationsWidth: 10,
-        lineNumbersMinChars: 4,
-        padding: { top: 10, bottom: 10 },
-        // Додаткові опції для мобільних
-        wordWrap: 'on',
-        wordWrapColumn: 40,
-        smoothScrolling: false,
-        cursorBlinking: 'solid',
-        renderLineHighlight: 'none',
-        occurrencesHighlight: false,
-        codeLens: false,
-        lightbulb: { enabled: false },
-        suggest: { showIcons: false },
-        // Вимикаємо hover
-        hover: { enabled: false },
-        parameterHints: { enabled: false },
-      });
-    } else {
-      editor.updateOptions({
-        ...baseOptions,
-        lineDecorationsWidth: 10,
-        lineNumbersMinChars: 4,
-        padding: { top: 10, bottom: 10 },
-      });
-    }
+    });
   };
 
   /**
@@ -717,42 +679,6 @@ int main() {
 
           {/* Редактор коду */}
           <div className="rounded-lg overflow-hidden relative" style={{ height: '400px' }}>
-            <style>{`
-              .monaco-editor textarea,
-              .monaco-editor .inputarea,
-              .monaco-editor .textarea,
-              .monaco-editor .monaco-editor-background textarea,
-              .monaco-editor .monaco-editor .inputarea {
-                display: none !important;
-                opacity: 0 !important;
-                visibility: hidden !important;
-                position: absolute !important;
-                left: -9999px !important;
-                top: -9999px !important;
-                width: 1px !important;
-                height: 1px !important;
-                pointer-events: none !important;
-              }
-              /* Приховуємо всі можливі textarea в контейнері редактора */
-              .monaco-editor-container textarea,
-              .monaco-editor-wrapper textarea {
-                display: none !important;
-                opacity: 0 !important;
-                visibility: hidden !important;
-              }
-              /* Додатково для мобільних пристроїв */
-              @media (max-width: 768px) {
-                .monaco-editor textarea,
-                .monaco-editor .inputarea,
-                textarea[aria-hidden="true"],
-                textarea[style*="position: absolute"] {
-                  display: none !important;
-                  opacity: 0 !important;
-                  visibility: hidden !important;
-                  z-index: -9999 !important;
-                }
-              }
-            `}</style>
             <Editor
               height="100%"
               language={getMonacoLanguage(selectedLanguage)}
@@ -767,14 +693,7 @@ int main() {
                 automaticLayout: true,
                 wordWrap: 'on',
                 lineNumbers: 'on',
-                lineNumbersMinChars: 4,
                 renderWhitespace: 'selection',
-                // Базові опції для всіх пристроїв
-                accessibilitySupport: 'off',
-                glyphMargin: false,
-                folding: false,
-                lineDecorationsWidth: 10,
-                padding: { top: 10, bottom: 10 },
               }}
             />
             {/* Кнопка запуску в редакторі */}
@@ -834,7 +753,7 @@ int main() {
                     value={stdin}
                     onChange={(e) => setStdin(e.target.value)}
                     placeholder="Введіть вхідні дані для програми..."
-                    className="font-mono h-full resize-none bg-slate-900 border-slate-700 text-slate-100 placeholder:text-slate-400"
+                    className="font-mono h-full resize-none"
                   />
                 </div>
               </div>
