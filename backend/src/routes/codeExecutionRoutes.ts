@@ -49,4 +49,24 @@ router.post('/execute',
   codeExecutionController.executeCode
 );
 
+/**
+ * POST /api/code-execution/run-tests
+ * Виконати код проти набору тестів
+ * Body: {
+ *   language: string,
+ *   code: string,
+ *   test_cases: Array<{
+ *     input: string,
+ *     expected_output: string,
+ *     visible?: boolean
+ *   }>,
+ *   time_limit?: number,
+ *   memory_limit?: number
+ * }
+ */
+router.post('/run-tests', 
+  codeExecutionRateLimit,
+  codeExecutionController.runTests
+);
+
 export default router;

@@ -21,6 +21,7 @@ interface Example {
   id: string;
   input: string;
   output: string;
+  visible?: boolean;
   explanation?: string;
 }
 
@@ -53,6 +54,43 @@ const TaskSolve = () => {
   const [task, setTask] = useState<TaskDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [submissionSuccess, setSubmissionSuccess] = useState(false);
+  const [savedCode, setSavedCode] = useState<string>('');
+
+  // Handle successful submission to trigger parent refresh
+  const handleSuccessfulSubmit = () => {
+    // Send event to parent component to refresh scores
+    window.dispatchEvent(new CustomEvent('tournamentScoreUpdate', { 
+      detail: { tournamentId, taskId } 
+    }));
+  };
+
+  // Handle code saving
+  const handleSaveCode = (code: string) => {
+    console.log('💾 Saving code for task:', taskId);
+    setSavedCode(code);
+    // Save to localStorage
+    try {
+      localStorage.setItem(`task_code_${taskId}`, code);
+    } catch (error) {
+      console.warn('Failed to save code:', error);
+    }
+  };
+
+  // Restore saved code from localStorage
+  useEffect(() => {
+    if (taskId) {
+      try {
+        const savedCodeFromStorage = localStorage.getItem(`task_code_${taskId}`);
+        if (savedCodeFromStorage) {
+          console.log('📂 Restored saved code for task:', taskId);
+          setSavedCode(savedCodeFromStorage);
+        }
+      } catch (error) {
+        console.warn('Failed to restore saved code:', error);
+      }
+    }
+  }, [taskId]);
 
   useEffect(() => {
     if (!session) {
@@ -125,11 +163,20 @@ const TaskSolve = () => {
           constraints: apiTask.constraints
             ? String(apiTask.constraints).split("\n").filter((c: string) => c.trim().length > 0)
             : [],
-          examples: Array.isArray(apiTask.examples)
+          examples: Array.isArray(apiTask.examples_with_visibility)
+            ? (apiTask.examples_with_visibility as any[]).map((ex, idx) => ({
+                id: String(ex.id ?? idx + 1),
+                input: String(ex.input ?? ""),
+                output: String(ex.output ?? ""),
+                visible: ex.visible !== false, // Default to true if not specified
+                explanation: ex.explanation ? String(ex.explanation) : undefined,
+              }))
+            : Array.isArray(apiTask.examples)
             ? (apiTask.examples as any[]).map((ex, idx) => ({
                 id: String(ex.id ?? idx + 1),
                 input: String(ex.input ?? ""),
                 output: String(ex.output ?? ""),
+                visible: true, // Old examples are always visible
                 explanation: ex.explanation ? String(ex.explanation) : undefined,
               }))
             : [],
@@ -302,16 +349,16 @@ const TaskSolve = () => {
 
                           <section>
                             <h3 className="font-mono font-semibold mb-2">
-                              {t("tasks.examples", "Приклади")}
+                              {t("tasks.examples", "Test Cases")}
                             </h3>
                             <div className="space-y-3">
-                              {task.examples.map((ex) => (
+                              {task.examples.filter(ex => ex.visible !== false).map((ex) => (
                                 <div
                                   key={ex.id}
                                   className="border border-border/60 rounded-md p-3 bg-background/60"
                                 >
                                   <div className="text-xs font-mono text-muted-foreground mb-1">
-                                    {t("tasks.example", "Приклад")} {ex.id}
+                                    {t("tasks.example", "Test Case")} {ex.id}
                                   </div>
                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
                                     <div>
@@ -455,7 +502,7 @@ const TaskSolve = () => {
                             {t("tasks.examples", "Приклади")}
                           </h3>
                           <div className="space-y-3">
-                            {task.examples.map((ex) => (
+                            {task.examples.filter(ex => ex.visible !== false).map((ex) => (
                               <div
                                 key={ex.id}
                                 className="border border-border/60 rounded-md p-3 bg-background/60"
@@ -521,7 +568,14 @@ const TaskSolve = () => {
                         
                         <TabsContent value="local" className="flex-1 mt-0">
                           <div className="h-full">
-                            <CodeEditor examples={task?.examples || []} />
+                            <CodeEditor 
+                              examples={task?.examples || []} 
+                              taskId={taskId}
+                              tournamentId={tournamentId}
+                              onSuccessfulSubmit={handleSuccessfulSubmit}
+                              onSaveCode={handleSaveCode}
+                              initialCode={savedCode}
+                            />
                           </div>
                         </TabsContent>
                         

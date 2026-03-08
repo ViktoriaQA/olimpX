@@ -5,10 +5,11 @@ import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { Play, Code, Terminal } from "lucide-react";
+import { Play, Code, Terminal, Save } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Alert, AlertDescription } from "./ui/alert";
+import { TestResultsDisplay } from "./TestResultsDisplay";
 
 /**
  * Інтерфейс для мови програмування
@@ -47,31 +48,73 @@ interface Example {
   id: string;
   input: string;
   output: string;
+  visible?: boolean;
   explanation?: string;
+}
+
+interface TestResults {
+  total_tests: number;
+  passed_tests: number;
+  failed_tests: number;
+  total_time: number;
+  test_cases: Array<{
+    id: string;
+    name: string;
+    input: string;
+    expected_output: string;
+    actual_output?: string;
+    passed?: boolean;
+    execution_time?: number;
+    memory_usage?: number;
+    error?: string;
+    visible?: boolean;
+  }>;
+  score: number;
 }
 
 interface CodeEditorProps {
   examples?: Example[];
+  taskId?: string;
+  tournamentId?: string;
+  onSaveCode?: (code: string) => void;
+  onSuccessfulSubmit?: () => void;
+  initialCode?: string;
 }
 
 /**
  * Компонент редактора коду з підтримкою Monaco Editor
  * Підтримує JavaScript, TypeScript, Python та C++
  */
-export const CodeEditor: React.FC<CodeEditorProps> = ({ examples = [] }) => {
+export const CodeEditor: React.FC<CodeEditorProps> = ({ 
+  examples = [], 
+  taskId, 
+  tournamentId, 
+  onSaveCode,
+  onSuccessfulSubmit,
+  initialCode
+}) => {
   const editorRef = useRef<any>(null);
   const isMobile = useIsMobile();
   const [selectedLanguage, setSelectedLanguage] = useState<string>('javascript');
   const [selectedVersion, setSelectedVersion] = useState<string>('');
-  const [code, setCode] = useState<string>('// Ваш JavaScript код\nconsole.log("Hello, World!");');
+  const [code, setCode] = useState<string>(initialCode || '// Ваш JavaScript код\nconsole.log("Hello, World!");');
   const [stdin, setStdin] = useState<string>('');
   const [result, setResult] = useState<ExecutionResponse | null>(null);
+  const [testResults, setTestResults] = useState<TestResults | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isTestsLoading, setIsTestsLoading] = useState<boolean>(false);
   const [availableLanguages, setAvailableLanguages] = useState<Language[]>([]);
   const [error, setError] = useState<string>('');
   const [timeLimit, setTimeLimit] = useState<number>(10000);
   const [memoryLimit, setMemoryLimit] = useState<number>(128);
   const [activeTab, setActiveTab] = useState<string>('input');
+
+  // Update code when initialCode changes
+  useEffect(() => {
+    if (initialCode && initialCode !== code) {
+      setCode(initialCode);
+    }
+  }, [initialCode]);
 
   /**
    * Шаблони коду для різних мов
@@ -142,11 +185,28 @@ int main() {
   };
 
   /**
-   * Автоматично заповнювати вхідні дані з першого прикладу
+   * Завантажити збережені результати тестів з localStorage
    */
   useEffect(() => {
-    if (examples.length > 0 && !stdin) {
-      setStdin(examples[0].input);
+    if (taskId) {
+      try {
+        const savedResults = localStorage.getItem(`test_results_${taskId}`);
+        if (savedResults) {
+          setTestResults(JSON.parse(savedResults));
+        }
+      } catch (error) {
+        console.warn('Failed to load saved test results:', error);
+      }
+    }
+  }, [taskId]);
+
+  /**
+   * Автоматично заповнювати вхідні дані з першого видимого прикладу
+   */
+  useEffect(() => {
+    const visibleExamples = examples.filter(ex => ex.visible !== false);
+    if (visibleExamples.length > 0 && !stdin) {
+      setStdin(visibleExamples[0].input);
     }
   }, [examples, stdin]);
 
@@ -259,6 +319,272 @@ int main() {
   };
 
   /**
+   * Виконати код (RUN - тільки видимі тести)
+   */
+  const runCodeOnly = async () => {
+    if (!code.trim()) {
+      setError('Будь ласка, напишіть код перед виконанням');
+      return;
+    }
+
+    try {
+      // Fetch all test cases for execution (including hidden ones)
+      let testCases;
+      if (taskId) {
+        const token = localStorage.getItem('auth_token');
+        const url = new URL(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/tasks/${taskId}/test-cases`);
+        if (tournamentId) {
+          url.searchParams.set("tournament_id", tournamentId);
+        }
+
+        const response = await fetch(url.toString(), {
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          testCases = data.test_cases.map((tc: any) => ({
+            input: tc.input,
+            expected_output: tc.expected_output,
+            visible: tc.visible !== false
+          }));
+        }
+      }
+
+      // Fallback to examples if no test cases from API
+      if (!testCases || testCases.length === 0) {
+        testCases = examples.map(ex => ({
+          input: ex.input,
+          expected_output: ex.output,
+          visible: ex.visible !== false
+        }));
+      }
+
+      if (testCases.length === 0) {
+        setError('Немає доступних тестів для виконання');
+        setActiveTab('tests');
+        return;
+      }
+
+      setIsTestsLoading(true);
+      setError('');
+      setTestResults(null);
+      setActiveTab('tests');
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/code-execution/run-tests`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          language: selectedLanguage,
+          code,
+          test_cases: testCases,
+          run_only_visible: true, // RUN: тільки видимі тести
+          time_limit: timeLimit,
+          memory_limit: memoryLimit * 1024 * 1024,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setTestResults(data.data);
+        
+        // Зберегти результати тестів в localStorage
+        if (taskId) {
+          try {
+            localStorage.setItem(`test_results_${taskId}`, JSON.stringify(data.data));
+          } catch (error) {
+            console.warn('Failed to save test results:', error);
+          }
+        }
+        
+        // Зберегти код після успішного запуску тестів
+        if (onSaveCode) {
+          onSaveCode(code);
+        }
+      } else {
+        setError(data.message || 'Помилка виконання тестів');
+      }
+    } catch (err) {
+      console.error('Error running tests:', err);
+      setError('Не вдалося виконати тести. Перевірте з\'єднання з сервером.');
+    } finally {
+      setIsTestsLoading(false);
+    }
+  };
+
+  /**
+   * Виконати всі тести та відправити рішення (SEND - всі тести)
+   */
+  const runAllTestsAndSubmit = async () => {
+    if (!code.trim()) {
+      setError('Будь ласка, напишіть код перед виконанням тестів');
+      return;
+    }
+
+    try {
+      // Fetch all test cases for execution (including hidden ones)
+      let testCases;
+      if (taskId) {
+        const token = localStorage.getItem('auth_token');
+        const url = new URL(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/tasks/${taskId}/test-cases`);
+        if (tournamentId) {
+          url.searchParams.set("tournament_id", tournamentId);
+        }
+
+        const response = await fetch(url.toString(), {
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          testCases = data.test_cases.map((tc: any) => ({
+            input: tc.input,
+            expected_output: tc.expected_output,
+            visible: tc.visible !== false
+          }));
+        }
+      }
+
+      // Fallback to examples if no test cases from API
+      if (!testCases || testCases.length === 0) {
+        testCases = examples.map(ex => ({
+          input: ex.input,
+          expected_output: ex.output,
+          visible: ex.visible !== false
+        }));
+      }
+
+      if (testCases.length === 0) {
+        setError('Немає доступних тестів для виконання');
+        setActiveTab('tests');
+        return;
+      }
+
+      setIsTestsLoading(true);
+      setError('');
+      setTestResults(null);
+      setActiveTab('tests');
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/code-execution/run-tests`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          language: selectedLanguage,
+          code,
+          test_cases: testCases,
+          run_only_visible: false, // SEND: всі тести
+          time_limit: timeLimit,
+          memory_limit: memoryLimit * 1024 * 1024,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setTestResults(data.data);
+        
+        // Зберегти результати тестів в localStorage
+        if (taskId) {
+          try {
+            localStorage.setItem(`test_results_${taskId}`, JSON.stringify(data.data));
+          } catch (error) {
+            console.warn('Failed to save test results:', error);
+          }
+        }
+        
+        // Зберегти код після успішного запуску тестів
+        if (onSaveCode) {
+          onSaveCode(code);
+        }
+
+        // Якщо є taskId, відправити результати на сервер
+        if (taskId) {
+          await submitSolution(data.data);
+        }
+      } else {
+        setError(data.message || 'Помилка виконання тестів');
+      }
+    } catch (err) {
+      console.error('Error running tests:', err);
+      setError('Не вдалося виконати тести. Перевірте з\'єднання з сервером.');
+    } finally {
+      setIsTestsLoading(false);
+    }
+  };
+  const clearSavedResults = () => {
+    if (taskId) {
+      try {
+        localStorage.removeItem(`test_results_${taskId}`);
+        setTestResults(null);
+      } catch (error) {
+        console.warn('Failed to clear saved test results:', error);
+      }
+    }
+  };
+
+  /**
+   * Відправити рішення на сервер
+   */
+  const submitSolution = async (testData: TestResults) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        console.warn('No auth token found, skipping submission');
+        setError('Будь ласка, увійдіть в систему для відправки рішення');
+        return;
+      }
+
+      console.log('Submitting solution:', {
+        taskId,
+        language: selectedLanguage,
+        tournamentId,
+        score: testData.score,
+        testResultsSize: testData.test_cases?.length
+      });
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/tasks/${taskId}/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          code,
+          language: selectedLanguage,
+          tournament_id: tournamentId || null,
+          test_results: testData,
+          score: testData.score,
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log('Solution submitted successfully:', data);
+        // Call callback to update score
+        onSuccessfulSubmit?.();
+      } else {
+        console.error('Failed to submit solution:', data);
+        setError(`Помилка відправки рішення: ${data.message}`);
+      }
+    } catch (err) {
+      console.error('Error submitting solution:', err);
+      setError('Не вдалося відправити рішення. Перевірте з\'єднання з сервером.');
+    }
+  };
+
+  /**
    * Отримати колір статусу виконання
    */
   const getStatusColor = (status: string): string => {
@@ -352,9 +678,9 @@ int main() {
           </div>
 
           {/* Редактор коду */}
-          <div className="rounded-lg overflow-hidden relative flex-1 min-h-[300px]">
+          <div className="rounded-lg overflow-hidden relative" style={{ height: '400px' }}>
             <Editor
-              height="400px"
+              height="100%"
               language={getMonacoLanguage(selectedLanguage)}
               value={code}
               onChange={(value) => setCode(value || '')}
@@ -371,14 +697,25 @@ int main() {
               }}
             />
             {/* Кнопка запуску в редакторі */}
-            <div className="absolute bottom-2 right-2">
+            <div className="absolute bottom-2 right-2 flex gap-2">
               <Button
                 onClick={executeCode}
-                disabled={isLoading}
-                className="flex items-center gap-2 px-3 py-2 h-8"
+                disabled={isLoading || isTestsLoading}
+                variant="outline"
+                className="flex items-center gap-2 px-3 py-2 h-8 bg-black/80 border-gray-600 hover:bg-black/90 hover:text-primary"
                 size="sm"
               >
                 <Play className="w-4 h-4" />
+                RUN
+              </Button>
+              <Button
+                onClick={runAllTestsAndSubmit}
+                disabled={isLoading || isTestsLoading}
+                className="flex items-center gap-2 px-3 py-2 h-8 bg-primary hover:bg-primary/90 text-primary-foreground"
+                size="sm"
+              >
+                <Play className="w-4 h-4" />
+                Надіслати
               </Button>
             </div>
           </div>
@@ -388,17 +725,17 @@ int main() {
             <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
               <TabsTrigger value="input">Вхідні дані</TabsTrigger>
               <TabsTrigger value="output">Виконання</TabsTrigger>
-              <TabsTrigger value="tests">Тести</TabsTrigger>
+              <TabsTrigger value="tests">Тест кейси</TabsTrigger>
             </TabsList>
 
             {/* Вхідні дані */}
             <TabsContent value="input" className="flex-1 overflow-hidden mt-4">
               <div className="h-full flex flex-col space-y-2">
                 {/* Кнопки вибору прикладів */}
-                {examples.length > 0 && (
+                {examples.filter(ex => ex.visible !== false).length > 0 && (
                   <div className="flex flex-wrap gap-2 flex-shrink-0">
                     <span className="text-xs font-mono text-muted-foreground self-center">Приклади:</span>
-                    {examples.map((ex, index) => (
+                    {examples.filter(ex => ex.visible !== false).map((ex, index) => (
                       <Button
                         key={ex.id}
                         variant={stdin === ex.input ? "default" : "outline"}
@@ -502,7 +839,8 @@ int main() {
                 <div className="h-full flex items-center justify-center text-muted-foreground">
                   <div className="text-center">
                     <Terminal className="w-10 h-12 mx-auto mb-2 opacity-50" />
-                    <p>Натисніть кнопку запуску для виконання коду</p>
+                    <p>Натисніть кнопку RUN для виконання коду з вхідними даними</p>
+                    <p className="text-sm mt-1">або Надіслати для виконання всіх тестів та відправки рішення</p>
                   </div>
                 </div>
               )}
@@ -511,12 +849,32 @@ int main() {
 
             {/* Тести */}
             <TabsContent value="tests" className="flex-1 overflow-hidden mt-4">
-              <div className="h-full flex items-center justify-center text-muted-foreground">
-                <div className="text-center">
-                  <Code className="w-10 h-12 mx-auto mb-4 opacity-50" />
-                  <p>Тут будуть відображатися результати автоматичних тестів</p>
+              {isTestsLoading ? (
+                <TestResultsDisplay results={null} isLoading={true} />
+              ) : testResults ? (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-medium">Результати тестів</h3>
+                    <Button
+                      onClick={clearSavedResults}
+                      variant="outline"
+                      size="sm"
+                      className="text-sm"
+                    >
+                      Очистити результати
+                    </Button>
+                  </div>
+                  <TestResultsDisplay results={testResults} isLoading={false} />
                 </div>
-              </div>
+              ) : (
+                <div className="h-full flex items-center justify-center text-muted-foreground">
+                  <div className="text-center">
+                    <Code className="w-10 h-12 mx-auto mb-4 opacity-50" />
+                    <p>Натисніть кнопку Надіслати для виконання всіх тестів та відправки рішення</p>
+                    <p className="text-sm mt-2">RUN виконує код з вхідними даними у вкладці "Виконання"</p>
+                  </div>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </CardContent>

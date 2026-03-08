@@ -704,6 +704,7 @@ router.post('/:id/tasks', requireRole(['trainer', 'admin']), async (req: AuthReq
           output_format: existingTask.output_format,
           constraints: existingTask.constraints,
           examples: existingTask.examples,
+          examples_with_visibility: existingTask.examples_with_visibility,
           time_limit_ms: existingTask.time_limit_ms,
           memory_limit_mb: existingTask.memory_limit_mb,
           test_cases: existingTask.test_cases,

@@ -135,35 +135,35 @@ export const TestResultsDisplay: React.FC<{
       <CardContent className="space-y-4">
         {/* Загальна статистика */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+          <div className="text-center p-3 bg-primary/10 rounded-lg border border-primary/20">
+            <div className="text-2xl font-bold text-primary">
               {results.passed_tests}
             </div>
-            <div className="text-sm text-green-600 dark:text-green-400">
+            <div className="text-sm text-primary">
               Пройдено
             </div>
           </div>
-          <div className="text-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+          <div className="text-center p-3 bg-destructive/10 rounded-lg border border-destructive/20">
+            <div className="text-2xl font-bold text-destructive">
               {results.failed_tests}
             </div>
-            <div className="text-sm text-red-600 dark:text-red-400">
+            <div className="text-sm text-destructive">
               Провалено
             </div>
           </div>
-          <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+          <div className="text-center p-3 bg-muted rounded-lg border border-border">
+            <div className="text-2xl font-bold text-foreground">
               {results.total_tests}
             </div>
-            <div className="text-sm text-blue-600 dark:text-blue-400">
+            <div className="text-sm text-muted-foreground">
               Всього тестів
             </div>
           </div>
-          <div className="text-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+          <div className="text-center p-3 bg-primary/10 rounded-lg border border-primary/20">
+            <div className="text-2xl font-bold text-primary">
               {successRate}%
             </div>
-            <div className="text-sm text-purple-600 dark:text-purple-400">
+            <div className="text-sm text-primary">
               Успішність
             </div>
           </div>
@@ -175,17 +175,20 @@ export const TestResultsDisplay: React.FC<{
           {results.test_cases.map((testCase, index) => (
             <div
               key={testCase.id}
-              className={`border rounded-lg p-4 ${
+              className={`border rounded-lg p-4 transition-all duration-200 hover:shadow-md ${
                 testCase.passed 
-                  ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20' 
-                  : 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20'
+                  ? 'border-primary/20 bg-primary/5 dark:border-primary/30 dark:bg-primary/10' 
+                  : 'border-destructive/20 bg-destructive/5 dark:border-destructive/30 dark:bg-destructive/10'
               }`}
             >
-              <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   {getStatusIcon(testCase.passed)}
-                  <span className="font-medium">Тест {index + 1}: {testCase.name}</span>
-                  <Badge variant={getStatusBadgeVariant(testCase.passed)}>
+                  <span className="font-medium text-foreground">{testCase.name}</span>
+                  <Badge 
+                    variant={testCase.passed ? "default" : "destructive"}
+                    className="shrink-0"
+                  >
                     {getStatusText(testCase.passed)}
                   </Badge>
                 </div>
@@ -194,70 +197,30 @@ export const TestResultsDisplay: React.FC<{
                   <span>{formatMemory(testCase.memory_usage)}</span>
                 </div>
               </div>
-
-              {/* Вхідні дані */}
-              <div className="mb-2">
-                <span className="text-sm font-medium">Вхідні дані:</span>
-                <pre className="text-xs bg-white dark:bg-gray-800 p-2 rounded mt-1 overflow-auto">
-                  {testCase.input || '(пусто)'}
-                </pre>
-              </div>
-
-              {/* Очікуваний результат */}
-              <div className="mb-2">
-                <span className="text-sm font-medium">Очікуваний результат:</span>
-                <pre className="text-xs bg-white dark:bg-gray-800 p-2 rounded mt-1 overflow-auto">
-                  {testCase.expected_output || '(пусто)'}
-                </pre>
-              </div>
-
-              {/* Фактичний результат */}
-              {testCase.actual_output !== undefined && (
-                <div className="mb-2">
-                  <span className="text-sm font-medium">Фактичний результат:</span>
-                  <pre className={`text-xs p-2 rounded mt-1 overflow-auto ${
-                    testCase.passed 
-                      ? 'bg-white dark:bg-gray-800' 
-                      : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200'
-                  }`}>
-                    {testCase.actual_output || '(пусто)'}
-                  </pre>
-                </div>
-              )}
-
-              {/* Помилка */}
-              {testCase.error && (
-                <div>
-                  <span className="text-sm font-medium text-red-600 dark:text-red-400">Помилка:</span>
-                  <pre className="text-xs bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 p-2 rounded mt-1 overflow-auto">
-                    {testCase.error}
-                  </pre>
-                </div>
-              )}
             </div>
           ))}
         </div>
 
         {/* Підсумок */}
         {results.failed_tests === 0 && results.total_tests > 0 && (
-          <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-            <CheckCircle className="w-8 h-8 mx-auto mb-2 text-green-600 dark:text-green-400" />
-            <h3 className="text-lg font-medium text-green-800 dark:text-green-200">
+          <div className="text-center p-4 bg-primary/10 rounded-lg border border-primary/20">
+            <CheckCircle className="w-8 h-8 mx-auto mb-2 text-primary" />
+            <h3 className="text-lg font-medium text-primary">
               Всі тести пройдено!
             </h3>
-            <p className="text-sm text-green-600 dark:text-green-400">
+            <p className="text-sm text-primary/80">
               Ваш код успішно пройшов усі {results.total_tests} тестів
             </p>
           </div>
         )}
 
         {results.failed_tests > 0 && (
-          <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
-            <XCircle className="w-8 h-8 mx-auto mb-2 text-red-600 dark:text-red-400" />
-            <h3 className="text-lg font-medium text-red-800 dark:text-red-200">
+          <div className="text-center p-4 bg-destructive/10 rounded-lg border border-destructive/20">
+            <XCircle className="w-8 h-8 mx-auto mb-2 text-destructive" />
+            <h3 className="text-lg font-medium text-destructive">
               Деякі тести провалено
             </h3>
-            <p className="text-sm text-red-600 dark:text-red-400">
+            <p className="text-sm text-destructive/80">
               {results.failed_tests} з {results.total_tests} тестів не пройдено
             </p>
           </div>

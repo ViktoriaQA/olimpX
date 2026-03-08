@@ -23,7 +23,8 @@ interface Task {
   input_format?: string;
   output_format?: string;
   constraints?: string;
-  examples?: Array<{ id: number; input: string; output: string }>;
+  examples?: Array<{ id: number; input: string; output: string; visible: boolean }>;
+  examples_with_visibility?: Array<{ id: number; input: string; output: string; visible: boolean }>;
   time_limit_ms?: number;
   memory_limit_mb?: number;
   difficulty?: Difficulty;
@@ -53,8 +54,13 @@ const TasksCreate = () => {
   const [inputFormat, setInputFormat] = useState("");
   const [outputFormat, setOutputFormat] = useState("");
   const [constraints, setConstraints] = useState("");
-  const [examplesInputText, setExamplesInputText] = useState("");
-  const [examplesOutputText, setExamplesOutputText] = useState("");
+  const [examples, setExamples] = useState<Array<{ id: number; input: string; output: string; visible: boolean }>>([
+    { id: 1, input: '', output: '', visible: true },
+    { id: 2, input: '', output: '', visible: false },
+    { id: 3, input: '', output: '', visible: false },
+    { id: 4, input: '', output: '', visible: false },
+    { id: 5, input: '', output: '', visible: false }
+  ]);
   const [timeLimitMs, setTimeLimitMs] = useState<number>(1000);
   const [memoryLimitMb, setMemoryLimitMb] = useState<number>(64);
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
@@ -109,11 +115,16 @@ const TasksCreate = () => {
         setCategory(taskData.category || "");
         setPoints(taskData.points || 100);
 
-        if (taskData.examples && Array.isArray(taskData.examples)) {
-          const inputs = taskData.examples.map((ex: any) => ex.input).join('\n');
-          const outputs = taskData.examples.map((ex: any) => ex.output).join('\n');
-          setExamplesInputText(inputs);
-          setExamplesOutputText(outputs);
+        if (taskData.examples_with_visibility && Array.isArray(taskData.examples_with_visibility)) {
+          setExamples(taskData.examples_with_visibility);
+        } else if (taskData.examples && Array.isArray(taskData.examples)) {
+          // Migrate old examples format
+          setExamples(taskData.examples.map((ex: any, index: number) => ({
+            id: index + 1,
+            input: ex.input || '',
+            output: ex.output || '',
+            visible: true
+          })));
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to load task";
@@ -137,24 +148,11 @@ const TasksCreate = () => {
       setSubmitting(true);
       setError(null);
 
-      let examples: any = null;
-      if (examplesInputText.trim() || examplesOutputText.trim()) {
-        const inputLines = examplesInputText
-          .split('\n')
-          .map(line => line.trim())
-          .filter(line => line.length > 0);
-        const outputLines = examplesOutputText
-          .split('\n')
-          .map(line => line.trim())
-          .filter(line => line.length > 0);
-
-        const maxLen = Math.max(inputLines.length, outputLines.length);
-        examples = Array.from({ length: maxLen }).map((_, idx) => ({
-          id: idx + 1,
-          input: inputLines[idx] ?? '',
-          output: outputLines[idx] ?? '',
-        }));
-      }
+      // Filter out empty examples
+      const validExamples = examples.filter(ex => ex.input.trim() || ex.output.trim());
+      
+      // Limit to 5 examples
+      const finalExamples = validExamples.slice(0, 5);
 
       const url = isEditing ? `${config.api.baseUrl}/api/tasks/${id}` : `${config.api.baseUrl}/api/tasks`;
       const method = isEditing ? "PUT" : "POST";
@@ -172,7 +170,7 @@ const TasksCreate = () => {
           input_format: inputFormat.trim() || null,
           output_format: outputFormat.trim() || null,
           constraints: constraints.trim() || null,
-          examples,
+          examples_with_visibility: finalExamples,
           time_limit_ms: timeLimitMs,
           memory_limit_mb: memoryLimitMb,
           difficulty,
@@ -424,37 +422,72 @@ const TasksCreate = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <Label htmlFor="examples_input" className="font-mono text-xs">
-                    {t("tasks.fields.examplesInput", "Приклади — вхідні дані")}
-                  </Label>
-                  <Textarea
-                    id="examples_input"
-                    value={examplesInputText}
-                    onChange={(e) => setExamplesInputText(e.target.value)}
-                    placeholder={t(
-                      "tasks.placeholders.examplesInput",
-                      "Кожен приклад з нового рядка, напр.:\n24\n3\n1 2 3"
-                    )}
-                    className="font-mono text-sm min-h-[120px]"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <Label htmlFor="examples_output" className="font-mono text-xs">
-                    {t("tasks.fields.examplesOutput", "Приклади — очікувана відповідь")}
-                  </Label>
-                  <Textarea
-                    id="examples_output"
-                    value={examplesOutputText}
-                    onChange={(e) => setExamplesOutputText(e.target.value)}
-                    placeholder={t(
-                      "tasks.placeholders.examplesOutput",
-                      "Відповідні відповіді построчно, напр.:\n2 4\n6"
-                    )}
-                    className="font-mono text-sm min-h-[120px]"
-                  />
+              <div className="space-y-4">
+                <Label className="font-mono text-xs">
+                  {t("tasks.fields.examples", "Test Cases (макс. 5)")}
+                </Label>
+                <div className="space-y-3">
+                  {examples.map((example, index) => (
+                    <Card key={example.id} className="border-border/60 bg-card/50">
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-sm font-medium text-primary">
+                            {t("tasks.fields.example", "Test Case")} {index + 1}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <Label htmlFor={`visible-${example.id}`} className="font-mono text-xs">
+                              {t("tasks.fields.visibleForStudents", "Видно для студентів")}
+                            </Label>
+                            <input
+                              type="checkbox"
+                              id={`visible-${example.id}`}
+                              checked={example.visible}
+                              onChange={(e) => {
+                                const newExamples = [...examples];
+                                newExamples[index].visible = e.target.checked;
+                                setExamples(newExamples);
+                              }}
+                              className="rounded border-border/60 bg-background/40"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <Label htmlFor={`input-${example.id}`} className="font-mono text-xs">
+                              {t("tasks.fields.exampleInput", "Вхідні дані")}
+                            </Label>
+                            <Textarea
+                              id={`input-${example.id}`}
+                              value={example.input}
+                              onChange={(e) => {
+                                const newExamples = [...examples];
+                                newExamples[index].input = e.target.value;
+                                setExamples(newExamples);
+                              }}
+                              placeholder={t("tasks.placeholders.exampleInput", "Вхідні дані прикладу...")}
+                              className="font-mono text-sm min-h-[80px]"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label htmlFor={`output-${example.id}`} className="font-mono text-xs">
+                              {t("tasks.fields.exampleOutput", "Очікувана відповідь")}
+                            </Label>
+                            <Textarea
+                              id={`output-${example.id}`}
+                              value={example.output}
+                              onChange={(e) => {
+                                const newExamples = [...examples];
+                                newExamples[index].output = e.target.value;
+                                setExamples(newExamples);
+                              }}
+                              placeholder={t("tasks.placeholders.exampleOutput", "Очікувана відповідь...")}
+                              className="font-mono text-sm min-h-[80px]"
+                            />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
               </div>
             </div>

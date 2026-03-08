@@ -12,6 +12,7 @@ import { useSidebar } from "@/components/ui/sidebar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import AddTaskFromLibraryModal from "@/components/AddTaskFromLibraryModal";
 import AddStudentModal from "@/components/AddStudentModal";
+import TournamentScoreCard from "@/components/TournamentScoreCard";
 
 type Difficulty = "easy" | "medium" | "hard";
 
@@ -228,6 +229,17 @@ const TournamentTasks = () => {
     }
   }, [tasks, participants, tournamentId, refreshKey]);
 
+  // Listen for score updates from task solving
+  useEffect(() => {
+    const handleScoreUpdate = () => {
+      console.log('Score update event received, refreshing...');
+      setRefreshKey(prev => prev + 1);
+    };
+
+    window.addEventListener('tournamentScoreUpdate', handleScoreUpdate);
+    return () => window.removeEventListener('tournamentScoreUpdate', handleScoreUpdate);
+  }, []);
+
   const canAddTasks = role === 'trainer' || role === 'admin';
   const isTournamentCreator = tournament?.creator?.id === profile?.id || role === 'admin';
 
@@ -326,51 +338,15 @@ const TournamentTasks = () => {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="border-border/60 bg-card/60">
-          <CardContent className="p-4 flex items-center gap-3">
-            <ListChecks className="h-5 w-5 text-primary" />
-            <div>
-              <div className="text-xs text-muted-foreground font-mono">
-                {t("tasks.total", "Всього задач")}
-              </div>
-              <div className="text-lg font-mono font-semibold">
-                {tasks.length}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-border/60 bg-card/60">
-          <CardContent className="p-4 flex items-center gap-3">
-            <BarChart3 className="h-5 w-5 text-neon-cyan" />
-            <div>
-              <div className="text-xs text-muted-foreground font-mono">
-                {t("tasks.maxScore", "Макс. балів")}
-              </div>
-              <div className="text-lg font-mono font-semibold">
-                {tasks.reduce((sum, task) => sum + task.maxScore, 0)}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-border/60 bg-card/60">
-          <CardContent className="p-4 flex items-center gap-3">
-            <Timer className="h-5 w-5 text-neon-green" />
-            <div>
-              <div className="text-xs text-muted-foreground font-mono">
-                {t("tasks.tip", "Порада")}
-              </div>
-              <div className="text-xs font-mono">
-                {t(
-                  "tasks.focusTip",
-                  "Почніть з простих задач, щоб розігрітися перед складнішими."
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Tournament Score Card - Show for students, hide for trainers/admins */}
+      {role === 'student' && (
+        <TournamentScoreCard 
+          tournamentId={tournamentId!}
+          tournamentName={tournament?.name || tournament?.title}
+          maxScore={tasks.reduce((sum, task) => sum + task.maxScore, 0)}
+          refreshKey={refreshKey}
+        />
+      )}
 
       {/* Tasks and Students Tabs */}
       <Tabs defaultValue="tasks" className="w-full">

@@ -126,6 +126,127 @@ export class CodeExecutionController {
   }
 
   /**
+   * Виконати код проти набору тестів
+   * @param req Express Request
+   * @param res Express Response
+   */
+  async runTests(req: Request, res: Response): Promise<void> {
+    try {
+      const { language, code, test_cases, time_limit, memory_limit, run_only_visible } = req.body;
+
+      // Валідація вхідних даних
+      if (!language || !code || !test_cases || !Array.isArray(test_cases)) {
+        res.status(400).json({
+          success: false,
+          message: 'Обов\'язкові поля: language, code, test_cases'
+        });
+        return;
+      }
+
+      // Переконуємось, що сервіси ініціалізовані
+      if (!CodeExecutionFactory.isInitialized()) {
+        await CodeExecutionFactory.initialize();
+      }
+
+      // Фільтруємо тест кейси залежно від флага run_only_visible
+      let filteredTestCases = test_cases;
+      if (run_only_visible === true) {
+        // Для RUN: виконуємо тільки видимі тест кейси
+        filteredTestCases = test_cases.filter(tc => tc.visible !== false);
+        console.log(`👁️ Running only visible tests: ${filteredTestCases.length}/${test_cases.length}`);
+      } else {
+        // Для SEND: виконуємо всі тест кейси
+        console.log(`🚀 Running all tests: ${test_cases.length}`);
+      }
+
+      console.log(`🧪 Running ${filteredTestCases.length} tests for ${language} code...`);
+
+      const results = [];
+      let totalTests = filteredTestCases.length;
+      let passedTests = 0;
+      let totalTime = 0;
+
+      // Виконуємо кожен тест
+      for (let i = 0; i < filteredTestCases.length; i++) {
+        const testCase = filteredTestCases[i];
+        
+        try {
+          const executionRequest: CodeExecutionRequest = {
+            language,
+            code,
+            stdin: testCase.input || '',
+            time_limit: time_limit || 10000,
+            memory_limit: memory_limit || 128 * 1024 * 1024,
+            client_id: req.ip || 'anonymous'
+          };
+
+          const result = await codeExecutionManager.executeCode(executionRequest);
+          
+          const passed = result.output.stdout.trim() === testCase.expected_output.trim();
+          if (passed) passedTests++;
+          
+          totalTime += result.execution_time_ms;
+
+          results.push({
+            id: `test-${i + 1}`,
+            name: `Тест ${i + 1}`,
+            input: testCase.input,
+            expected_output: testCase.expected_output,
+            actual_output: result.output.stdout,
+            passed,
+            execution_time: result.execution_time_ms,
+            memory_usage: result.memory_used_mb * 1024 * 1024, // Конвертуємо в байти
+            error: result.output.stderr || null,
+            visible: testCase.visible !== false // За замовчуванням видимий
+          });
+
+        } catch (error) {
+          results.push({
+            id: `test-${i + 1}`,
+            name: `Тест ${i + 1}`,
+            input: testCase.input,
+            expected_output: testCase.expected_output,
+            actual_output: '',
+            passed: false,
+            execution_time: 0,
+            memory_usage: 0,
+            error: error instanceof Error ? error.message : 'Невідома помилка',
+            visible: testCase.visible !== false
+          });
+        }
+      }
+
+      // Розрахунок балів (максимум 100, округлено до цілого)
+      const score = totalTests > 0 ? Math.round((passedTests / totalTests) * 100) : 0;
+
+      const testResults = {
+        total_tests: totalTests,
+        passed_tests: passedTests,
+        failed_tests: totalTests - passedTests,
+        total_time: totalTime,
+        test_cases: results,
+        score
+      };
+
+      console.log(`✅ Tests completed: ${passedTests}/${totalTests} passed, Score: ${score}`);
+
+      res.json({
+        success: true,
+        data: testResults,
+        message: 'Тести виконано успішно'
+      });
+
+    } catch (error) {
+      console.error('Помилка виконання тестів:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Помилка виконання тестів',
+        error: error instanceof Error ? error.message : 'Невідома помилка'
+      });
+    }
+  }
+
+  /**
    * Отримати інформацію про конкретну мову
    * @param req Express Request
    * @param res Express Response
