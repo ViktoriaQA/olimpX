@@ -269,6 +269,13 @@ int main() {
       minimap: { enabled: false },
       scrollBeyondLastLine: false,
       automaticLayout: true,
+      // Вимикаємо textarea для мобільних пристроїв
+      accessibilitySupport: 'off',
+      // Приховуємо декорації які можуть викликати проблеми на мобільних
+      glyphMargin: false,
+      folding: false,
+      lineDecorationsWidth: 0,
+      lineNumbersMinChars: 3,
     });
   };
 
@@ -694,6 +701,12 @@ int main() {
                 wordWrap: 'on',
                 lineNumbers: 'on',
                 renderWhitespace: 'selection',
+                // Вимикаємо accessibility features для мобільних
+                accessibilitySupport: 'off',
+                glyphMargin: false,
+                folding: false,
+                lineDecorationsWidth: 0,
+                lineNumbersMinChars: 3,
               }}
             />
             {/* Кнопка запуску в редакторі */}
