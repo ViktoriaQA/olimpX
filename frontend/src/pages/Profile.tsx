@@ -10,9 +10,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Mail, Phone, Calendar, Shield, CreditCard, Award, BookOpen, Trophy, TrendingUp, Edit, X, Save } from "lucide-react";
+import { User, Mail, Phone, Calendar, Shield, CreditCard, Award, BookOpen, Trophy, TrendingUp, Edit, X, Save, Lock } from "lucide-react";
 import { config } from "@/config";
 import { AuthService } from "@/services/authService";
+import { ProfileService, UserStats, SubscriptionInfo } from "@/services/profileService";
 import { useTranslation } from "react-i18next";
 
 export default function Profile() {
@@ -21,6 +22,8 @@ export default function Profile() {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [userStats, setUserStats] = useState<UserStats | null>(null);
+  const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null);
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -41,6 +44,31 @@ export default function Profile() {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (token) {
+      loadUserStats();
+      loadSubscriptionInfo();
+    }
+  }, [token]);
+
+  const loadUserStats = async () => {
+    try {
+      const stats = await ProfileService.getUserStats();
+      setUserStats(stats);
+    } catch (error) {
+      console.error('Failed to load user stats:', error);
+    }
+  };
+
+  const loadSubscriptionInfo = async () => {
+    try {
+      const { subscription } = await ProfileService.getSubscriptionInfo();
+      setSubscriptionInfo(subscription);
+    } catch (error) {
+      console.error('Failed to load subscription info:', error);
+    }
+  };
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -53,7 +81,9 @@ export default function Profile() {
 
     try {
       setLoading(true);
-      await AuthService.updateProfile(token, formData);
+      await ProfileService.updateProfile({
+        nickname: formData.nickname,
+      });
       await refreshProfile();
       setEditMode(false);
       toast({
@@ -109,6 +139,22 @@ export default function Profile() {
     }
   };
 
+  const isFeatureAvailable = (feature: string) => {
+    if (!subscriptionInfo) return false;
+    
+    const plan = subscriptionInfo.plan;
+    switch (feature) {
+      case 'progress':
+        return plan === 'Pro' || plan === 'Premium';
+      case 'tournaments':
+        return true; // Available for all plans including Free
+      case 'advanced_stats':
+        return plan === 'Premium';
+      default:
+        return true;
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-6 max-w-4xl">
       <div className="mb-6">
@@ -142,9 +188,9 @@ export default function Profile() {
                       <Shield className="w-3 h-3 mr-1" />
                       {user?.role}
                     </Badge>
-                    <Badge className={`font-mono ${getSubscriptionColor(user?.subscription_plan || 'Free')}`}>
+                    <Badge className={`font-mono ${getSubscriptionColor(subscriptionInfo?.plan || 'Free')}`}>
                       <CreditCard className="w-3 h-3 mr-1" />
-                      {user?.subscription_plan || 'Free'}
+                      {subscriptionInfo?.plan || 'Free'}
                     </Badge>
                   </div>
                 </div>
@@ -273,8 +319,8 @@ export default function Profile() {
         </TabsContent>
 
         <TabsContent value="subscription">
-          <div className="grid gap-6">
-            <Card>
+          <div className="grid gap-6 max-w-2xl">
+            <Card className="max-w-xl">
               <CardHeader>
                 <CardTitle className="font-mono flex items-center gap-2">
                   <CreditCard className="w-5 h-5" />
@@ -288,16 +334,36 @@ export default function Profile() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="font-mono">{t('profile.plan')}</span>
-                    <Badge className={`font-mono ${getSubscriptionColor(user?.subscription_plan || 'Free')}`}>
-                      {user?.subscription_plan || 'Free'}
+                    <Badge className={`font-mono ${getSubscriptionColor(subscriptionInfo?.plan || 'Free')}`}>
+                      {subscriptionInfo?.plan || 'Free'}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="font-mono">{t('profile.status')}</span>
-                    <Badge variant={user?.subscription_status === 'active' ? 'default' : 'secondary'} className="font-mono">
-                      {user?.subscription_status || 'inactive'}
+                    <Badge variant={subscriptionInfo?.status === 'active' ? 'default' : 'secondary'} className="font-mono">
+                      {subscriptionInfo?.status || 'inactive'}
                     </Badge>
                   </div>
+                  {subscriptionInfo?.expires_at && (
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono">{t('profile.expiresAt')}</span>
+                      <span className="font-mono text-sm text-muted-foreground">
+                        {new Date(subscriptionInfo.expires_at).toLocaleDateString('uk-UA')}
+                      </span>
+                    </div>
+                  )}
+                  {subscriptionInfo?.features && subscriptionInfo.features.length > 0 && (
+                    <div className="mt-4">
+                      <span className="font-mono text-sm font-medium mb-2 block">{t('profile.features')}</span>
+                      <div className="flex flex-wrap gap-2">
+                        {subscriptionInfo.features.map((feature, index) => (
+                          <Badge key={index} variant="outline" className="font-mono text-xs">
+                            {feature}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <Button
                     onClick={() => navigate('/subscription')}
                     className="w-full font-mono"
@@ -326,17 +392,17 @@ export default function Profile() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="text-center p-4 border rounded-lg">
                     <Trophy className="w-8 h-8 mx-auto mb-2 text-yellow-500" />
-                    <div className="text-2xl font-bold font-mono">0</div>
+                    <div className="text-2xl font-bold font-mono">{userStats?.tournaments_count || 0}</div>
                     <div className="text-sm text-muted-foreground font-mono">{t('profile.tournamentsCount')}</div>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
                     <BookOpen className="w-8 h-8 mx-auto mb-2 text-blue-500" />
-                    <div className="text-2xl font-bold font-mono">0</div>
+                    <div className="text-2xl font-bold font-mono">{userStats?.tasks_count || 0}</div>
                     <div className="text-sm text-muted-foreground font-mono">{t('profile.tasksCount')}</div>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
                     <Award className="w-8 h-8 mx-auto mb-2 text-purple-500" />
-                    <div className="text-2xl font-bold font-mono">0</div>
+                    <div className="text-2xl font-bold font-mono">{userStats?.achievements_count || 0}</div>
                     <div className="text-sm text-muted-foreground font-mono">{t('profile.achievementsCount')}</div>
                   </div>
                 </div>
@@ -351,19 +417,51 @@ export default function Profile() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Button
                     variant="outline"
-                    onClick={() => navigate('/progress')}
-                    className="font-mono justify-start"
+                    onClick={() => {
+                      if (isFeatureAvailable('progress')) {
+                        navigate('/progress');
+                      } else {
+                        toast({
+                          title: t('profile.upgradeRequired'),
+                          description: t('profile.progressUpgradeDescription'),
+                          action: (
+                            <Button onClick={() => navigate('/subscription')} className="font-mono">
+                              {t('profile.upgrade')}
+                            </Button>
+                          ),
+                        });
+                      }
+                    }}
+                    disabled={!subscriptionInfo}
+                    className={`font-mono justify-start ${!isFeatureAvailable('progress') ? 'opacity-50' : ''}`}
                   >
                     <TrendingUp className="w-4 h-4 mr-2" />
                     {t('profile.myProgress')}
+                    {!isFeatureAvailable('progress') && <Lock className="w-4 h-4 ml-auto" />}
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => navigate('/my-tournaments')}
-                    className="font-mono justify-start"
+                    onClick={() => {
+                      if (isFeatureAvailable('tournaments')) {
+                        navigate('/my-tournaments');
+                      } else {
+                        toast({
+                          title: t('profile.upgradeRequired'),
+                          description: t('profile.tournamentsUpgradeDescription'),
+                          action: (
+                            <Button onClick={() => navigate('/subscription')} className="font-mono">
+                              {t('profile.upgrade')}
+                            </Button>
+                          ),
+                        });
+                      }
+                    }}
+                    disabled={!subscriptionInfo}
+                    className={`font-mono justify-start ${!isFeatureAvailable('tournaments') ? 'opacity-50' : ''}`}
                   >
                     <Trophy className="w-4 h-4 mr-2" />
                     {t('profile.myTournaments')}
+                    {!isFeatureAvailable('tournaments') && <Lock className="w-4 h-4 ml-auto" />}
                   </Button>
                 </div>
               </CardContent>

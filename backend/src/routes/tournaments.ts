@@ -905,7 +905,7 @@ router.get('/:id/progress', async (req: AuthRequest, res, next) => {
         const progressEntry = (userProgress as any[])?.find(p => p.tournament_task_id === task.id);
         let score = 0;
 
-        if (progressEntry && progressEntry.status === 'completed') {
+        if (progressEntry && (progressEntry.status === 'completed' || progressEntry.best_score > 0)) {
           score = progressEntry.best_score || 0;
         } else {
           // Fallback to submissions

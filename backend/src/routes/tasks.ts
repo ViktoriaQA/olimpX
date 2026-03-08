@@ -194,12 +194,12 @@ router.get('/progress', async (req: AuthRequest, res, next) => {
     });
 
     const stats = {
-      total_solved: progress?.filter(p => p.status === 'completed').length || 0,
+      total_solved: progress?.filter(p => p.status === 'completed' || p.best_score > 0).length || 0,
       total_attempted: progress?.filter(p => p.status !== 'not_started').length || 0,
       by_difficulty: {
-        easy: progress?.filter(p => p.status === 'completed' && (p.task?.difficulty === 'easy' || p.tournament_task?.difficulty === 'easy')).length || 0,
-        medium: progress?.filter(p => p.status === 'completed' && (p.task?.difficulty === 'medium' || p.tournament_task?.difficulty === 'medium')).length || 0,
-        hard: progress?.filter(p => p.status === 'completed' && (p.task?.difficulty === 'hard' || p.tournament_task?.difficulty === 'hard')).length || 0
+        easy: progress?.filter(p => (p.status === 'completed' || p.best_score > 0) && (p.task?.difficulty === 'easy' || p.tournament_task?.difficulty === 'easy')).length || 0,
+        medium: progress?.filter(p => (p.status === 'completed' || p.best_score > 0) && (p.task?.difficulty === 'medium' || p.tournament_task?.difficulty === 'medium')).length || 0,
+        hard: progress?.filter(p => (p.status === 'completed' || p.best_score > 0) && (p.task?.difficulty === 'hard' || p.tournament_task?.difficulty === 'hard')).length || 0
       },
       recent_activity: progress?.slice(0, 10) || []
     };
@@ -649,18 +649,41 @@ router.post('/:id/submit', async (req: AuthRequest, res, next) => {
 
     console.log('✅ Submission created:', submission.id);
 
-    // Update user progress
+    // Update user progress - get existing progress first
+    const existingProgressQuery = tournament_id 
+      ? { user_id: userId, tournament_task_id: id }
+      : { user_id: userId, task_id: id };
+    
+    const { data: existingProgress } = await supabase
+      .from('user_progress')
+      .select('attempts, best_score')
+      .match(existingProgressQuery)
+      .single();
+
     const progressData = {
       user_id: userId,
       task_id: tournament_id ? null : id,
       tournament_task_id: tournament_id ? id : null,
-      status: test_results ? (test_results.failed_tests === 0 ? 'completed' : 'in_progress') : 'in_progress',
-      attempts: 1, // This should be incremented in a real implementation
-      best_score: score || 0,
-      completed_at: test_results && test_results.failed_tests === 0 ? new Date().toISOString() : null
+      status: (score && score > 0) ? 'completed' : 'in_progress',
+      attempts: (existingProgress?.attempts || 0) + 1,
+      best_score: Math.max(score || 0, existingProgress?.best_score || 0),
+      completed_at: (score && score > 0) ? new Date().toISOString() : null
     };
 
+    // Also update any existing progress entries that have score > 0 but status 'in_progress'
+    if (existingProgress && existingProgress.best_score > 0 && existingProgress.best_score === progressData.best_score) {
+      progressData.status = 'completed';
+      progressData.completed_at = new Date().toISOString();
+    }
+
     console.log('📈 Updating user progress:', progressData);
+    console.log('🔍 Debug info:', {
+      testResults: test_results,
+      failedTests: test_results?.failed_tests,
+      score: score,
+      isCompleted: (score && score > 0),
+      existingProgress: existingProgress
+    });
 
     // Upsert progress
     const { error: progressError } = await supabase

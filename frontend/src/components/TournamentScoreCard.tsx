@@ -60,9 +60,12 @@ const TournamentScoreCard: React.FC<TournamentScoreCardProps> = ({
         if (response.ok) {
           const data = await response.json();
           console.log('Progress data received:', data);
+          console.log('Current user ID:', profile?.id);
+          console.log('Available progress entries:', data.progress?.map((p: any) => ({ userId: p.userId, userName: p.userName, totalScore: p.totalScore })));
           
           // Find current user's progress from the list
           const currentUserProgress = data.progress?.find((p: any) => p.userId === profile?.id);
+          console.log('Current user progress:', currentUserProgress);
           
           if (currentUserProgress) {
             // Calculate total score and max score

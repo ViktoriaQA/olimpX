@@ -70,12 +70,6 @@ const mockTasksByTournament: Record<string, Task[]> = {
   ],
 };
 
-const difficultyColor: Record<Difficulty, string> = {
-  easy: "bg-green-500/15 text-green-500 border-green-500/30",
-  medium: "bg-yellow-500/15 text-yellow-500 border-yellow-500/30",
-  hard: "bg-red-500/15 text-red-500 border-red-500/30",
-};
-
 const TournamentTasks = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -92,6 +86,69 @@ const TournamentTasks = () => {
   const [progressData, setProgressData] = useState<StudentProgress[]>([]);
   const [loadingProgress, setLoadingProgress] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Function to get task status for current user
+  const getTaskStatus = (taskId: string) => {
+    if (!profile || role !== 'student') return 'new';
+    
+    const currentUserProgress = progressData.find(p => p.userId === profile.id);
+    if (!currentUserProgress) return 'new';
+    
+    const score = currentUserProgress.taskScores[taskId] || 0;
+    const task = tasks.find(t => t.id === taskId);
+    if (score === 0) return 'new';
+    if (task && score >= task.maxScore) return 'success';
+    return 'progress';
+  };
+
+  // Function to get status badge styling
+  const getStatusBadgeStyle = (status: 'success' | 'progress' | 'new') => {
+    switch (status) {
+      case 'success':
+        return 'bg-primary/15 text-primary border-primary/30';
+      case 'progress':
+        return 'bg-yellow-500/15 text-yellow-500 border-yellow-500/30';
+      case 'new':
+        return 'bg-gray-300 text-gray-800 border-gray-500';
+      default:
+        return 'bg-gray-300 text-gray-800 border-gray-500';
+    }
+  };
+
+  // Function to get status text
+  const getStatusText = (status: 'success' | 'progress' | 'new') => {
+    switch (status) {
+      case 'success':
+        return 'Success';
+      case 'progress':
+        return 'In Progress';
+      case 'new':
+        return 'New';
+      default:
+        return 'New';
+    }
+  };
+
+  // Function to get task status for progress table
+  const getProgressTaskStatus = (score: number, maxScore: number) => {
+    if (score === 0) return 'new';
+    if (score >= maxScore) return 'success';
+    return 'progress';
+  };
+
+  // Function to get progress cell styling
+  const getProgressCellStyle = (status: 'success' | 'progress' | 'new') => {
+    switch (status) {
+      case 'success':
+        return 'bg-primary/5 border-l-2 border-l-primary';
+      case 'progress':
+        return 'bg-yellow-500/5 border-l-2 border-l-yellow-500';
+      case 'new':
+        return 'bg-gray-200';
+      default:
+        return 'bg-gray-200';
+    }
+  };
 
   // Fetch tournament tasks from API
   useEffect(() => {
@@ -440,13 +497,12 @@ const TournamentTasks = () => {
                         {task.title}
                       </CardTitle>
                       <div className="flex items-center gap-2">
-                        <Badge className={`${difficultyColor[task.difficulty]} font-mono text-[11px]`}>
-                          {task.difficulty === "easy"
-                            ? t("tasks.difficulty.easy", "Легка")
-                            : task.difficulty === "medium"
-                            ? t("tasks.difficulty.medium", "Середня")
-                            : t("tasks.difficulty.hard", "Складна")}
-                        </Badge>
+                        {/* Status badge for students */}
+                        {role === 'student' && (
+                          <Badge className={`${getStatusBadgeStyle(getTaskStatus(task.id))} font-mono text-[10px]`}>
+                            {getStatusText(getTaskStatus(task.id))}
+                          </Badge>
+                        )}
                         {canAddTasks && isTournamentCreator && (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -545,9 +601,9 @@ const TournamentTasks = () => {
                                 <th key={task.id} className="text-center p-3 font-mono text-xs font-semibold min-w-[80px]">
                                   <div className="space-y-1">
                                     <div className="text-primary">{task.title}</div>
-                                    <Badge className={`${difficultyColor[task.difficulty]} text-[10px]`}>
+                                    <div className="text-muted-foreground text-[10px]">
                                       {task.maxScore} {t('common.points', 'балів')}
-                                    </Badge>
+                                    </div>
                                   </div>
                                 </th>
                               ))}
@@ -572,13 +628,14 @@ const TournamentTasks = () => {
                                 {tasks.map((task) => {
                                   const score = student.taskScores[task.id] || 0;
                                   const percentage = task.maxScore > 0 ? (score / task.maxScore) * 100 : 0;
+                                  const status = getProgressTaskStatus(score, task.maxScore);
                                   
                                   return (
-                                    <td key={task.id} className="text-center p-3">
+                                    <td key={task.id} className={`text-center p-3 ${getProgressCellStyle(status)}`}>
                                       <div className="space-y-1">
                                         <div className={`font-mono text-sm font-medium ${
                                           score === 0 ? 'text-muted-foreground' : 
-                                          score === task.maxScore ? 'text-green-500' : 'text-yellow-500'
+                                          score === task.maxScore ? 'text-primary' : 'text-yellow-500'
                                         }`}>
                                           {score}/{task.maxScore}
                                         </div>
@@ -586,7 +643,7 @@ const TournamentTasks = () => {
                                           <div className="w-full bg-border/60 rounded-full h-1">
                                             <div 
                                               className={`h-1 rounded-full ${
-                                                score === task.maxScore ? 'bg-green-500' : 'bg-yellow-500'
+                                                score === task.maxScore ? 'bg-primary' : 'bg-yellow-500'
                                               }`}
                                               style={{ width: `${Math.min(percentage, 100)}%` }}
                                             />
@@ -644,26 +701,20 @@ const TournamentTasks = () => {
                           {tasks.map((task) => {
                             const score = student.taskScores[task.id] || 0;
                             const percentage = task.maxScore > 0 ? (score / task.maxScore) * 100 : 0;
+                            const status = getProgressTaskStatus(score, task.maxScore);
                             
                             return (
-                              <div key={task.id} className="flex items-center justify-between p-3 rounded-lg bg-card/50 border border-border/30">
+                              <div key={task.id} className={`flex items-center justify-between p-3 rounded-lg bg-card/50 border border-border/30 ${getProgressCellStyle(status)}`}>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-1">
                                     <h5 className="font-mono text-sm font-medium truncate">
                                       {task.title}
                                     </h5>
-                                    <Badge className={`${difficultyColor[task.difficulty]} text-[10px] shrink-0`}>
-                                      {task.difficulty === "easy"
-                                        ? t("tasks.difficulty.easy", "Легка")
-                                        : task.difficulty === "medium"
-                                        ? t("tasks.difficulty.medium", "Середня")
-                                        : t("tasks.difficulty.hard", "Складна")}
-                                    </Badge>
                                   </div>
                                   <div className="flex items-center gap-3">
                                     <div className={`font-mono text-sm font-medium ${
                                       score === 0 ? 'text-muted-foreground' : 
-                                      score === task.maxScore ? 'text-green-500' : 'text-yellow-500'
+                                      score === task.maxScore ? 'text-primary' : 'text-yellow-500'
                                     }`}>
                                       {score}/{task.maxScore} {t('common.points', 'балів')}
                                     </div>
@@ -672,7 +723,7 @@ const TournamentTasks = () => {
                                         <div className="w-full bg-border/60 rounded-full h-2">
                                           <div 
                                             className={`h-2 rounded-full ${
-                                              score === task.maxScore ? 'bg-green-500' : 'bg-yellow-500'
+                                              score === task.maxScore ? 'bg-primary' : 'bg-yellow-500'
                                             }`}
                                             style={{ width: `${Math.min(percentage, 100)}%` }}
                                           />

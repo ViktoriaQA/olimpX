@@ -296,7 +296,13 @@
     "profileUpdated": "Профіль оновлено",
     "profileUpdatedDescription": "Ваш профіль успішно оновлено.",
     "updateError": "Помилка оновлення",
-    "atLeastOneField": "Щонайменше одне поле повинно бути надано для оновлення"
+    "atLeastOneField": "Щонайменше одне поле повинно бути надано для оновлення",
+    "upgradeRequired": "Потрібне оновлення підписки",
+    "progressUpgradeDescription": "Функція 'Мій прогрес' доступна з підпискою Pro або Premium",
+    "tournamentsUpgradeDescription": "Функція 'Мої турніри' доступна для всіх планів підписки",
+    "upgrade": "Оновити підписку",
+    "features": "Функції",
+    "expiresAt": "Діє до"
   },
   "ratings": {
     "title": "Рейтинг",

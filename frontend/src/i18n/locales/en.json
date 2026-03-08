@@ -296,7 +296,13 @@
     "profileUpdated": "Profile Updated",
     "profileUpdatedDescription": "Your profile has been successfully updated.",
     "updateError": "Update Error",
-    "atLeastOneField": "At least one field must be provided for update"
+    "atLeastOneField": "At least one field must be provided for update",
+    "upgradeRequired": "Subscription Upgrade Required",
+    "progressUpgradeDescription": "'My Progress' feature is available with Pro or Premium subscription",
+    "tournamentsUpgradeDescription": "'My Tournaments' feature is available for all subscription plans",
+    "upgrade": "Upgrade Subscription",
+    "features": "Features",
+    "expiresAt": "Expires on"
   },
   "ratings": {
     "title": "Ratings",
