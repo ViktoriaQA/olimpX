@@ -501,7 +501,7 @@ int main() {
               {!result && !error && (
                 <div className="h-full flex items-center justify-center text-muted-foreground">
                   <div className="text-center">
-                    <Terminal className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <Terminal className="w-10 h-12 mx-auto mb-2 opacity-50" />
                     <p>Натисніть кнопку запуску для виконання коду</p>
                   </div>
                 </div>
@@ -513,7 +513,7 @@ int main() {
             <TabsContent value="tests" className="flex-1 overflow-hidden mt-4">
               <div className="h-full flex items-center justify-center text-muted-foreground">
                 <div className="text-center">
-                  <Code className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <Code className="w-10 h-12 mx-auto mb-4 opacity-50" />
                   <p>Тут будуть відображатися результати автоматичних тестів</p>
                 </div>
               </div>

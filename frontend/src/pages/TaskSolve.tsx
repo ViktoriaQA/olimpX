@@ -384,7 +384,6 @@ const TaskSolve = () => {
                                   minHeight: '400px'
                                 }}
                                 title="OneCompiler JavaScript Editor"
-                                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
                                 loading="lazy"
                               />
                             </div>
@@ -408,7 +407,7 @@ const TaskSolve = () => {
           ) : (
             <ResizablePanelGroup direction="horizontal" className="h-full">
               {/* Left: problem description */}
-              <ResizablePanel defaultSize={40} minSize={30} maxSize={55}>
+              <ResizablePanel defaultSize={40} minSize={30} maxSize={60}>
                 <div className="h-full border-r border-border/70">
                   <ScrollArea className="h-full px-4 py-4">
                     {task ? (
@@ -504,7 +503,7 @@ const TaskSolve = () => {
               <ResizableHandle withHandle />
 
               {/* Right: editor */}
-              <ResizablePanel defaultSize={55} minSize={40}>
+              <ResizablePanel defaultSize={60} minSize={40}>
                 <div className="h-full bg-background/40">
                   <div className="h-full flex flex-col">
                     <div className="flex-1 overflow-auto">
@@ -538,7 +537,6 @@ const TaskSolve = () => {
                                   minHeight: '500px'
                                 }}
                                 title="OneCompiler JavaScript Editor"
-                                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
                                 loading="lazy"
                               />
                             </div>

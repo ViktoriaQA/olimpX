@@ -134,7 +134,7 @@ const Students = () => {
 
       {/* Statistics Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-border bg-card">
+        <Card className="student-card border-border bg-card">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <Users className="w-8 h-8 text-primary" />
@@ -145,7 +145,7 @@ const Students = () => {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-border bg-card">
+        <Card className="student-card border-border bg-card">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <Trophy className="w-8 h-8 text-accent" />
@@ -158,7 +158,7 @@ const Students = () => {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-border bg-card">
+        <Card className="student-card border-border bg-card">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <Target className="w-8 h-8 text-neon-cyan" />
@@ -171,7 +171,7 @@ const Students = () => {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-border bg-card">
+        <Card className="student-card border-border bg-card">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <TrendingUp className="w-8 h-8 text-neon-green" />
@@ -189,7 +189,7 @@ const Students = () => {
       {/* Students List */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         {students.map((student) => (
-          <Card key={student.id} className="border-border bg-card hover:neon-border transition-all duration-300">
+          <Card key={student.id} className="student-card border-border bg-card hover:neon-border transition-all duration-300">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="space-y-1">

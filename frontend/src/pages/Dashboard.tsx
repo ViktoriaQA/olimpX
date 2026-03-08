@@ -32,21 +32,21 @@ const Dashboard = () => {
 
   const studentCards: CardItem[] = [
     { icon: Trophy, title: t('dashboard.tournaments'), desc: t('dashboard.browseJoinTournaments'), color: "text-primary", path: "/my-tournaments" },
-    { icon: BookOpen, title: t('dashboard.myProgress'), desc: t('dashboard.viewScoresHistory'), color: "text-accent", path: "/progress", requiresPro: true },
-    { icon: Star, title: t('navigation.rating'), desc: t('dashboard.viewRating'), color: "text-yellow-500", path: "/rating", requiresPro: true },
-    { icon: Award, title: t('navigation.certificates'), desc: t('dashboard.viewCertificates'), color: "text-purple-500", path: "/certificates", requiresPro: true },
-    { icon: CreditCard, title: t('dashboard.subscription'), desc: profile?.subscription_status === "active" ? t('dashboard.planActive') : t('dashboard.upgradeToCompete'), color: "text-neon-cyan", path: "/subscription" },
+    { icon: BookOpen, title: t('dashboard.myProgress'), desc: t('dashboard.viewScoresHistory'), color: "text-primary", path: "/progress", requiresPro: true },
+    { icon: Star, title: t('navigation.rating'), desc: t('dashboard.viewRating'), color: "text-primary", path: "/rating", requiresPro: true },
+    { icon: Award, title: t('navigation.certificates'), desc: t('dashboard.viewCertificates'), color: "text-primary", path: "/certificates", requiresPro: true },
+    { icon: CreditCard, title: t('dashboard.subscription'), desc: profile?.subscription_status === "active" ? t('dashboard.planActive') : t('dashboard.upgradeToCompete'), color: "text-primary", path: "/subscription" },
   ];
 
   const trainerCards: CardItem[] = [
     { icon: Trophy, title: t('dashboard.tournaments'), desc: t('dashboard.createManageTournaments'), color: "text-primary", path: "/my-tournaments" },
-    { icon: BookOpen, title: t('dashboard.taskLibrary'), desc: t('dashboard.createBrowseTasks'), color: "text-accent", path: "/tasks" },
-    { icon: Users, title: t('dashboard.students'), desc: t('dashboard.viewStudentPerformance'), color: "text-neon-cyan", path: "/students" },
-    { icon: CreditCard, title: t('dashboard.subscription'), desc: profile?.subscription_status === "active" ? t('dashboard.planActive') : t('dashboard.upgradeToCreate'), color: "text-neon-green", path: "/subscription" },
+    { icon: BookOpen, title: t('dashboard.taskLibrary'), desc: t('dashboard.createBrowseTasks'), color: "text-primary", path: "/tasks" },
+    { icon: Users, title: t('dashboard.students'), desc: t('dashboard.viewStudentPerformance'), color: "text-primary", path: "/students" },
+    { icon: CreditCard, title: t('dashboard.subscription'), desc: profile?.subscription_status === "active" ? t('dashboard.planActive') : t('dashboard.upgradeToCreate'), color: "text-primary", path: "/subscription" },
   ];
 
   const adminCards: CardItem[] = [
-    { icon: Shield, title: t('dashboard.adminPanel'), desc: t('dashboard.manageUsersPlatform'), color: "text-destructive", path: "/admin" },
+    { icon: Shield, title: t('dashboard.adminPanel'), desc: t('dashboard.manageUsersPlatform'), color: "text-primary", path: "/admin" },
     ...trainerCards,
   ];
 
@@ -70,7 +70,7 @@ const Dashboard = () => {
           return (
             <div
               key={card.title}
-              className={`rounded-lg border border-border bg-card p-6 space-y-3 transition-all duration-300 group ${
+              className={`dashboard-card rounded-lg border border-border bg-card p-6 space-y-3 transition-all duration-300 group ${
                 isDisabled 
                   ? 'opacity-60 cursor-not-allowed' 
                   : 'hover:neon-border cursor-pointer'

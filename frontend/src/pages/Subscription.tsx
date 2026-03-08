@@ -217,13 +217,13 @@ const Subscription = () => {
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredPlans.map((plan) => (
                 <div 
                   key={plan.id} 
-                  className={`relative overflow-hidden rounded-lg border border-border bg-card p-6 space-y-4 hover:neon-border transition-all duration-300 group ${
+                  className={`subscription-card relative overflow-hidden rounded-lg border border-border bg-card p-6 space-y-4 ${
                     plan.is_popular 
-                      ? 'ring-2 ring-primary shadow-lg scale-105' 
+                      ? 'popular ring-2 ring-primary shadow-lg scale-105' 
                       : ''
                   }`}
                 >
@@ -239,13 +239,13 @@ const Subscription = () => {
                   <div className="text-center pb-4">
                     <div className="flex justify-center mb-2">
                       {plan.target_audience === 'student' && (
-                        <Users className="w-8 h-8 text-primary group-hover:animate-pulse-glow" />
+                        <Users className="w-8 h-8 text-primary icon-hover animate-pulse-glow" />
                       )}
                       {plan.target_audience === 'trainer' && (
-                        <Star className="w-8 h-8 text-accent group-hover:animate-pulse-glow" />
+                        <Star className="w-8 h-8 text-primary icon-hover animate-pulse-glow" />
                       )}
                       {plan.target_audience === 'all' && (
-                        <Crown className="w-8 h-8 text-neon-cyan group-hover:animate-pulse-glow" />
+                        <Crown className="w-8 h-8 text-primary icon-hover animate-pulse-glow" />
                       )}
                     </div>
                     <h3 className="text-xl font-bold font-mono text-card-foreground mb-2">{plan.name}</h3>
@@ -263,7 +263,7 @@ const Subscription = () => {
                   <div className="pb-6">
                     <ul className="space-y-3">
                       {plan.features.map((feature, index) => (
-                        <li key={index} className="flex items-start gap-2">
+                        <li key={index} className="flex items-start gap-2 feature-item">
                           <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                           <span className="text-card-foreground font-mono text-sm">{feature}</span>
                         </li>
@@ -275,7 +275,7 @@ const Subscription = () => {
                     <Button
                       onClick={() => handleSubscribe(plan.id)}
                       disabled={processing === plan.id}
-                      className={`w-full font-mono ${
+                      className={`subscription-button w-full font-mono ${
                         plan.is_popular 
                           ? 'bg-primary hover:bg-primary/90 text-primary-foreground' 
                           : 'bg-muted hover:bg-muted/80 text-muted-foreground'

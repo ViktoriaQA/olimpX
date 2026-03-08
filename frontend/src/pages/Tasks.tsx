@@ -124,11 +124,20 @@ const Tasks = () => {
         {(role === "trainer" || role === "admin") && (
           <Button
             size="sm"
-            className="font-mono text-xs md:text-sm"
+            className="font-mono text-xs md:text-sm hidden md:flex"
             onClick={() => navigate("/tasks/create")}
           >
             <Plus className="h-4 w-4 mr-1" />
             {t("tasks.createTask", "Створити задачу")}
+          </Button>
+        )}
+        {(role === "trainer" || role === "admin") && (
+          <Button
+            size="sm"
+            className="font-mono md:hidden"
+            onClick={() => navigate("/tasks/create")}
+          >
+            <Plus className="h-4 w-4" />
           </Button>
         )}
       </div>
@@ -161,14 +170,23 @@ const Tasks = () => {
               {t("tasks.emptyList", "Поки що немає жодної задачі.")}
             </p>
             {(role === "trainer" || role === "admin") && (
-              <Button
-                size="sm"
-                className="font-mono text-xs"
-                onClick={() => navigate("/tasks/create")}
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                {t("tasks.createFirstTask", "Створити першу задачу")}
-              </Button>
+              <>
+                <Button
+                  size="sm"
+                  className="font-mono text-xs hidden md:flex"
+                  onClick={() => navigate("/tasks/create")}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  {t("tasks.createFirstTask", "Створити першу задачу")}
+                </Button>
+                <Button
+                  size="sm"
+                  className="font-mono md:hidden"
+                  onClick={() => navigate("/tasks/create")}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </>
             )}
           </div>
         </div>
@@ -177,7 +195,7 @@ const Tasks = () => {
           {tasks.map((task) => (
             <Card
               key={task.id}
-              className="border-border/60 bg-card/70 hover:neon-border transition-all duration-300 cursor-pointer"
+              className="task-card border-border/60 bg-card/70 hover:neon-border transition-all duration-300 cursor-pointer"
               onClick={() => {
                 if (role === "trainer" || role === "admin") {
                   navigate(`/tasks/${task.id}/edit`);
@@ -188,7 +206,7 @@ const Tasks = () => {
             >
               <CardHeader className="space-y-2 pb-3">
                 <div className="flex items-center justify-between gap-2">
-                  <CardTitle className="text-sm md:text-base font-mono line-clamp-1">
+                  <CardTitle className="text-sm md:text-base font-mono line-clamp-1 text-primary">
                     {task.title}
                   </CardTitle>
                   {getDifficultyBadge((task.difficulty as Difficulty) ?? null)}
