@@ -252,7 +252,7 @@ const Tournaments = () => {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="font-mono text-xs h-8 px-3 bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20 hover:text-green-300 hover:border-green-500/30 transition-all"
+                  className="font-mono text-xs h-8 px-3 bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 hover:text-primary/90 hover:border-primary/30 transition-all"
                   onClick={() => navigate("/")}
                 >
                   <ArrowLeft className="h-4 w-4 mr-1" />

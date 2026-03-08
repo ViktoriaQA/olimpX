@@ -307,7 +307,7 @@ const TournamentTasks = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="border border-border/60 hover:bg-primary/10"
+            className="border border-border/60 hover:bg-primary/10 hover:text-primary transition-colors"
             onClick={() => navigate("/my-tournaments")}
           >
             <ArrowLeft className="h-4 w-4" />
@@ -441,7 +441,7 @@ const TournamentTasks = () => {
               {tasks.map((task) => (
                 <Card
                   key={task.id}
-                  className="border-border/60 bg-card/70 hover:border-primary/70 hover:shadow-lg transition-all cursor-pointer"
+                  className="border-primary/60 bg-card/70 hover:border-primary hover:shadow-lg transition-all cursor-pointer"
                   onClick={() => handleTaskCardClick(task.id)}
                 >
                   <CardHeader className="space-y-3">

@@ -458,8 +458,8 @@ const MyTournaments = () => {
     return profile?.subscription_plan === 'Free' || !profile?.subscription_plan;
   };
 
-  const TournamentCard = ({ tournament, showJoinButton = true, showLeaveButton = true }: { tournament: Tournament; showJoinButton?: boolean; showLeaveButton?: boolean }) => (
-    <Card className="border-border/50 bg-card/50 backdrop-blur-sm hover:neon-border transition-all duration-300 group cursor-pointer">
+  const TournamentCard = ({ tournament, showJoinButton = true, showLeaveButton = true, isPrimary = false }: { tournament: Tournament; showJoinButton?: boolean; showLeaveButton?: boolean; isPrimary?: boolean }) => (
+    <Card className={`border-border/50 bg-card/50 backdrop-blur-sm hover:neon-border transition-all duration-300 group cursor-pointer ${isPrimary ? 'border-2 border-primary/50 shadow-primary/20 shadow-lg' : ''}`}>
       <CardHeader className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -780,7 +780,7 @@ const MyTournaments = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+        <Card className="border-2 border-primary/50 bg-card/50 backdrop-blur-sm shadow-primary/20 shadow-lg">
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-primary font-mono">
               {myTournaments.length}
@@ -843,7 +843,7 @@ const MyTournaments = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {myTournaments.map((tournament) => (
-                <TournamentCard key={tournament.id} tournament={tournament} />
+                <TournamentCard key={tournament.id} tournament={tournament} isPrimary={true} />
               ))}
             </div>
           )}
@@ -852,7 +852,7 @@ const MyTournaments = () => {
         <TabsContent value="all-tournaments" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {tournaments.map((tournament) => (
-              <TournamentCard key={tournament.id} tournament={tournament} showJoinButton={true} showLeaveButton={false} />
+              <TournamentCard key={tournament.id} tournament={tournament} showJoinButton={true} showLeaveButton={false} isPrimary={true} />
             ))}
           </div>
         </TabsContent>
