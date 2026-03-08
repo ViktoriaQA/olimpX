@@ -753,7 +753,7 @@ int main() {
                     value={stdin}
                     onChange={(e) => setStdin(e.target.value)}
                     placeholder="Введіть вхідні дані для програми..."
-                    className="font-mono h-full resize-none"
+                    className="font-mono h-full resize-none bg-slate-900 border-slate-700 text-slate-100 placeholder:text-slate-400"
                   />
                 </div>
               </div>
