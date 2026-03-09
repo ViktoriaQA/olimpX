@@ -10,7 +10,7 @@ import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { Play, Code, Terminal, Save, Settings } from "lucide-react";
+import { Play, Code, Terminal, Save, Settings, RefreshCw } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Alert, AlertDescription } from "./ui/alert";
@@ -778,7 +778,7 @@ int main() {
               <div className="h-full p-1">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
                 <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
-                  <TabsTrigger value="input">Вхідні дані</TabsTrigger>
+                  <TabsTrigger value="input">Вхід</TabsTrigger>
                   <TabsTrigger value="output">Виконання</TabsTrigger>
                   <TabsTrigger value="tests">Тести</TabsTrigger>
                 </TabsList>
@@ -900,7 +900,7 @@ int main() {
                           size="sm"
                           className="text-sm"
                         >
-                          Очистити результати
+                          {isMobile ? <RefreshCw className="w-4 h-4" /> : "Очистити результати"}
                         </Button>
                       </div>
                       <div className="overflow-auto max-h-64">
