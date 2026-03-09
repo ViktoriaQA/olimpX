@@ -544,14 +544,26 @@ const TournamentTasks = () => {
                       <span>•</span>
                       <span>{task.estimatedTime}</span>
                     </div>
-                    <Button
-                      size="sm"
-                      className="font-mono text-xs"
-                      onClick={(e) => handleSolveTask(e, task.id)}
-                    >
-                      {t("tasks.solve", "Розв'язати")}
-                      <ArrowRight className="h-3 w-3 ml-1" />
-                    </Button>
+                    {role === 'student' && getTaskStatus(task.id) !== 'success' && (
+                      <Button
+                        size="sm"
+                        className="font-mono text-xs"
+                        onClick={(e) => handleSolveTask(e, task.id)}
+                      >
+                        {t("tasks.solve", "Розв'язати")}
+                        <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
+                    )}
+                    {role !== 'student' && (
+                      <Button
+                        size="sm"
+                        className="font-mono text-xs"
+                        onClick={(e) => handleSolveTask(e, task.id)}
+                      >
+                        {t("tasks.solve", "Розв'язати")}
+                        <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               ))}
