@@ -661,17 +661,17 @@ const MyTournaments = () => {
           <div className="flex items-center gap-2 text-sm">
             <Users className="h-4 w-4 text-muted-foreground" />
             <span className="font-mono text-muted-foreground">
-              {t('tournaments.participantsCount', { current: tournament.participants, max: tournament.maxParticipants })}
+              {t('tournaments.maxParticipants', { max: tournament.maxParticipants })}
             </span>
           </div>
-          {tournament.startDate && tournament.endDate && (
+          {/* {tournament.startDate && tournament.endDate && (
             <div className="flex items-center gap-2 text-sm">
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <span className="font-mono text-muted-foreground">
                 {new Date(tournament.startDate).toLocaleDateString(i18n.language === 'ua' ? 'uk-UA' : 'en-US')} - {new Date(tournament.endDate).toLocaleDateString(i18n.language === 'ua' ? 'uk-UA' : 'en-US')}
               </span>
             </div>
-          )}
+          )} */}
           {tournament.prize && (
             <div className="flex items-center gap-2 text-sm">
               <Trophy className="h-4 w-4 text-primary" />

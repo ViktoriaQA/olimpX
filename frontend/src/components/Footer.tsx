@@ -27,7 +27,7 @@ export function Footer({
   
   return (
     <footer className={`fixed bottom-0 left-0 right-0 border-t border-border bg-card/30 backdrop-blur-lg py-1 px-6 z-50 transition-all duration-300 ${
-      isSidebarCollapsed ? 'md:left-16' : 'md:left-64'
+      isSidebarCollapsed ? 'md:left-12' : 'md:left-64'
     }`}>
       <div className="container mx-auto">
         <div className="flex items-center justify-between gap-4 text-sm text-muted-foreground">
