@@ -778,43 +778,7 @@ const MyTournaments = () => {
         </p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-2 border-primary/50 bg-card/50 backdrop-blur-sm shadow-primary/20 shadow-lg">
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-primary font-mono">
-              {myTournaments.length}
-            </div>
-            <div className="text-sm text-muted-foreground font-mono">{t('tournaments.myTournaments')}</div>
-          </CardContent>
-        </Card>
-        <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-accent font-mono">
-              {tournaments.filter(t => t.status === "active").length}
-            </div>
-            <div className="text-sm text-muted-foreground font-mono">{t('home.activeTournaments')}</div>
-          </CardContent>
-        </Card>
-        <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-neon-cyan font-mono">
-              {tournaments.filter(t => t.status === "upcoming").length}
-            </div>
-            <div className="text-sm text-muted-foreground font-mono">{t('home.upcomingTournaments')}</div>
-          </CardContent>
-        </Card>
-        <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-neon-green font-mono">
-              {tournaments.reduce((sum, t) => sum + t.participants, 0)}
-            </div>
-
-            <div className="text-sm text-muted-foreground font-mono">{t('tournaments.totalParticipants')}</div>
-          </CardContent>
-        </Card>
-      </div>
-
+      
       {/* Tabs */}
       <Tabs defaultValue="my-tournaments" className="space-y-4">
         <TabsList className="grid w-full grid-cols-2">
