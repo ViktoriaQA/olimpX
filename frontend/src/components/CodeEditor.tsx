@@ -634,11 +634,11 @@ int main() {
   return (
     <div className="w-full h-full min-h-[600px] flex flex-col overflow-hidden">
       <Card className="flex-1 flex flex-col overflow-hidden border-0">
-        <CardContent className="flex-1 flex flex-col overflow-hidden p-3 sm:p-4">
-          <ResizablePanelGroup direction="vertical" className="flex-1 gap-2">
+        <CardContent className="flex-1 flex flex-col overflow-hidden p-1 sm:p-4">
+          <ResizablePanelGroup direction="vertical" className="flex-1 gap-1 sm:gap-2">
             {/* Верхня панель: редактор коду */}
             <ResizablePanel defaultSize={50} minSize={20} maxSize={80}>
-              <div className="h-full p-1">
+              <div className="h-full">
                 <div className="h-full rounded-lg overflow-hidden relative">
                 <CodeMirror
                   value={code}
@@ -649,7 +649,7 @@ int main() {
                       fontSize: isMobile ? '12px' : '14px',
                     },
                     '.cm-content': {
-                      padding: isMobile ? '8px' : '12px',
+                      padding: isMobile ? '12px' : '12px',
                       maxWidth: isMobile ? '100%' : 'none',
                       // overflowX: isMobile ? 'scroll' : 'auto',
                       wordBreak: isMobile ? 'break-all' : 'normal',
@@ -687,7 +687,7 @@ int main() {
                   }}
                 />
                 {/* Іконка копіювання вгорі */}
-                <div className="absolute top-2 right-2">
+                <div className="absolute -top-2 -right-2">
                   <button
                     onClick={copyCode}
                     className="p-2 rounded hover:bg-gray-700/80 transition-colors"
@@ -797,7 +797,7 @@ int main() {
 
             {/* Нижня панель: таби для входних даних, результатів та тестів */}
             <ResizablePanel defaultSize={50} minSize={20} maxSize={80}>
-              <div className="h-full p-1">
+              <div className="h-full">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
                 <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
                   <TabsTrigger value="input">Вхід</TabsTrigger>
