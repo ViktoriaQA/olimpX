@@ -2,6 +2,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Terminal, Trophy, BookOpen, Users, CreditCard, Shield, Lock, Star, Award } from "lucide-react";
+import { Loading } from "@/components/ui/loading";
 import { useTranslation } from "react-i18next";
 
 type CardItem = {
@@ -23,11 +24,7 @@ const Dashboard = () => {
   }, [loading, session, navigate]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-pulse-glow text-primary font-mono">{t('dashboard.loading')}</div>
-      </div>
-    );
+    return <Loading fullScreen={false} />;
   }
 
   const studentCards: CardItem[] = [

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { Loading } from "@/components/ui/loading";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { User, Mail, Phone, Calendar, Shield, CreditCard, Award, BookOpen, Troph
 import { config } from "@/config";
 import { AuthService } from "@/services/authService";
 import { ProfileService, UserStats, SubscriptionInfo } from "@/services/profileService";
+import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
 
 export default function Profile() {
@@ -116,11 +117,7 @@ export default function Profile() {
   };
 
   if (!user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-pulse-glow text-primary font-mono text-lg">Loading...</div>
-      </div>
-    );
+    return <Loading fullScreen={false} />;
   }
 
   const getRoleColor = (role: string) => {

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Loading } from "@/components/ui/loading";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -131,13 +133,7 @@ const Auth = () => {
   }, [loading, isAuthenticated, navigate]);
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background matrix-bg">
-        <div className="animate-pulse-glow text-primary font-mono text-lg">
-          Initializing...
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   return (

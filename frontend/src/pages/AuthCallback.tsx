@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { Loading } from "@/components/ui/loading";
 
 const AuthCallback = () => {
   const { session, profile, loading } = useAuth();
@@ -17,13 +18,7 @@ const AuthCallback = () => {
     }
   }, [loading, session, navigate]);
 
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background matrix-bg">
-      <div className="animate-pulse-glow text-primary font-mono text-lg">
-        Authenticating...
-      </div>
-    </div>
-  );
+  return <Loading />;
 };
 
 export default AuthCallback;

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Loading } from "@/components/ui/loading";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -82,11 +83,7 @@ const Students = () => {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-pulse-glow text-primary font-mono">{t('students.loading', 'Loading students...')}</div>
-      </div>
-    );
+    return <Loading fullScreen={false} />;
   }
 
   if (error) {

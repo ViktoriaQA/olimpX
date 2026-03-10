@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { CodeEditor } from "@/components/CodeEditor";
+import { Loading } from "@/components/ui/loading";
 import { ArrowLeft, BookOpenText, Flame, Clock3, ListChecks, Monitor } from "lucide-react";
 import { TestResultsDisplay } from "@/components/TestResultsDisplay";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -58,6 +59,17 @@ const TaskSolve = () => {
   const [savedCode, setSavedCode] = useState<string>('');
   const [isRestoringCode, setIsRestoringCode] = useState(false);
   const [savedTestResults, setSavedTestResults] = useState<any>(null);
+  const [isIframeLoading, setIsIframeLoading] = useState(false);
+
+  
+  // Handle iframe loading
+  const handleIframeLoad = () => {
+    setIsIframeLoading(false);
+  };
+
+  const handleIframeTabClick = () => {
+    setIsIframeLoading(true);
+  };
 
   // Handle successful submission to trigger parent refresh
   const handleSuccessfulSubmit = () => {
@@ -271,16 +283,9 @@ const TaskSolve = () => {
     [task, t]
   );
 
-  if (loading || isRestoringCode) {
+  if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
-        <div className="flex items-center gap-2 text-muted-foreground font-mono text-sm">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          {isRestoringCode 
-            ? t("common.restoringCode", "Відновлення коду...") 
-            : t("common.loading", "Завантаження...")
-          }
-        </div>
       </div>
     );
   }
@@ -370,7 +375,7 @@ const TaskSolve = () => {
                   <TabsTrigger value="editor" className="flex-1 text-xs sm:text-sm">
                     {t("tasks.editorTab", "Редактор")}
                   </TabsTrigger>
-                  <TabsTrigger value="tests" className="flex-1 text-xs sm:text-sm">
+                  <TabsTrigger value="tests" className="flex-1 text-xs sm:text-sm" onClick={handleIframeTabClick}>
                     {t("tasks.testsTab", "Тренування")}
                   </TabsTrigger>
                 </TabsList>
@@ -491,7 +496,15 @@ const TaskSolve = () => {
                 {/* Вкладка: тести */}
                 <TabsContent value="tests" className="h-full mt-2">
                   <div className="h-full border border-border/70 rounded-md bg-background/40">
-                    <div className="h-full p-3">
+                    <div className="h-full p-3 relative">
+                      {isIframeLoading && (
+                        <div className="absolute inset-0 bg-background/80 flex items-center justify-center z-10">
+                          <div className="flex items-center gap-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span className="text-sm text-muted-foreground">Завантаження...</span>
+                          </div>
+                        </div>
+                      )}
                       <div className="h-full border rounded-lg overflow-hidden bg-white">
                         <iframe
                           src="https://onecompiler.com/embed/javascript?theme=dark"
@@ -503,6 +516,7 @@ const TaskSolve = () => {
                           }}
                           title="OneCompiler JavaScript Editor"
                           loading="lazy"
+                          onLoad={handleIframeLoad}
                         />
                       </div>
                     </div>
@@ -619,7 +633,7 @@ const TaskSolve = () => {
                             <TabsTrigger value="local" className="flex-1">
                               {t("tasks.localEditor", "Виконання")}
                             </TabsTrigger>
-                            <TabsTrigger value="onecompiler" className="flex-1">
+                            <TabsTrigger value="onecompiler" className="flex-1" onClick={handleIframeTabClick}>
                               {t("tasks.onecompiler", "Тренування")}
                             </TabsTrigger>
                           </TabsList>
@@ -640,7 +654,15 @@ const TaskSolve = () => {
                         </TabsContent>
                         
                         <TabsContent value="onecompiler" className="flex-1 mt-0 overflow-hidden">
-                          <div className="h-full p-4">
+                          <div className="h-full p-4 relative">
+                            {isIframeLoading && (
+                              <div className="absolute inset-0 bg-background/80 flex items-center justify-center z-10">
+                                <div className="flex items-center gap-2">
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                  <span className="text-sm text-muted-foreground">Завантаження...</span>
+                                </div>
+                              </div>
+                            )}
                             <div className="h-full border rounded-lg overflow-hidden bg-white">
                               <iframe
                                 src="https://onecompiler.com/embed/javascript?theme=dark"
@@ -648,10 +670,11 @@ const TaskSolve = () => {
                                 height="100%"
                                 style={{ 
                                   border: 'none',
-                                  minHeight: '500px'
+                                  minHeight: '400px'
                                 }}
                                 title="OneCompiler JavaScript Editor"
                                 loading="lazy"
+                                onLoad={handleIframeLoad}
                               />
                             </div>
                           </div>

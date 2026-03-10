@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Loading } from "@/components/ui/loading";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -451,9 +452,7 @@ const TournamentTasks = () => {
             )}
           </div>
           {loading ? (
-            <div className="flex items-center justify-center h-32">
-              <div className="animate-pulse-glow text-primary font-mono">{t('common.loading')}</div>
-            </div>
+            <Loading fullScreen={false} />
           ) : tasks.length === 0 ? (
             <Card className="border-border/60 bg-card/60">
               <CardContent className="p-8 text-center">
@@ -581,9 +580,7 @@ const TournamentTasks = () => {
             </div>
             
             {loadingProgress ? (
-              <div className="flex items-center justify-center h-32">
-                <div className="animate-pulse-glow text-primary font-mono">{t('common.loading')}</div>
-              </div>
+              <Loading fullScreen={false} />
             ) : progressData.length === 0 ? (
               <Card className="border-border/60 bg-card/60">
                 <CardContent className="p-8 text-center">

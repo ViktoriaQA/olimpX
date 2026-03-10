@@ -6,6 +6,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { MobileSidebar } from "@/components/MobileSidebar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { Loading } from "@/components/ui/loading";
 import { Menu, LogOut, Terminal } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -40,14 +41,7 @@ function AppLayoutContent({ children }: { children: ReactNode }) {
   }, [loading, isAuthenticated, navigate]);
 
   if (loading) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-background matrix-bg z-50">
-        <div className="flex items-center gap-3">
-          <Terminal className="w-8 h-8 text-primary animate-pulse-glow" />
-          <div className="animate-pulse-glow text-primary font-mono text-lg">Loading...</div>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   return (

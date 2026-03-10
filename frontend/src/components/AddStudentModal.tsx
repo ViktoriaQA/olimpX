@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Loading } from "@/components/ui/loading";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -214,9 +215,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
                 </CardHeader>
                 <CardContent>
                   {studentsLoading ? (
-                    <div className="flex items-center justify-center h-32">
-                      <div className="animate-pulse-glow text-primary font-mono">{t('common.loading')}</div>
-                    </div>
+                    <Loading fullScreen={false} />
                   ) : students.length === 0 ? (
                     <div className="text-center py-8">
                       <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />

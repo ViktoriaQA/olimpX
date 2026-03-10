@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Loading } from "@/components/ui/loading";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -744,11 +745,7 @@ const MyTournaments = () => {
   );
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-pulse-glow text-primary font-mono">{t('common.loading')}</div>
-      </div>
-    );
+    return <Loading fullScreen={false} />;
   }
 
   return (
