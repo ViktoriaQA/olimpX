@@ -17,6 +17,7 @@ import taskRoutes from './routes/tasks';
 import studentRoutes from './routes/students';
 import paymentRoutes from './routes/payment';
 import codeExecutionRoutes from './routes/codeExecutionRoutes';
+import logRoutes from './routes/logs';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -75,6 +76,7 @@ app.use('/api/tasks', authMiddleware, taskRoutes);
 app.use('/api/students', authMiddleware, studentRoutes);
 app.use('/api/v1/payment', paymentRoutes);
 app.use('/api/code-execution', codeExecutionRoutes);
+app.use('/api/logs', authMiddleware, logRoutes);
 
 // Direct LiqPay callback route (without /api/v1 prefix)
 app.use('/payment', paymentRoutes);

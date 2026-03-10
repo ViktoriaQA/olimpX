@@ -60,15 +60,81 @@ const TaskSolve = () => {
   const [isRestoringCode, setIsRestoringCode] = useState(false);
   const [savedTestResults, setSavedTestResults] = useState<any>(null);
   const [isIframeLoading, setIsIframeLoading] = useState(false);
+  const [isIframeError, setIsIframeError] = useState(false);
 
   
   // Handle iframe loading
   const handleIframeLoad = () => {
+    console.log('✅ OneCompiler iframe loaded successfully');
     setIsIframeLoading(false);
+    setIsIframeError(false);
+    
+    // Send log to server
+    fetch(`${config.api.baseUrl}/api/logs/iframe`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        event: 'iframe_loaded',
+        url: 'https://onecompiler.com/embed/javascript?theme=dark&hideNew=true&hideLanguageSelection=true',
+        userAgent: navigator.userAgent,
+        isMobile: isMobile,
+        timestamp: new Date().toISOString(),
+        taskId,
+        tournamentId
+      })
+    }).catch(err => console.warn('Failed to send iframe log:', err));
+  };
+
+  const handleIframeError = () => {
+    console.error('❌ OneCompiler iframe failed to load');
+    setIsIframeLoading(false);
+    setIsIframeError(true);
+    
+    // Send error log to server
+    fetch(`${config.api.baseUrl}/api/logs/iframe`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        event: 'iframe_error',
+        url: 'https://onecompiler.com/embed/javascript?theme=dark&hideNew=true&hideLanguageSelection=true',
+        userAgent: navigator.userAgent,
+        isMobile: isMobile,
+        timestamp: new Date().toISOString(),
+        taskId,
+        tournamentId,
+        error: 'iframe_failed_to_load'
+      })
+    }).catch(err => console.warn('Failed to send iframe error log:', err));
   };
 
   const handleIframeTabClick = () => {
+    console.log('🖱️ OneCompiler tab clicked, starting iframe load');
     setIsIframeLoading(true);
+    setIsIframeError(false);
+    
+    // Send click log to server
+    fetch(`${config.api.baseUrl}/api/logs/iframe`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        event: 'tab_clicked',
+        url: 'https://onecompiler.com/embed/javascript?theme=dark&hideNew=true&hideLanguageSelection=true',
+        userAgent: navigator.userAgent,
+        isMobile: isMobile,
+        timestamp: new Date().toISOString(),
+        taskId,
+        tournamentId
+      })
+    }).catch(err => console.warn('Failed to send tab click log:', err));
   };
 
   // Handle successful submission to trigger parent refresh
@@ -176,6 +242,16 @@ const TaskSolve = () => {
   }, [taskId, tournamentId]);
 
   useEffect(() => {
+    console.log('🔍 TaskSolve component mounted');
+    console.log('📱 Device info:', {
+      userAgent: navigator.userAgent,
+      isMobile: isMobile,
+      screenResolution: `${window.screen.width}x${window.screen.height}`,
+      viewport: `${window.innerWidth}x${window.innerHeight}`,
+      taskId,
+      tournamentId
+    });
+
     if (!session) {
       navigate("/auth");
       return;
@@ -266,17 +342,19 @@ const TaskSolve = () => {
         };
 
         setTask(mapped);
+        console.log('✅ Task loaded successfully:', mapped.title);
       } catch (err) {
         const message =
           err instanceof Error ? err.message : t("tasks.loadError", "Не вдалося завантажити задачу.");
         setError(message);
+        console.error('❌ Failed to load task:', err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchTask();
-  }, [session, token, taskId, tournamentId, navigate, t]);
+  }, [session, token, taskId, tournamentId, navigate, t, isMobile]);
 
   const headerTitle = useMemo(
     () => task?.title ?? t("tasks.unknownTask", "Задача"),
@@ -505,23 +583,41 @@ const TaskSolve = () => {
                           </div>
                         </div>
                       )}
-                      <div className="h-full rounded-lg overflow-hidden">
-                        <iframe
-                          src="https://onecompiler.com/embed/javascript?theme=dark&hideNew=true&hideLanguageSelection=true"
-                          width="100%"
-                          height="100%"
-                          style={{ 
-                            border: 'none',
-                            minHeight: '400px',
-                            backgroundColor: 'transparent'
-                          }}
-                          title="OneCompiler JavaScript Editor"
-                          loading="lazy"
-                          onLoad={handleIframeLoad}
-                          referrerPolicy="no-referrer-when-downgrade"
-                          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
-                        />
-                      </div>
+                      {isIframeError ? (
+                        <div className="h-full flex flex-col items-center justify-center text-center p-4">
+                          <div className="text-muted-foreground mb-4">
+                            <Monitor className="h-8 w-8 mx-auto mb-2" />
+                            <p className="text-sm">Не вдалося завантажити тренування</p>
+                            <p className="text-xs mt-1">Спробуйте відкрити на реальному мобільному пристрої</p>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open('https://onecompiler.com/embed/javascript?theme=dark', '_blank')}
+                          >
+                            Відкрити в новому вікні
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="h-full rounded-lg overflow-hidden">
+                          <iframe
+                            src="https://onecompiler.com/embed/javascript?theme=dark&hideNew=true&hideLanguageSelection=true"
+                            width="100%"
+                            height="100%"
+                            style={{ 
+                              border: 'none',
+                              minHeight: '400px',
+                              backgroundColor: 'transparent'
+                            }}
+                            title="OneCompiler JavaScript Editor"
+                            loading="lazy"
+                            onLoad={handleIframeLoad}
+                            onError={handleIframeError}
+                            referrerPolicy="no-referrer-when-downgrade"
+                            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </TabsContent>
@@ -666,23 +762,41 @@ const TaskSolve = () => {
                                 </div>
                               </div>
                             )}
-                            <div className="h-full rounded-lg overflow-hidden">
-                              <iframe
-                                src="https://onecompiler.com/embed/javascript?theme=dark&hideNew=true&hideLanguageSelection=true"
-                                width="100%"
-                                height="100%"
-                                style={{ 
-                                  border: 'none',
-                                  minHeight: '400px',
-                                  backgroundColor: 'transparent'
-                                }}
-                                title="OneCompiler JavaScript Editor"
-                                loading="lazy"
-                                onLoad={handleIframeLoad}
-                                referrerPolicy="no-referrer-when-downgrade"
-                                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
-                              />
-                            </div>
+                            {isIframeError ? (
+                              <div className="h-full flex flex-col items-center justify-center text-center p-4">
+                                <div className="text-muted-foreground mb-4">
+                                  <Monitor className="h-8 w-8 mx-auto mb-2" />
+                                  <p className="text-sm">Не вдалося завантажити тренування</p>
+                                  <p className="text-xs mt-1">Спробуйте відкрити на реальному мобільному пристрої</p>
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => window.open('https://onecompiler.com/embed/javascript?theme=dark', '_blank')}
+                                >
+                                  Відкрити в новому вікні
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="h-full rounded-lg overflow-hidden">
+                                <iframe
+                                  src="https://onecompiler.com/embed/javascript?theme=dark&hideNew=true&hideLanguageSelection=true"
+                                  width="100%"
+                                  height="100%"
+                                  style={{ 
+                                    border: 'none',
+                                    minHeight: '400px',
+                                    backgroundColor: 'transparent'
+                                  }}
+                                  title="OneCompiler JavaScript Editor"
+                                  loading="lazy"
+                                  onLoad={handleIframeLoad}
+                                  onError={handleIframeError}
+                                  referrerPolicy="no-referrer-when-downgrade"
+                                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
+                                />
+                              </div>
+                            )}
                           </div>
                         </TabsContent>
                       </Tabs>
