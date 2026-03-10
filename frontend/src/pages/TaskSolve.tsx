@@ -505,14 +505,15 @@ const TaskSolve = () => {
                           </div>
                         </div>
                       )}
-                      <div className="h-full border rounded-lg overflow-hidden bg-white">
+                      <div className="h-full rounded-lg overflow-hidden">
                         <iframe
                           src="https://onecompiler.com/embed/javascript?theme=dark"
                           width="100%"
                           height="100%"
                           style={{ 
                             border: 'none',
-                            minHeight: '400px'
+                            minHeight: '400px',
+                            backgroundColor: 'transparent'
                           }}
                           title="OneCompiler JavaScript Editor"
                           loading="lazy"
@@ -663,14 +664,15 @@ const TaskSolve = () => {
                                 </div>
                               </div>
                             )}
-                            <div className="h-full border rounded-lg overflow-hidden bg-white">
+                            <div className="h-full rounded-lg overflow-hidden">
                               <iframe
                                 src="https://onecompiler.com/embed/javascript?theme=dark"
                                 width="100%"
                                 height="100%"
                                 style={{ 
                                   border: 'none',
-                                  minHeight: '400px'
+                                  minHeight: '400px',
+                                  backgroundColor: 'transparent'
                                 }}
                                 title="OneCompiler JavaScript Editor"
                                 loading="lazy"
