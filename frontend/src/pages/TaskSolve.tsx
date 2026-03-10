@@ -661,7 +661,7 @@ const TaskSolve = () => {
                 {/* Вкладка: тести */}
                 <TabsContent value="tests" className="h-full mt-2">
                   <div className="h-full border border-border/70 rounded-md bg-background/40">
-                    <div className="h-full p-3 relative">
+                    <div className="h-full p-3 relative min-h-0">
                       {isIframeLoading && (
                         <div className="absolute inset-0 bg-background/80 flex items-center justify-center z-10">
                           <div className="flex items-center gap-2">
@@ -686,15 +686,15 @@ const TaskSolve = () => {
                           </Button>
                         </div>
                       ) : (
-                        <div className="h-full rounded-lg overflow-hidden">
+                        <div className="h-full w-full rounded-lg overflow-hidden min-h-0">
                           <iframe
                             src="https://onecompiler.com/embed/javascript?theme=dark"
-                            width="100%"
-                            height="100%"
+                            className="w-full h-full border-0"
                             style={{ 
-                              border: 'none',
-                              minHeight: '400px',
-                              backgroundColor: 'transparent'
+                              minHeight: 'calc(100vh - 250px)',
+                              backgroundColor: 'transparent',
+                              position: 'relative',
+                              zIndex: 1
                             }}
                             title="OneCompiler JavaScript Editor"
                             loading="lazy"
@@ -840,7 +840,7 @@ const TaskSolve = () => {
                         </TabsContent>
                         
                         <TabsContent value="onecompiler" className="flex-1 mt-0 overflow-hidden">
-                          <div className="h-full p-4 relative">
+                          <div className="h-full p-4 relative min-h-0">
                             {isIframeLoading && (
                               <div className="absolute inset-0 bg-background/80 flex items-center justify-center z-10">
                                 <div className="flex items-center gap-2">
@@ -865,15 +865,15 @@ const TaskSolve = () => {
                                 </Button>
                               </div>
                             ) : (
-                              <div className="h-full rounded-lg overflow-hidden">
+                              <div className="h-full w-full rounded-lg overflow-hidden min-h-0">
                                 <iframe
                                   src="https://onecompiler.com/embed/javascript?theme=dark"
-                                  width="100%"
-                                  height="100%"
+                                  className="w-full h-full border-0"
                                   style={{ 
-                                    border: 'none',
                                     minHeight: '400px',
-                                    backgroundColor: 'transparent'
+                                    backgroundColor: 'transparent',
+                                    position: 'relative',
+                                    zIndex: 1
                                   }}
                                   title="OneCompiler JavaScript Editor"
                                   loading="lazy"
