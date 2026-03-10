@@ -67,7 +67,9 @@ const TaskSolve = () => {
   const handleIframeLoad = () => {
     console.log('✅ OneCompiler iframe loaded successfully');
     console.log('🔍 Iframe details:', {
-      src: 'https://onecompiler.com/embed/javascript?theme=dark&hideNew=true&hideLanguageSelection=true',
+      src: isMobile 
+        ? 'https://onecompiler.com/embed/javascript?theme=dark&hideNew=true&hideLanguageSelection=true&mobile=true'
+        : 'https://onecompiler.com/embed/javascript?theme=dark&hideNew=true&hideLanguageSelection=true',
       userAgent: navigator.userAgent,
       isMobile: isMobile,
       screen: `${window.screen.width}x${window.screen.height}`,
@@ -78,7 +80,22 @@ const TaskSolve = () => {
     // Check if iframe actually has content after a delay
     setTimeout(() => {
       const iframes = document.querySelectorAll('iframe');
+      console.log(`🔍 Found ${iframes.length} iframes on page`);
+      
       iframes.forEach((iframe, index) => {
+        console.log(`🔍 Iframe ${index} details:`, {
+          src: iframe.src,
+          width: iframe.width,
+          height: iframe.height,
+          style: iframe.style.cssText,
+          className: iframe.className,
+          offsetWidth: iframe.offsetWidth,
+          offsetHeight: iframe.offsetHeight,
+          isVisible: iframe.offsetParent !== null,
+          display: window.getComputedStyle(iframe).display,
+          visibility: window.getComputedStyle(iframe).visibility
+        });
+        
         try {
           // Try to access iframe content (may be blocked by CORS)
           const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -134,6 +151,11 @@ const TaskSolve = () => {
           }
         } catch (error) {
           console.error(`🚫 Iframe ${index} access error:`, error);
+          console.error(`🚫 Error details:`, {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+          });
           
           // Send access error log
           fetch(`${config.api.baseUrl}/api/logs/iframe`, {
@@ -149,7 +171,12 @@ const TaskSolve = () => {
               timestamp: new Date().toISOString(),
               taskId,
               tournamentId,
-              error: error.toString()
+              error: error.toString(),
+              errorName: error.name,
+              errorMessage: error.message,
+              iframeSrc: iframe.src,
+              iframeWidth: iframe.width,
+              iframeHeight: iframe.height
             })
           }).catch(err => console.warn('Failed to send access error log:', err));
         }
@@ -168,7 +195,9 @@ const TaskSolve = () => {
       },
       body: JSON.stringify({
         event: 'iframe_loaded',
-        url: 'https://onecompiler.com/embed/javascript?theme=dark&hideNew=true&hideLanguageSelection=true',
+        url: isMobile 
+          ? 'https://onecompiler.com/embed/javascript?theme=dark&hideNew=true&hideLanguageSelection=true&mobile=true'
+          : 'https://onecompiler.com/embed/javascript?theme=dark&hideNew=true&hideLanguageSelection=true',
         userAgent: navigator.userAgent,
         isMobile: isMobile,
         timestamp: new Date().toISOString(),
@@ -694,7 +723,10 @@ const TaskSolve = () => {
                       ) : (
                         <div className="h-full rounded-lg overflow-hidden">
                           <iframe
-                            src="https://onecompiler.com/embed/javascript?theme=dark&hideNew=true&hideLanguageSelection=true"
+                            src={isMobile 
+                              ? "https://onecompiler.com/embed/javascript?theme=dark&hideNew=true&hideLanguageSelection=true&mobile=true"
+                              : "https://onecompiler.com/embed/javascript?theme=dark&hideNew=true&hideLanguageSelection=true"
+                            }
                             width="100%"
                             height="100%"
                             style={{ 
@@ -873,7 +905,10 @@ const TaskSolve = () => {
                             ) : (
                               <div className="h-full rounded-lg overflow-hidden">
                                 <iframe
-                                  src="https://onecompiler.com/embed/javascript?theme=dark&hideNew=true&hideLanguageSelection=true"
+                                  src={isMobile 
+                                    ? "https://onecompiler.com/embed/javascript?theme=dark&hideNew=true&hideLanguageSelection=true&mobile=true"
+                                    : "https://onecompiler.com/embed/javascript?theme=dark&hideNew=true&hideLanguageSelection=true"
+                                  }
                                   width="100%"
                                   height="100%"
                                   style={{ 

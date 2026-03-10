@@ -21,6 +21,11 @@ interface IframeLogRequest {
   screen?: string;
   viewport?: string;
   devicePixelRatio?: number;
+  errorName?: string;
+  errorMessage?: string;
+  iframeSrc?: string;
+  iframeWidth?: string;
+  iframeHeight?: string;
 }
 
 interface DailySummary {
