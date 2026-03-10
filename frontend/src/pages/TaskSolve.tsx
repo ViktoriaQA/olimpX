@@ -66,6 +66,15 @@ const TaskSolve = () => {
   // Handle iframe loading
   const handleIframeLoad = () => {
     console.log('✅ OneCompiler iframe loaded successfully');
+    console.log('🔍 Iframe details:', {
+      src: 'https://onecompiler.com/embed/javascript?theme=dark&hideNew=true&hideLanguageSelection=true',
+      userAgent: navigator.userAgent,
+      isMobile: isMobile,
+      screen: `${window.screen.width}x${window.screen.height}`,
+      viewport: `${window.innerWidth}x${window.innerHeight}`,
+      devicePixelRatio: window.devicePixelRatio
+    });
+    
     setIsIframeLoading(false);
     setIsIframeError(false);
     
@@ -83,7 +92,10 @@ const TaskSolve = () => {
         isMobile: isMobile,
         timestamp: new Date().toISOString(),
         taskId,
-        tournamentId
+        tournamentId,
+        screen: `${window.screen.width}x${window.screen.height}`,
+        viewport: `${window.innerWidth}x${window.innerHeight}`,
+        devicePixelRatio: window.devicePixelRatio
       })
     }).catch(err => console.warn('Failed to send iframe log:', err));
   };
