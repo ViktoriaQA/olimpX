@@ -96,6 +96,9 @@ COPY --from=backend-builder --chown=nodejs:nodejs /app/backend/dist ./dist
 # Copy frontend build from frontend builder
 COPY --from=frontend-builder --chown=nodejs:nodejs /app/frontend/dist ./static
 
+# Create logs directory with proper permissions
+RUN mkdir -p /app/logs && chown -R nodejs:nodejs /app/logs
+
 # Create .env file for runtime
 RUN echo "NODE_ENV=production" > .env
 

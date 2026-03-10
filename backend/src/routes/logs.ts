@@ -5,14 +5,22 @@ import fs from 'fs';
 import path from 'path';
 
 interface IframeLogRequest {
-  event: 'iframe_loaded' | 'iframe_error' | 'tab_clicked';
-  url: string;
+  event: 'iframe_loaded' | 'iframe_error' | 'tab_clicked' | 'iframe_content_check' | 'iframe_cors_blocked' | 'iframe_access_error';
+  url?: string;
   userAgent: string;
   isMobile: boolean;
   timestamp?: string;
   taskId?: string;
   tournamentId?: string;
   error?: string;
+  hasContent?: boolean;
+  bodyLength?: number;
+  title?: string;
+  readyState?: string;
+  reason?: string;
+  screen?: string;
+  viewport?: string;
+  devicePixelRatio?: number;
 }
 
 interface DailySummary {
@@ -54,14 +62,17 @@ router.post('/iframe', authMiddleware, async (req: Request, res: Response) => {
     const consoleMessage: { [key: string]: string } = {
       'iframe_loaded': '✅ OneCompiler iframe loaded successfully',
       'iframe_error': '❌ OneCompiler iframe failed to load',
-      'tab_clicked': '🖱️ OneCompiler tab clicked'
+      'tab_clicked': '🖱️ OneCompiler tab clicked',
+      'iframe_content_check': '📄 OneCompiler iframe content check',
+      'iframe_cors_blocked': '🚫 OneCompiler iframe CORS blocked',
+      'iframe_access_error': '💥 OneCompiler iframe access error'
     };
     
     console.log(consoleMessage[event] || `📝 OneCompiler event: ${event}`);
     console.log('📊 Iframe Log Data:', JSON.stringify(logEntry, null, 2));
 
-    // Save to log file
-    const logDir = path.join(process.cwd(), 'tmp', 'logs');
+    // Try to save to log file (optional - fail silently if not possible)
+    const logDir = path.join(process.cwd(), 'logs');
     try {
       if (!fs.existsSync(logDir)) {
         fs.mkdirSync(logDir, { recursive: true });
@@ -72,13 +83,12 @@ router.post('/iframe', authMiddleware, async (req: Request, res: Response) => {
       
       fs.appendFileSync(logFile, logLine);
     } catch (fileError) {
-      console.warn('⚠️ Could not write to log file:', fileError);
-      // Continue without file logging - still log to console
+      // Silent fail - console logging is enough for debugging
     }
 
     // Also save daily summary
     const today = new Date().toISOString().split('T')[0];
-    const summaryFile = path.join(process.cwd(), 'tmp', 'logs', `iframe-summary-${today}.json`);
+    const summaryFile = path.join(process.cwd(), 'logs', `iframe-summary-${today}.json`);
     
     let summary: DailySummary = {
       mobile: { loaded: 0, error: 0, clicked: 0 },
@@ -109,8 +119,7 @@ router.post('/iframe', authMiddleware, async (req: Request, res: Response) => {
 
       fs.writeFileSync(summaryFile, JSON.stringify(summary, null, 2));
     } catch (summaryError) {
-      console.warn('⚠️ Could not write summary file:', summaryError);
-      // Continue without summary file - still log to console
+      // Silent fail - console logging is enough for debugging
     }
 
     res.json({ success: true, logged: true });
@@ -125,7 +134,7 @@ router.post('/iframe', authMiddleware, async (req: Request, res: Response) => {
 router.get('/iframe/summary', authMiddleware, async (req: Request, res: Response) => {
   try {
     const today = new Date().toISOString().split('T')[0];
-    const summaryFile = path.join(process.cwd(), 'tmp', 'logs', `iframe-summary-${today}.json`);
+    const summaryFile = path.join(process.cwd(), 'logs', `iframe-summary-${today}.json`);
     
     if (fs.existsSync(summaryFile)) {
       const summary: DailySummary = JSON.parse(fs.readFileSync(summaryFile, 'utf8'));

@@ -75,6 +75,87 @@ const TaskSolve = () => {
       devicePixelRatio: window.devicePixelRatio
     });
     
+    // Check if iframe actually has content after a delay
+    setTimeout(() => {
+      const iframes = document.querySelectorAll('iframe');
+      iframes.forEach((iframe, index) => {
+        try {
+          // Try to access iframe content (may be blocked by CORS)
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+          if (iframeDoc) {
+            const hasContent = iframeDoc.body.innerHTML.length > 0;
+            console.log(`📄 Iframe ${index} content check:`, {
+              hasContent,
+              bodyLength: iframeDoc.body.innerHTML.length,
+              title: iframeDoc.title,
+              readyState: iframeDoc.readyState
+            });
+            
+            // Send content check log
+            fetch(`${config.api.baseUrl}/api/logs/iframe`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+              },
+              body: JSON.stringify({
+                event: 'iframe_content_check',
+                userAgent: navigator.userAgent,
+                isMobile: isMobile,
+                timestamp: new Date().toISOString(),
+                taskId,
+                tournamentId,
+                hasContent,
+                bodyLength: iframeDoc.body.innerHTML.length,
+                title: iframeDoc.title,
+                readyState: iframeDoc.readyState
+              })
+            }).catch(err => console.warn('Failed to send content check log:', err));
+          } else {
+            console.log(`🚫 Iframe ${index} content access blocked (CORS)`);
+            
+            // Send CORS blocked log
+            fetch(`${config.api.baseUrl}/api/logs/iframe`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+              },
+              body: JSON.stringify({
+                event: 'iframe_cors_blocked',
+                userAgent: navigator.userAgent,
+                isMobile: isMobile,
+                timestamp: new Date().toISOString(),
+                taskId,
+                tournamentId,
+                reason: 'content_document_access_blocked'
+              })
+            }).catch(err => console.warn('Failed to send CORS log:', err));
+          }
+        } catch (error) {
+          console.error(`🚫 Iframe ${index} access error:`, error);
+          
+          // Send access error log
+          fetch(`${config.api.baseUrl}/api/logs/iframe`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({
+              event: 'iframe_access_error',
+              userAgent: navigator.userAgent,
+              isMobile: isMobile,
+              timestamp: new Date().toISOString(),
+              taskId,
+              tournamentId,
+              error: error.toString()
+            })
+          }).catch(err => console.warn('Failed to send access error log:', err));
+        }
+      });
+    }, 3000); // Check after 3 seconds
+    
     setIsIframeLoading(false);
     setIsIframeError(false);
     
