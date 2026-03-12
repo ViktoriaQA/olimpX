@@ -28,12 +28,8 @@ const Certificates = () => {
   useEffect(() => {
     // TODO: Fetch certificates from API
     // For now, showing empty state
-    const mockCertificates: Certificate[] = [];
-
-    setTimeout(() => {
-      setCertificates(mockCertificates);
-      setLoading(false);
-    }, 1000);
+    setCertificates([]);
+    setLoading(false);
   }, []);
 
   if (!isPro) {

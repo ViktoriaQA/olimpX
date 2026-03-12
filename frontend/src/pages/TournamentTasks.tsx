@@ -39,38 +39,6 @@ interface StudentProgress {
   totalScore: number;
 }
 
-const mockTasksByTournament: Record<string, Task[]> = {
-  "1": [
-    {
-      id: "a",
-      title: "Сума масиву",
-      difficulty: "easy",
-      maxScore: 100,
-      solved: false,
-      shortDescription: "Обчислити суму елементів масиву з обмеженнями за часом.",
-      estimatedTime: "10-15 хв",
-    },
-    {
-      id: "b",
-      title: "Парні й непарні",
-      difficulty: "easy",
-      maxScore: 150,
-      solved: false,
-      shortDescription: "Розділити числа на парні та непарні й підрахувати статистику.",
-      estimatedTime: "15-20 хв",
-    },
-    {
-      id: "c",
-      title: "Найдовша зростаюча підпослідовність",
-      difficulty: "medium",
-      maxScore: 250,
-      solved: false,
-      shortDescription: "Знайти довжину LIS для заданої послідовності.",
-      estimatedTime: "30-40 хв",
-    },
-  ],
-};
-
 const TournamentTasks = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -159,8 +127,8 @@ const TournamentTasks = () => {
       try {
         const token = localStorage.getItem('auth_token');
         if (!token) {
-          // Fallback to mock data
-          setTasks(mockTasksByTournament[tournamentId] ?? mockTasksByTournament["1"] ?? []);
+          // Show empty state if not authenticated
+          setTasks([]);
           setLoading(false);
           return;
         }
@@ -213,13 +181,13 @@ const TournamentTasks = () => {
           }));
           setTasks(transformedTasks);
         } else {
-          // Fallback to mock data
-          setTasks(mockTasksByTournament[tournamentId] ?? mockTasksByTournament["1"] ?? []);
+          // Show empty state if tasks fetch fails
+          setTasks([]);
         }
       } catch (error) {
         console.error('Error fetching tournament data:', error);
-        // Fallback to mock data
-        setTasks(mockTasksByTournament[tournamentId] ?? mockTasksByTournament["1"] ?? []);
+        // Show empty state on error
+        setTasks([]);
       } finally {
         setLoading(false);
       }
@@ -248,30 +216,8 @@ const TournamentTasks = () => {
         const data = await progressResponse.json();
         setProgressData(data.progress || []);
       } else {
-        // Fallback: create mock progress data
-        const mockProgress: StudentProgress[] = participants
-          .filter((p: any) => p.user?.role === 'student')
-          .map((participant: any) => {
-            const taskScores: Record<string, number> = {};
-            let totalScore = 0;
-            
-            tasks.forEach(task => {
-              // Mock random scores for demonstration
-              const score = Math.random() > 0.5 ? Math.floor(Math.random() * task.maxScore) : 0;
-              taskScores[task.id] = score;
-              totalScore += score;
-            });
-
-            return {
-              userId: participant.user?.id || participant.id,
-              userName: `${participant.user?.first_name || ''} ${participant.user?.last_name || ''}`.trim() || participant.user?.email || 'Unknown',
-              userEmail: participant.user?.email || '',
-              taskScores,
-              totalScore
-            };
-          });
-        
-        setProgressData(mockProgress);
+        // Show empty progress data if fetch fails
+        setProgressData([]);
       }
     } catch (error) {
       console.error('Error fetching progress data:', error);

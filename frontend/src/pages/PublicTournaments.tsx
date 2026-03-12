@@ -37,79 +37,38 @@ const PublicTournaments = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock data for tournaments
-    const mockTournaments: Tournament[] = [
-      {
-        id: "1",
-        name: "Spring Coding Challenge 2024",
-        description: "Test your skills in this comprehensive coding competition featuring algorithmic challenges and problem-solving tasks.",
-        status: "active",
-        participants: 45,
-        minParticipants: 10,
-        maxParticipants: 100,
-        startDate: "2024-03-15",
-        endDate: "2027-03-20",
-        difficulty: "medium",
-        prize: "Premium subscription + Certificate"
-      },
-      {
-        id: "2",
-        name: "Algorithm Masters",
-        description: "Advanced algorithmic tournament for experienced programmers. Focus on data structures and optimization.",
-        status: "upcoming",
-        participants: 12,
-        minParticipants: 5,
-        maxParticipants: 50,
-        startDate: "2024-03-25",
-        endDate: "2027-03-30",
-        difficulty: "hard",
-        prize: "Mentorship session"
-      },
-      {
-        id: "3",
-        name: "Beginner Friendly Contest",
-        description: "Perfect for newcomers! Learn the basics of competitive programming in a supportive environment.",
-        status: "completed",
-        participants: 78,
-        minParticipants: 20,
-        maxParticipants: 80,
-        startDate: "2025-03-01",
-        endDate: "2025-03-05",
-        difficulty: "easy",
-        prize: "Certificate + Badge"
-      },
-      {
-        id: "4",
-        name: "Speed Coding Sprint",
-        description: "Race against the clock! Solve as many problems as possible in the shortest time.",
-        status: "active",
-        participants: 23,
-        minParticipants: 15,
-        maxParticipants: 60,
-        startDate: "2024-03-18",
-        endDate: "2024-03-19",
-        difficulty: "medium",
-        prize: "Merchandise + Premium features"
-      },
-      {
-        id: "5",
-        name: "Data Structures Marathon",
-        description: "Comprehensive tournament covering all major data structures and their applications.",
-        status: "upcoming",
-        participants: 8,
-        minParticipants: 5,
-        maxParticipants: 40,
-        startDate: "2024-04-01",
-        endDate: "2024-04-05",
-        difficulty: "hard",
-        prize: "Advanced course access"
+    // Fetch real tournaments from API
+    const fetchTournaments = async () => {
+      try {
+        const response = await fetch('/api/public/tournaments');
+        if (response.ok) {
+          const data = await response.json();
+          const transformedTournaments: Tournament[] = data.tournaments.map((tournament: any) => ({
+            id: tournament.id,
+            name: tournament.name,
+            description: tournament.description,
+            status: tournament.status,
+            participants: tournament._count?.tournament_participants || 0,
+            minParticipants: tournament.min_participants || 0,
+            maxParticipants: tournament.max_participants || 50,
+            startDate: tournament.start_time,
+            endDate: tournament.end_time,
+            difficulty: tournament.difficulty || 'medium',
+            prize: tournament.prize
+          }));
+          setTournaments(transformedTournaments);
+        } else {
+          setTournaments([]);
+        }
+      } catch (error) {
+        console.error('Error fetching tournaments:', error);
+        setTournaments([]);
+      } finally {
+        setLoading(false);
       }
-    ];
+    };
 
-    setTimeout(() => {
-      setTournaments(mockTournaments);
-      setLoading(false);
-    }, 1000);
+    fetchTournaments();
   }, []);
 
   const getStatusColor = (status: Tournament["status"]) => {
@@ -317,7 +276,7 @@ const PublicTournaments = () => {
       <AuthFab isMobile={isMobile} />
       
       {/* Footer */}
-      <Footer />
+      <Footer hasSidebar={false} />
     </div>
   );
 };

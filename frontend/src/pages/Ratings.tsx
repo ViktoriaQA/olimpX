@@ -21,19 +21,6 @@ interface RatingUser {
   progress: number;
 }
 
-const mockUsers: RatingUser[] = [
-  { id: "1", nickname: "CodeMaster", points: 2450, rank: 1, solvedTasks: 89, tournamentsWon: 12, role: "student", progress: 95 },
-  { id: "2", nickname: "AlgoWizard", points: 2380, rank: 2, solvedTasks: 85, tournamentsWon: 10, role: "student", progress: 92 },
-  { id: "3", nickname: "PythonPro", points: 2290, rank: 3, solvedTasks: 78, tournamentsWon: 8, role: "student", progress: 88 },
-  { id: "4", nickname: "JavaExpert", points: 2150, rank: 4, solvedTasks: 72, tournamentsWon: 7, role: "student", progress: 85 },
-  { id: "5", nickname: "CppChampion", points: 2080, rank: 5, solvedTasks: 68, tournamentsWon: 6, role: "student", progress: 82 },
-  { id: "6", nickname: "RubyRider", points: 1950, rank: 6, solvedTasks: 62, tournamentsWon: 5, role: "student", progress: 78 },
-  { id: "7", nickname: "SwiftSolver", points: 1820, rank: 7, solvedTasks: 58, tournamentsWon: 4, role: "student", progress: 75 },
-  { id: "8", nickname: "GoGuru", points: 1750, rank: 8, solvedTasks: 55, tournamentsWon: 4, role: "student", progress: 72 },
-  { id: "9", nickname: "RustRuler", points: 1680, rank: 9, solvedTasks: 52, tournamentsWon: 3, role: "student", progress: 70 },
-  { id: "10", nickname: "KotlinKing", points: 1600, rank: 10, solvedTasks: 48, tournamentsWon: 3, role: "student", progress: 68 },
-];
-
 const getRankIcon = (rank: number) => {
   switch (rank) {
     case 1:
@@ -67,8 +54,8 @@ export default function Ratings() {
     { id: "3", nickname: t('ratings.noDataUser'), points: 0, rank: 3, solvedTasks: 0, tournamentsWon: 0, role: "student", progress: 0 },
   ];
 
-  const users = hasData ? mockUsers : emptyUsers;
-  const currentUserRank = hasData ? (users.find(u => u.id === "1")?.rank || 0) : 0;
+  const users = hasData ? [] : emptyUsers;
+  const currentUserRank = hasData ? 0 : 0;
 
   return (
     <div className="container mx-auto p-6 space-y-6">

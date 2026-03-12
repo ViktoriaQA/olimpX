@@ -115,27 +115,18 @@ const MyTournaments = () => {
           };
         });
 
-        setTournaments(transformedTournaments);
-        setMyTournaments(transformedTournaments.filter(t => t.isJoined));
+        // Filter out inactive tournaments for students
+        const filteredTournaments = role === 'student' 
+          ? transformedTournaments.filter(tournament => tournament.is_active)
+          : transformedTournaments;
+
+        setTournaments(filteredTournaments);
+        setMyTournaments(filteredTournaments.filter(t => t.isJoined));
         
       } catch (error) {
         console.error('Error fetching tournaments:', error);
-        // Fallback to mock data if API fails
-        const mockTournaments: Tournament[] = [
-          {
-            id: "1",
-            name: "Spring Coding Challenge 2024",
-            description: "Test your skills in this comprehensive coding competition featuring algorithmic challenges and problem-solving tasks.",
-            status: "active",
-            participants: 45,
-            maxParticipants: 100,
-            startDate: "2024-03-15",
-            endDate: "2027-03-20",
-            difficulty: "medium",
-            prize: "Premium subscription + Certificate"
-          }
-        ];
-        setTournaments(mockTournaments);
+        // Show empty state when API fails
+        setTournaments([]);
         setMyTournaments([]);
       } finally {
         setLoading(false);

@@ -85,62 +85,8 @@ const Tournaments = () => {
         setTournaments(transformedTournaments);
       } catch (error) {
         console.error('Error fetching public tournaments:', error);
-        // Fallback to mock data if API fails
-        const mockTournaments: Tournament[] = [
-          {
-            id: "1",
-            name: "Spring Coding Challenge 2024",
-            description: "Test your skills in this comprehensive coding competition featuring algorithmic challenges and problem-solving tasks.",
-            status: "active",
-            participants: 45,
-            maxParticipants: 100,
-            startDate: "2024-03-15",
-            endDate: "2027-03-20",
-            difficulty: "medium",
-            prize: "Premium subscription + Certificate",
-            show_on_public_page: true
-          },
-          {
-            id: "2",
-            name: "Algorithm Masters",
-            description: "Advanced algorithmic tournament for experienced programmers. Focus on data structures and optimization.",
-            status: "upcoming",
-            participants: 12,
-            maxParticipants: 50,
-            startDate: "2024-03-25",
-            endDate: "2027-03-30",
-            difficulty: "hard",
-            prize: "Mentorship session",
-            show_on_public_page: true
-          },
-          {
-            id: "3",
-            name: "Beginner Friendly Contest",
-            description: "Perfect for newcomers! Learn the basics of competitive programming in a supportive environment.",
-            status: "completed",
-            participants: 78,
-            maxParticipants: 80,
-            startDate: "2025-03-01",
-            endDate: "2025-03-05",
-            difficulty: "easy",
-            prize: "Certificate + Badge",
-            show_on_public_page: true
-          },
-          {
-            id: "4",
-            name: "Speed Coding Sprint",
-            description: "Race against the clock! Solve as many problems as possible in the shortest time.",
-            status: "active",
-            participants: 23,
-            maxParticipants: 60,
-            startDate: "2024-03-18",
-            endDate: "2024-03-19",
-            difficulty: "medium",
-            prize: "Merchandise + Premium features",
-            show_on_public_page: true
-          }
-        ];
-        setTournaments(mockTournaments);
+        // Show empty state when API fails
+        setTournaments([]);
       } finally {
         setLoading(false);
       }
@@ -240,7 +186,7 @@ const Tournaments = () => {
       <Header showHomeButton={false} showTournamentsButton={false} currentPage="tournaments" />
 
       {/* Main Content */}
-      <main className="flex-1 container mx-auto px-4 py-8">
+      <main className="flex-1 container mx-auto px-4 py-8 pb-20">
         <div className="space-y-8">
           {/* Page Title */}
           <div className="text-center space-y-4 relative">
@@ -403,7 +349,7 @@ const Tournaments = () => {
       </main>
 
       {/* Footer */}
-      <Footer />
+      <Footer hasSidebar={false} />
 
       {/* Registration Sheet */}
       <RegistrationSheet
