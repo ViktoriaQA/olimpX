@@ -9,6 +9,7 @@ import path from 'path';
 
 import { errorHandler } from './middleware/errorHandler';
 import { authMiddleware } from './middleware/auth';
+import { swaggerSpec, swaggerUi } from './config/swagger';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import subscriptionRoutes from './routes/subscriptions';
@@ -79,6 +80,18 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Swagger API Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'CodeArena API Documentation'
+}));
+
+// Swagger JSON specification
+app.get('/api-docs.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
+
 // API routes
 app.use('/auth', authRoutes);
 app.use('/api/users', authMiddleware, userRoutes);
@@ -120,6 +133,8 @@ app.use('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 CodeArena Backend server running on port ${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
+  console.log(`📄 Swagger JSON: http://localhost:${PORT}/api-docs.json`);
   
   // Log vConsole status on startup
   const vConsoleEnabled = process.env.VITE_ENABLE_VCONSOLE === 'true';
