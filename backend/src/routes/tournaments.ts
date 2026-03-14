@@ -269,7 +269,8 @@ router.get('/:id', async (req: AuthRequest, res, next) => {
       prize: tournament.rules, // database 'rules' -> frontend 'prize'
       maxParticipants: tournament.max_participants || 50,
       minParticipants: tournament.prize_pool || 0, // Get min participants from prize_pool field
-      participants: currentParticipants, // Use actual participant count
+      participants: tournament.participants || [], // Keep the participants array with user data
+      participantsCount: currentParticipants, // Use actual participant count for display
       startDate: tournament.start_time,
       endDate: tournament.end_time,
       difficulty: tournament.difficulty || 'medium',
