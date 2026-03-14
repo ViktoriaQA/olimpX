@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { CodeEditor } from "@/components/CodeEditor";
 import { Loading } from "@/components/ui/loading";
-import { ArrowLeft, BookOpenText, Flame, Clock3, ListChecks, Monitor } from "lucide-react";
+import { ArrowLeft, BookOpenText, Flame, Clock3, ListChecks, Monitor, Copy } from "lucide-react";
 import { TestResultsDisplay } from "@/components/TestResultsDisplay";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -248,6 +248,15 @@ const TaskSolve = () => {
       localStorage.setItem(`task_code_${taskId}`, code);
     } catch (error) {
       console.warn('Failed to save code:', error);
+    }
+  };
+
+  // Copy text to clipboard
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
     }
   };
 
@@ -803,9 +812,18 @@ const TaskSolve = () => {
                                     <div className="text-[11px] text-muted-foreground mb-1">
                                       {t("tasks.input", "Вхід")}
                                     </div>
-                                    <pre className="bg-card/70 rounded px-2 py-1 whitespace-pre-wrap">
-                                      {ex.input}
-                                    </pre>
+                                    <div className="relative">
+                                      <pre className="bg-card/70 rounded px-2 py-1 whitespace-pre-wrap pr-8">
+                                        {ex.input}
+                                      </pre>
+                                      <button
+                                        onClick={() => copyToClipboard(ex.input)}
+                                        className="absolute top-1 right-1 p-1 hover:bg-muted rounded transition-colors"
+                                        title={t("tasks.copyInput", "Копіювати вхідні дані")}
+                                      >
+                                        <Copy className="w-3 h-3" />
+                                      </button>
+                                    </div>
                                   </div>
                                   <div>
                                     <div className="text-[11px] text-muted-foreground mb-1">
