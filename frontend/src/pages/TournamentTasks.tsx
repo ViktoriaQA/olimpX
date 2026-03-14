@@ -157,7 +157,7 @@ const TournamentTasks = () => {
           const tournamentData = await tournamentResponse.json();
           console.log('Tournament data received:', tournamentData);
           setTournament(tournamentData.tournament);
-          setParticipants(tournamentData.tournament?.participants || []);
+          setParticipants(Array.isArray(tournamentData.tournament?.participants) ? tournamentData.tournament.participants : []);
         } else {
           const errorData = await tournamentResponse.json().catch(() => ({}));
           console.log('Tournament fetch error:', errorData);
