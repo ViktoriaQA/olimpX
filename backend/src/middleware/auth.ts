@@ -98,11 +98,15 @@ export const authMiddleware = async (
  */
 export const requireRole = (allowedRoles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
+    console.log('requireRole check - User role:', req.user?.role, 'Allowed roles:', allowedRoles);
+    
     // Check if user exists and has role
     if (!req.user?.role || !allowedRoles.includes(req.user.role)) {
+      console.log('Permission denied - User role:', req.user?.role, 'Required:', allowedRoles);
       next(createError('Insufficient permissions', 403));
       return;
     }
+    console.log('Permission granted for role:', req.user?.role);
     next();
   };
 };

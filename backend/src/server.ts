@@ -25,6 +25,8 @@ import paymentSwaggerRoutes from './routes/payment-swagger';
 import codeExecutionRoutes from './routes/codeExecutionRoutes';
 import logRoutes from './routes/logs';
 import testSwaggerRoutes from './routes/test-swagger';
+import adminRoutes from './routes/admin';
+import { cronService } from './services/cronService';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -187,6 +189,7 @@ app.use('/api/students', authMiddleware, studentRoutes);
 app.use('/api/v1/payment', paymentRoutes);
 app.use('/api/code-execution', codeExecutionRoutes);
 app.use('/api/logs', authMiddleware, logRoutes);
+app.use('/api/admin', authMiddleware, adminRoutes);
 
 // Direct LiqPay callback route (without /api/v1 prefix)
 app.use('/payment', paymentRoutes);
@@ -235,6 +238,10 @@ app.listen(PORT, () => {
     environment: process.env.NODE_ENV,
     message: vConsoleEnabled ? '✅ vConsole will be available on mobile devices' : '❌ vConsole is disabled'
   });
+
+  // Log cron service status
+  console.log('⏰ Cron Service Status:', cronService.getTaskStatus());
+  console.log('🗓️  Monthly session cleanup scheduled for 1st of each month at 2:00 AM');
 });
 
 export default app;

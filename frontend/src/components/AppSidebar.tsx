@@ -1,4 +1,4 @@
-import { Trophy, BookOpen, Users, CreditCard, Shield, Settings, LogOut, Terminal, LayoutDashboard, PanelLeft, Menu, Timer, Target, ListTodo, Code, History, Star, User, Award, Lock, TrendingUp, Monitor } from "lucide-react";
+import { Trophy, BookOpen, Users, CreditCard, Shield, Settings, LogOut, Terminal, LayoutDashboard, PanelLeft, Menu, Timer, Target, ListTodo, Code, History, Star, User, Award, Lock, TrendingUp, Monitor, Trash2 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -79,6 +79,7 @@ export function AppSidebar() {
     { title: t('navigation.analytics'), url: "/analytics", icon: History, requiresPro: true },
     { title: t('navigation.admin'), url: "/admin", icon: Shield },
     { title: t('navigation.adminTournaments'), url: "/admin/tournaments", icon: Trophy },
+    { title: t('navigation.settings'), url: "/admin/settings", icon: Settings },
     { title: t('navigation.subscription'), url: "/subscription", icon: CreditCard },
   ];
 
