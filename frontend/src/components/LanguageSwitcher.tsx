@@ -11,7 +11,7 @@ export function LanguageSwitcher() {
     i18n.changeLanguage(newLang);
   };
 
-  const currentLanguage = i18n.language === 'en' ? 'EN' : 'UA';
+  const currentLanguage = i18n.language === 'en' ? 'UK' : 'UA';
   
   const FlagIcon = () => {
     if (i18n.language === 'en') {
