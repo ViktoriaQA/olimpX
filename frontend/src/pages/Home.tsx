@@ -332,12 +332,12 @@ const Home = () => {
                       }
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
+                  {/* <div className="flex items-center gap-2 text-sm">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <span className="font-mono text-muted-foreground">
                       {new Date(tournament.startDate).toLocaleDateString("uk-UA")} - {new Date(tournament.endDate).toLocaleDateString("uk-UA")}
                     </span>
-                  </div>
+                  </div> */}
                   {tournament.prize && (
                     <div className="flex items-center gap-2 text-sm">
                       <Trophy className="h-4 w-4 text-primary" />

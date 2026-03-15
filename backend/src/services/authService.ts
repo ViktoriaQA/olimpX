@@ -28,6 +28,11 @@ export class AuthService {
     // Validate input
     const validatedData = ValidationService.validateRegister(userData);
     
+    // Convert empty strings to undefined for optional fields
+    if (validatedData.email === '') validatedData.email = undefined;
+    if (validatedData.phone === '') validatedData.phone = undefined;
+    if (validatedData.country_code === '') validatedData.country_code = undefined;
+    
     // Normalize phone if provided
     if (validatedData.phone) {
       validatedData.phone = ValidationService.normalizePhone(validatedData.phone, validatedData.country_code);

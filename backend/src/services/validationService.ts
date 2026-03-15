@@ -13,9 +13,9 @@ export const profileUpdateSchema = Joi.object({
 }).min(1); // At least one field must be provided
 
 export const registerSchema = Joi.object({
-  email: Joi.string().email().optional(),
-  phone: Joi.string().pattern(phoneRegex).optional(),
-  country_code: Joi.string().pattern(/^\+\d{1,3}$/).optional(),
+  email: Joi.string().email().optional().allow(''),
+  phone: Joi.string().pattern(phoneRegex).optional().allow(''),
+  country_code: Joi.string().pattern(/^\+\d{1,3}$/).optional().allow(''),
   first_name: Joi.string().min(2).max(50).required(),
   last_name: Joi.string().min(2).max(50).required(),
   password: Joi.string().min(8).pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).required(),
