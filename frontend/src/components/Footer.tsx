@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import { useSidebar } from "@/components/ui/sidebar";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 
@@ -34,9 +35,18 @@ export function Footer({
       <div className="container mx-auto">
         <div className="flex items-center justify-between gap-4 text-sm text-muted-foreground">
           <div className="flex-1" />
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center gap-4">
             {customContent || (
-              <span>{t('footer.copyright', { year: currentYear })}</span>
+              <>
+                <span>{t('footer.copyright', { year: currentYear })}</span>
+                <span className="text-muted-foreground/50">•</span>
+                <Link 
+                  to="/contract" 
+                  className="hover:text-primary transition-colors"
+                >
+                  {t('footer.contract', 'Договір оферти')}
+                </Link>
+              </>
             )}
           </div>
           <div className="flex-1 flex justify-end">

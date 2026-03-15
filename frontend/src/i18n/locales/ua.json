@@ -212,7 +212,8 @@
   "footer": {
     "copyright": "© {{year}} CodeArena",
     "version": "Версія",
-    "allRightsReserved": "Всі права захищено"
+    "allRightsReserved": "Всі права захищено",
+    "contract": "Договір оферти"
   },
   "language": {
     "english": "English",
@@ -351,5 +352,15 @@
   },
   "tasks": {
     "tasksAddedSuccessfully": "{{successful}} завдань додано, {{failed}} не вдалося"
+  },
+  "contract": {
+    "back_to_home": "Повернутися на головну",
+    "contract_offer": "Договір пубічної оферти",
+    "contract_subtitle": "Платформа освітніх змагань з програмування «OlimpX»",
+    "download_contract": "Завантажити",
+    "table_of_contents": "Зміст договору",
+    "contract_footer_note": "Реєструючись на платформі «OlimpX», ви підтверджуєте, що ознайомилися з умовами цього Договору та повністю погоджуєтеся з ними.",
+    "last_updated": "Останнє оновлення",
+    "contact_info": "Контактна інформація"
   }
 }

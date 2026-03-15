@@ -212,7 +212,8 @@
   "footer": {
     "copyright": "© {{year}} CodeArena",
     "version": "Version",
-    "allRightsReserved": "All rights reserved"
+    "allRightsReserved": "All rights reserved",
+    "contract": "Terms of Service"
   },
   "language": {
     "english": "English",
@@ -351,5 +352,15 @@
   },
   "tasks": {
     "tasksAddedSuccessfully": "{{successful}} tasks added, {{failed}} failed"
+  },
+  "contract": {
+    "back_to_home": "Back to Home",
+    "contract_offer": "Public Offer Agreement",
+    "contract_subtitle": "Educational Programming Competition Platform «OlimpX»",
+    "download_contract": "Download",
+    "table_of_contents": "Table of Contents",
+    "contract_footer_note": "By registering on the «OlimpX» platform, you confirm that you have read the terms of this Agreement and fully agree to them.",
+    "last_updated": "Last Updated",
+    "contact_info": "Contact Information"
   }
 }

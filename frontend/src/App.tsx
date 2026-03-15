@@ -27,6 +27,7 @@ import NotFound from "@/pages/NotFound";
 import Profile from "@/pages/Profile";
 import Ratings from "@/pages/Ratings";
 import Analytics from "@/pages/Analytics";
+import ContractOffer from "@/pages/ContractOffer";
 import '@/i18n';
 import { isMobileDevice } from '@/utils/deviceDetection';
 import { useEffect } from 'react';
@@ -204,6 +205,7 @@ const App = () => {
                   </AppLayout>
                 }
               />
+              <Route path="/contract" element={<ContractOffer />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
