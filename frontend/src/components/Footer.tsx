@@ -45,12 +45,12 @@ export function Footer({
                   href="mailto:support@xcode24.com" 
                   className="hover:text-primary transition-colors flex items-center gap-1"
                 >
-                  <Mail className="h-3 w-3" />
+                  <Mail className="h-4 w-4" />
                   support@xcode24.com
                 </a>
                 <span className="text-muted-foreground/50">|</span>
                 <span className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
+                  <Clock className="h-4 w-4" />
                   Пн-Пт: 9:00-18:00
                 </span> 
               </>
