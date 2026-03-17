@@ -148,20 +148,18 @@ const ContractOffer: React.FC = () => {
         t('contract.section_11_7', 'Компанія не несе відповідальності за затримки повернення коштів, пов\'язані з роботою банківських установ чи платіжних систем.')
       ]
     },
-    // {
-    //   id: '10',
-    //   title: 'Реквізити Компанії',
-    //   content: [
-    //     `10.1. ${PLATFORM_CONFIG.company.name}`,
-    //     `10.2. Код ЄДРПОУ: ${PLATFORM_CONFIG.company.code}`,
-    //     `10.3. ІПН: ${PLATFORM_CONFIG.company.taxNumber}`,
-    //     `10.4. Адреса: ${PLATFORM_CONFIG.address}`,
-    //     `10.5. Email: ${PLATFORM_CONFIG.email}`,
-    //     `10.6. Телефон: ${PLATFORM_CONFIG.phone}`,
-    //     `10.7. Банк: ${PLATFORM_CONFIG.company.bank}`,
-    //     `10.8. Рахунок: ${PLATFORM_CONFIG.company.account}`
-    //   ]
-    // }
+    {
+      id: '12',
+      title: t('contract.section_12_title', 'Реквізити Компанії'),
+      content: [
+        `12.1. ${PLATFORM_CONFIG.company.name}`,
+        `12.2. ${t('contract.section_12_2', 'Повне ім\'я')}: ${PLATFORM_CONFIG.company.fullName}`,
+        `12.3. ${t('contract.section_12_3', 'Код ЄДРПОУ')}: ${PLATFORM_CONFIG.company.edrpou}`,
+        `12.4. ${t('contract.section_12_4', 'Адреса')}: ${PLATFORM_CONFIG.address}`,
+        `12.7. ${t('contract.section_12_7', 'Рахунок')}: ${PLATFORM_CONFIG.company.account}`,
+        `12.8. ${t('contract.section_12_8', 'Email')}: ${PLATFORM_CONFIG.email}`
+      ]
+    }
   ];
 
   useEffect(() => {
