@@ -195,7 +195,7 @@ export class PaymentController {
       if (paymentAttempt.status === 'processing') {
         try {
           const invoiceStatus = await this.monobankService.getInvoiceStatus(paymentAttempt.payment_id);
-          const mappedStatus = this.monobankService.mapMonobankStatus(invoiceStatus.status);
+          const mappedStatus = this.monobankService.mapMonobankStatus(invoiceStatus.status || 'created');
           
           await this.updatePaymentAttemptStatus(orderId, invoiceStatus);
           paymentAttempt.status = mappedStatus;
@@ -234,7 +234,7 @@ export class PaymentController {
       if (paymentAttempt.status === 'processing') {
         try {
           const invoiceStatus = await this.monobankService.getInvoiceStatus(paymentAttempt.payment_id);
-          const mappedStatus = this.monobankService.mapMonobankStatus(invoiceStatus.status);
+          const mappedStatus = this.monobankService.mapMonobankStatus(invoiceStatus.status || 'created');
           
           await this.updatePaymentAttemptStatus(orderId, invoiceStatus);
           paymentAttempt.status = mappedStatus;
@@ -368,7 +368,7 @@ export class PaymentController {
       try {
         console.log('🔄 [VERIFY] Checking real-time payment status...');
         const invoiceStatus = await this.monobankService.getInvoiceStatus(session_id);
-        const mappedStatus = this.monobankService.mapMonobankStatus(invoiceStatus.status);
+        const mappedStatus = this.monobankService.mapMonobankStatus(invoiceStatus.status || 'created');
         
         console.log('📊 [VERIFY] Monobank status:', invoiceStatus);
         console.log('📈 [VERIFY] Mapped status:', mappedStatus);
@@ -540,7 +540,7 @@ export class PaymentController {
       console.log('📊 [MONOBANK_CHECK] Monobank status:', invoiceStatus);
 
       // Map Monobank status to our status
-      const mappedStatus = this.monobankService.mapMonobankStatus(invoiceStatus.status);
+      const mappedStatus = this.monobankService.mapMonobankStatus(invoiceStatus.status || 'created');
 
       console.log('📈 [MONOBANK_CHECK] Mapped status:', mappedStatus);
 

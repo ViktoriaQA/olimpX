@@ -7,8 +7,8 @@ export class RecurringService {
   async createRecurringSubscription(
     userId: string,
     packageId: string,
-    paymentId: string,
-    recToken?: string,
+    invoiceId: string,
+    token?: string,
     startDate?: Date,
     endDate?: Date
   ): Promise<Subscription> {
@@ -21,8 +21,9 @@ export class RecurringService {
       start_date: startDate || new Date(),
       end_date: endDate || this.calculateEndDate(startDate || new Date(), 1), // Default 1 month
       auto_renew: true,
-      liqpay_payment_id: paymentId,
-      liqpay_rec_token: recToken,
+      monobank_invoice_id: invoiceId,
+      monobank_token: token,
+      payment_gateway: 'monobank',
       created_at: new Date(),
       updated_at: new Date(),
     };
@@ -104,7 +105,7 @@ export class RecurringService {
 
   async processRecurringPayment(
     subscriptionId: string,
-    paymentId: string,
+    invoiceId: string,
     amount: number
   ): Promise<void> {
     const subscription = await this.getSubscriptionById(subscriptionId);
@@ -120,7 +121,7 @@ export class RecurringService {
     await this.extendSubscription(subscriptionId, 1);
 
     // Log the payment
-    await this.logRecurringPayment(subscriptionId, paymentId, amount);
+    await this.logRecurringPayment(subscriptionId, invoiceId, amount);
   }
 
   async checkExpiringSubscriptions(): Promise<Subscription[]> {
@@ -170,11 +171,11 @@ export class RecurringService {
 
   private async logRecurringPayment(
     subscriptionId: string,
-    paymentId: string,
+    invoiceId: string,
     amount: number
   ): Promise<void> {
     // Log payment for audit trail
-    console.log(`Recurring payment logged: ${subscriptionId}, ${paymentId}, ${amount}`);
+    console.log(`Recurring payment logged: ${subscriptionId}, ${invoiceId}, ${amount}`);
   }
 
   private async logRenewalFailure(
