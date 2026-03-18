@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import LiqPayService from '../services/liqpayService';
+import MonobankService from '../services/monobankService';
 import RecurringService from '../services/recurringService';
 import TelegramService from '../services/telegramService';
 import { AuthenticatedRequest } from '../types/auth';
@@ -7,20 +7,20 @@ import {
   InitiateSubscriptionRequest, 
   InitiateSubscriptionResponse,
   PaymentStatusResponse,
-  LiqPayCallbackData,
   PaymentAttempt,
   Package,
   Subscription
 } from '../models/subscription';
 import { supabase } from '../utils/supabase';
+import { MonobankCallbackData } from '../services/monobankService';
 
 export class PaymentController {
-  private liqPayService: LiqPayService;
+  private monobankService: MonobankService;
   private recurringService: RecurringService;
   private telegramService: TelegramService;
 
   constructor() {
-    this.liqPayService = new LiqPayService();
+    this.monobankService = new MonobankService();
     this.recurringService = new RecurringService();
     this.telegramService = new TelegramService();
   }
@@ -87,12 +87,12 @@ export class PaymentController {
         product_price: amount,
       };
 
-      console.log('💳 [PAYMENT] Creating payment with LiqPay...');
+      console.log('💳 [PAYMENT] Creating payment with Monobank...');
       console.log('📝 [PAYMENT] Payment request:', paymentRequest);
 
-      // Create payment with LiqPay
-      const paymentResponse = await this.liqPayService.createPaymentURL(paymentRequest);
-      console.log('✅ [PAYMENT] LiqPay response:', paymentResponse);
+      // Create payment with Monobank
+      const paymentResponse = await this.monobankService.createInvoice(paymentRequest);
+      console.log('✅ [PAYMENT] Monobank response:', paymentResponse);
 
       // Store payment attempt
       const paymentAttempt: PaymentAttempt = {
@@ -139,39 +139,26 @@ export class PaymentController {
 
   async handlePaymentCallback(req: Request, res: Response): Promise<void> {
     try {
-      console.log('🔔 [CALLBACK] Received LiqPay callback...');
+      console.log('🔔 [CALLBACK] Received Monobank callback...');
       console.log('📋 [CALLBACK] Request body:', req.body);
-      
-      const { data, signature } = req.body;
 
-      if (!data || !signature) {
-        console.log('❌ [CALLBACK] Missing data or signature');
-        res.status(400).json({ error: 'data and signature are required' });
-        return;
-      }
-
-      // Parse and verify callback
-      console.log('🔍 [CALLBACK] Parsing callback data...');
-      const callbackData = await this.liqPayService.parseCallback(data, signature);
+      // Parse and verify webhook data
+      console.log('🔍 [CALLBACK] Parsing Monobank webhook data...');
+      const callbackData = this.monobankService.parseWebhookData(req.body);
       console.log('✅ [CALLBACK] Parsed callback data:', callbackData);
 
-      // Update payment attempt status
+      // Update payment attempt status using invoiceId as order_id
       console.log('📝 [CALLBACK] Updating payment attempt status...');
-      await this.updatePaymentAttemptStatus(callbackData.order_id, callbackData);
+      await this.updatePaymentAttemptStatus(callbackData.merchantPaymInfo.reference, callbackData);
 
       // Check if payment is successful
-      const mappedStatus = this.liqPayService.mapLiqPayStatusWithResult(
-        callbackData.status,
-        callbackData.result,
-        callbackData.response_code
-      );
-      
+      const mappedStatus = this.monobankService.mapMonobankStatus(callbackData.status);
       console.log('📊 [CALLBACK] Mapped status:', mappedStatus);
 
       // Update status to completed if payment is successful
       if (mappedStatus === 'completed') {
         console.log('🎉 [CALLBACK] Payment completed successfully!');
-        await this.updatePaymentAttemptStatus(callbackData.order_id, callbackData, 'completed');
+        await this.updatePaymentAttemptStatus(callbackData.merchantPaymInfo.reference, callbackData, 'completed');
         await this.handleSuccessfulPayment(callbackData);
       }
 
@@ -207,14 +194,10 @@ export class PaymentController {
       // If status is processing, do real-time check
       if (paymentAttempt.status === 'processing') {
         try {
-          const paymentStatus = await this.liqPayService.checkPaymentStatus(orderId);
-          const mappedStatus = this.liqPayService.mapLiqPayStatusWithResult(
-            paymentStatus.status,
-            paymentStatus.result,
-            paymentStatus.response_code
-          );
+          const invoiceStatus = await this.monobankService.getInvoiceStatus(paymentAttempt.payment_id);
+          const mappedStatus = this.monobankService.mapMonobankStatus(invoiceStatus.status);
           
-          await this.updatePaymentAttemptStatus(orderId, paymentStatus);
+          await this.updatePaymentAttemptStatus(orderId, invoiceStatus);
           paymentAttempt.status = mappedStatus;
         } catch (error) {
           console.error('Error checking payment status:', error);
@@ -250,14 +233,10 @@ export class PaymentController {
       // If status is processing, do real-time check
       if (paymentAttempt.status === 'processing') {
         try {
-          const paymentStatus = await this.liqPayService.checkPaymentStatus(orderId);
-          const mappedStatus = this.liqPayService.mapLiqPayStatusWithResult(
-            paymentStatus.status,
-            paymentStatus.result,
-            paymentStatus.response_code
-          );
+          const invoiceStatus = await this.monobankService.getInvoiceStatus(paymentAttempt.payment_id);
+          const mappedStatus = this.monobankService.mapMonobankStatus(invoiceStatus.status);
           
-          await this.updatePaymentAttemptStatus(orderId, paymentStatus);
+          await this.updatePaymentAttemptStatus(orderId, invoiceStatus);
           paymentAttempt.status = mappedStatus;
         } catch (error) {
           console.error('Error checking payment status:', error);
@@ -306,8 +285,8 @@ export class PaymentController {
 
       if (!receiptData) {
         try {
-          // Get PDF from LiqPay
-          const pdfBuffer = await this.liqPayService.getReceiptPDF(orderId, paymentAttempt.payment_id);
+          // Get PDF from Monobank
+          const pdfBuffer = await this.monobankService.getReceipt(paymentAttempt.payment_id);
           
           // Store receipt in database
           await this.storeReceiptInDatabase(orderId, paymentAttempt.payment_id, userId, pdfBuffer);
@@ -388,17 +367,13 @@ export class PaymentController {
       // Check real-time payment status
       try {
         console.log('🔄 [VERIFY] Checking real-time payment status...');
-        const paymentStatus = await this.liqPayService.checkPaymentStatus(session_id);
-        const mappedStatus = this.liqPayService.mapLiqPayStatusWithResult(
-          paymentStatus.status,
-          paymentStatus.result,
-          paymentStatus.response_code
-        );
+        const invoiceStatus = await this.monobankService.getInvoiceStatus(session_id);
+        const mappedStatus = this.monobankService.mapMonobankStatus(invoiceStatus.status);
         
-        console.log('📊 [VERIFY] LiqPay status:', paymentStatus);
+        console.log('📊 [VERIFY] Monobank status:', invoiceStatus);
         console.log('📈 [VERIFY] Mapped status:', mappedStatus);
         
-        await this.updatePaymentAttemptStatus(session_id, paymentStatus);
+        await this.updatePaymentAttemptStatus(session_id, invoiceStatus);
         paymentAttempt.status = mappedStatus;
       } catch (error) {
         console.error('❌ [VERIFY] Error checking payment status:', error);
@@ -455,6 +430,74 @@ export class PaymentController {
     }
   }
 
+  async getWalletCards(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      console.log('🃏 [WALLET] Getting cards for user:', userId);
+      
+      // Використовуємо userId як walletId
+      const cards = await this.monobankService.getWalletCards(userId);
+      
+      console.log('✅ [WALLET] Retrieved cards:', cards);
+      res.json({ cards, walletId: userId });
+    } catch (error) {
+      console.error('💥 [WALLET] Error getting wallet cards:', error);
+      res.status(500).json({ 
+        error: 'Failed to get wallet cards',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  async createRecurringPayment(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      const { cardToken, amount, description, package_id } = req.body;
+
+      if (!cardToken || !amount || !description) {
+        res.status(400).json({ 
+          error: 'Missing required fields',
+          required: ['cardToken', 'amount', 'description']
+        });
+        return;
+      }
+
+      console.log('🔄 [RECURRING] Creating recurring payment:', { userId, amount, description });
+
+      const reference = package_id ? `recurring_${userId}_${package_id}_${Date.now()}` : undefined;
+      
+      const payment = await this.monobankService.createRecurringPayment(
+        cardToken,
+        amount,
+        description,
+        reference
+      );
+
+      console.log('✅ [RECURRING] Payment created:', payment);
+      res.json({
+        success: true,
+        payment,
+        reference
+      });
+    } catch (error) {
+      console.error('💥 [RECURRING] Error creating recurring payment:', error);
+      res.status(500).json({ 
+        error: 'Failed to create recurring payment',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
   async cancelSubscription(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { subscriptionId } = req.params;
@@ -492,27 +535,22 @@ export class PaymentController {
 
       console.log('🆔 [LIQPAY_CHECK] Order ID:', orderId);
 
-      // Check payment status directly with LiqPay
-      const paymentStatus = await this.liqPayService.checkPaymentStatus(orderId);
-      console.log('📊 [LIQPAY_CHECK] LiqPay status:', paymentStatus);
+      // Check payment status directly with Monobank
+      const invoiceStatus = await this.monobankService.getInvoiceStatus(orderId);
+      console.log('📊 [MONOBANK_CHECK] Monobank status:', invoiceStatus);
 
-      // Map LiqPay status to our status
-      const mappedStatus = this.liqPayService.mapLiqPayStatusWithResult(
-        paymentStatus.status,
-        paymentStatus.result,
-        paymentStatus.response_code
-      );
+      // Map Monobank status to our status
+      const mappedStatus = this.monobankService.mapMonobankStatus(invoiceStatus.status);
 
-      console.log('📈 [LIQPAY_CHECK] Mapped status:', mappedStatus);
+      console.log('📈 [MONOBANK_CHECK] Mapped status:', mappedStatus);
 
       // Update payment attempt in our database
-      await this.updatePaymentAttemptStatus(orderId, paymentStatus, mappedStatus);
+      await this.updatePaymentAttemptStatus(orderId, invoiceStatus, mappedStatus);
 
       res.json({
         success: true,
         status: mappedStatus,
-        liqpayStatus: paymentStatus.status,
-        result: paymentStatus.result
+        monobankStatus: invoiceStatus.status
       });
     } catch (error) {
       console.error('💥 [LIQPAY_CHECK] Error checking payment status:', error);
@@ -523,9 +561,9 @@ export class PaymentController {
     }
   }
 
-  private async handleSuccessfulPayment(callbackData: LiqPayCallbackData): Promise<void> {
+  private async handleSuccessfulPayment(callbackData: MonobankCallbackData): Promise<void> {
     try {
-      const paymentAttempt = await this.getPaymentAttemptByOrderId(callbackData.order_id);
+      const paymentAttempt = await this.getPaymentAttemptByOrderId(callbackData.merchantPaymInfo.reference);
       if (!paymentAttempt) {
         throw new Error('Payment attempt not found');
       }
@@ -552,21 +590,21 @@ export class PaymentController {
 
       // Create recurring subscription if applicable
       let subscriptionId: string | undefined;
-      if (paymentAttempt.order_type === 'recurring' && callbackData.rec_token) {
+      if (paymentAttempt.order_type === 'recurring' && callbackData.paymentInfo?.token) {
         const subscription = await this.recurringService.createRecurringSubscription(
           paymentAttempt.user_id,
           paymentAttempt.package_id!,
-          callbackData.payment_id,
-          callbackData.rec_token
+          callbackData.invoiceId,
+          callbackData.paymentInfo.token
         );
         subscriptionId = subscription.id;
       }
 
       // Update payment attempt with subscription ID
-      await this.updatePaymentAttemptSubscriptionId(callbackData.order_id, subscriptionId);
+      await this.updatePaymentAttemptSubscriptionId(callbackData.merchantPaymInfo.reference, subscriptionId);
 
       // Update payment status to completed
-      await this.updatePaymentAttemptStatus(callbackData.order_id, callbackData, 'completed');
+      await this.updatePaymentAttemptStatus(callbackData.merchantPaymInfo.reference, callbackData, 'completed');
 
       // Send Telegram notification
       await this.telegramService.sendPaymentNotification(
@@ -577,7 +615,7 @@ export class PaymentController {
       );
 
       // Asynchronously get and store receipt
-      this.storeReceiptAsync(callbackData.order_id, callbackData.payment_id, paymentAttempt.user_id);
+      this.storeReceiptAsync(callbackData.merchantPaymInfo.reference, callbackData.invoiceId, paymentAttempt.user_id);
     } catch (error) {
       console.error('Error handling successful payment:', error);
       
@@ -591,7 +629,7 @@ export class PaymentController {
 
   private async storeReceiptAsync(orderId: string, paymentId: string, userId: string): Promise<void> {
     try {
-      const pdfBuffer = await this.liqPayService.getReceiptPDF(orderId, paymentId);
+      const pdfBuffer = await this.monobankService.getReceipt(paymentId);
       await this.storeReceiptInDatabase(orderId, paymentId, userId, pdfBuffer);
     } catch (error) {
       console.error('Error storing receipt asynchronously:', error);
@@ -692,7 +730,7 @@ export class PaymentController {
           currency: paymentAttempt.currency,
           billing_period: paymentAttempt.order_type === 'recurring' ? 'month' : 'year',
           status: paymentAttempt.status,
-          payment_gateway: 'liqpay',
+          payment_gateway: 'monobank',
           response_data: paymentAttempt.callback_data ? JSON.stringify(paymentAttempt.callback_data) : '{}',
           created_at: paymentAttempt.created_at.toISOString(),
           updated_at: paymentAttempt.updated_at.toISOString()

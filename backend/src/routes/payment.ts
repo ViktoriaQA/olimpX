@@ -14,7 +14,7 @@ router.post(
   paymentController.initiateSubscriptionPayment.bind(paymentController)
 );
 
-// Handle LiqPay callback
+// Handle payment gateway callback (Monobank)
 router.post(
   '/callback',
   validateRequest,
@@ -36,7 +36,7 @@ router.get(
   paymentController.getPublicPaymentStatus.bind(paymentController)
 );
 
-// Check payment status directly with LiqPay
+// Check payment status directly with payment gateway
 router.get(
   '/check-status/:orderId',
   authMiddleware,
@@ -58,6 +58,22 @@ router.post(
   authMiddleware,
   validateRequest,
   paymentController.verifySubscription.bind(paymentController)
+);
+
+// Get wallet cards
+router.get(
+  '/wallet/cards',
+  authMiddleware,
+  validateRequest,
+  paymentController.getWalletCards.bind(paymentController)
+);
+
+// Create recurring payment
+router.post(
+  '/recurring',
+  authMiddleware,
+  validateRequest,
+  paymentController.createRecurringPayment.bind(paymentController)
 );
 
 // Cancel subscription
