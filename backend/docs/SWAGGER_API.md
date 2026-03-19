@@ -39,7 +39,7 @@ Subscription management:
 - Admin plan management
 
 ### 4. Payments (`/api/v1/payment`)
-Payment processing via LiqPay:
+Payment processing via payment gateway:
 - Payment initiation
 - Callback handling
 - Status checking

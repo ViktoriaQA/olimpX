@@ -74,8 +74,7 @@ export type Database = {
           created_at: string
           currency: string
           id: string
-          liqpay_order_id: string | null
-          liqpay_status: string | null
+          order_id: string | null
           plan_id: string | null
           status: string
           user_id: string
@@ -85,8 +84,7 @@ export type Database = {
           created_at?: string
           currency?: string
           id?: string
-          liqpay_order_id?: string | null
-          liqpay_status?: string | null
+          order_id?: string | null
           plan_id?: string | null
           status?: string
           user_id: string
@@ -96,8 +94,7 @@ export type Database = {
           created_at?: string
           currency?: string
           id?: string
-          liqpay_order_id?: string | null
-          liqpay_status?: string | null
+          order_id?: string | null
           plan_id?: string | null
           status?: string
           user_id?: string

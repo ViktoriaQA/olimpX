@@ -176,8 +176,7 @@ CREATE TABLE IF NOT EXISTS public.payments (
   amount INTEGER NOT NULL,
   currency TEXT NOT NULL DEFAULT 'UAH',
   status TEXT NOT NULL DEFAULT 'pending',
-  liqpay_order_id TEXT,
-  liqpay_status TEXT,
+  order_id TEXT,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 

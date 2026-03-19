@@ -41,7 +41,7 @@ router.get(
   '/check-status/:orderId',
   authMiddleware,
   validateRequest,
-  paymentController.checkPaymentStatusWithLiqPay.bind(paymentController)
+  paymentController.checkPaymentStatusWithMonobank.bind(paymentController)
 );
 
 // Get receipt

@@ -98,7 +98,7 @@ export class PaymentController {
       const paymentAttempt: PaymentAttempt = {
         id: this.generateId(), // Generate proper UUID
         user_id: userId,
-        order_id: orderId, // Keep orderId for LiqPay
+        order_id: orderId, // Keep orderId for payment tracking
         payment_id: paymentResponse.payment_id,
         checkout_id: paymentResponse.payment_id,
         checkout_url: paymentResponse.checkout_url,
@@ -417,7 +417,7 @@ export class PaymentController {
           end_date: subscription?.end_date,
           price: paymentAttempt.amount,
           duration: paymentAttempt.order_type === 'recurring' ? 'місяць' : 'рік',
-          payment_method: 'LiqPay',
+          payment_method: 'Monobank',
           auto_renewal: true, // Subscriptions always have auto-renewal enabled
         }
       };
@@ -521,19 +521,19 @@ export class PaymentController {
     }
   }
 
-  async checkPaymentStatusWithLiqPay(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async checkPaymentStatusWithMonobank(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      console.log('🔍 [LIQPAY_CHECK] Checking payment status with LiqPay...');
+      console.log('🔍 [MONOBANK_CHECK] Checking payment status with Monobank...');
       const { orderId } = req.params;
       const userId = req.user?.id;
 
       if (!userId) {
-        console.log('❌ [LIQPAY_CHECK] Unauthorized');
+        console.log('❌ [MONOBANK_CHECK] Unauthorized');
         res.status(401).json({ error: 'Unauthorized' });
         return;
       }
 
-      console.log('🆔 [LIQPAY_CHECK] Order ID:', orderId);
+      console.log('🆔 [MONOBANK_CHECK] Order ID:', orderId);
 
       // Check payment status directly with Monobank
       const invoiceStatus = await this.monobankService.getInvoiceStatus(orderId);
@@ -553,7 +553,7 @@ export class PaymentController {
         monobankStatus: invoiceStatus.status
       });
     } catch (error) {
-      console.error('💥 [LIQPAY_CHECK] Error checking payment status:', error);
+      console.error('💥 [MONOBANK_CHECK] Error checking payment status:', error);
       res.status(500).json({ 
         success: false,
         error: 'Failed to check payment status' 
@@ -818,7 +818,7 @@ export class PaymentController {
         updateData.status = status;
       }
 
-      // Store response data from LiqPay callback
+      // Store response data from payment gateway callback
       if (data) {
         const responseData = {
           payment_id: data.payment_id,

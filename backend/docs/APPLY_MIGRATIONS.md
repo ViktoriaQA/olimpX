@@ -67,7 +67,7 @@ npm run dev
 ### payment_attempts
 - `id` (TEXT) - Primary key
 - `user_id` (UUID) → `custom_users.id`
-- `order_id` (TEXT) - LiqPay order ID
+- `order_id` (TEXT) - Payment order ID
 - `status` (TEXT) - pending/completed/failed/etc
 
 ### user_subscriptions  

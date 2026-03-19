@@ -26,8 +26,6 @@
 ## Environment Variables
 
 ### Required Variables
-- `LIQPAY_PUBLIC_KEY` - LiqPay public key
-- `LIQPAY_PRIVATE_KEY` - LiqPay private key  
 - `SUPABASE_URL` - Supabase project URL
 - `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key
 - `JWT_SECRET` - JWT signing secret
@@ -38,8 +36,6 @@
 - `NODE_ENV` - Environment (default: production)
 - `PORT` - Application port (default: 8080)
 - `FRONTEND_URL` - Frontend URL for CORS
-- `LIQPAY_CALLBACK_URL` - LiqPay callback URL
-- `LIQPAY_RESULT_URL` - LiqPay success URL
 
 ## Docker Build Process
 

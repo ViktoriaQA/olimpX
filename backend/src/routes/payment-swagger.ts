@@ -12,7 +12,7 @@ const paymentController = new PaymentController();
  *   post:
  *     tags: [Payments]
  *     summary: Initiate subscription payment
- *     description: Initiate a payment for a subscription plan using LiqPay
+ *     description: Initiate a payment for a subscription plan using payment gateway
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -61,8 +61,8 @@ router.post(
  * /api/v1/payment/callback:
  *   post:
  *     tags: [Payments]
- *     summary: LiqPay payment callback
- *     description: Handle payment callback from LiqPay service
+ *     summary: Payment callback
+ *     description: Handle payment callback from payment gateway
  *     requestBody:
  *       required: true
  *       content:
@@ -72,10 +72,10 @@ router.post(
  *             properties:
  *               data:
  *                 type: string
- *                 description: Base64 encoded payment data from LiqPay
+ *                 description: Base64 encoded payment data from payment gateway
  *               signature:
  *                 type: string
- *                 description: Payment signature from LiqPay
+ *                 description: Payment signature from payment gateway
  *     responses:
  *       200:
  *         description: Callback processed successfully
@@ -255,8 +255,8 @@ router.get(
  * /api/v1/payment/check-status/{orderId}:
  *   get:
  *     tags: [Payments]
- *     summary: Check payment status with LiqPay
- *     description: Check payment status directly with LiqPay service
+ *     summary: Check payment status
+ *     description: Check payment status directly with payment gateway
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -294,9 +294,9 @@ router.get(
  *                     currency:
  *                       type: string
  *                       description: Currency code
- *                     liqpay_status:
+ *                     gateway_status:
  *                       type: string
- *                       description: Status from LiqPay
+ *                       description: Status from payment gateway
  *                 message:
  *                   type: string
  *                   description: Response message
@@ -319,7 +319,7 @@ router.get(
   '/check-status/:orderId',
   authMiddleware,
   validateRequest,
-  paymentController.checkPaymentStatusWithLiqPay.bind(paymentController)
+  paymentController.checkPaymentStatusWithMonobank.bind(paymentController)
 );
 
 /**

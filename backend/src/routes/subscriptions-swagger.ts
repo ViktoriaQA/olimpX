@@ -214,12 +214,9 @@ router.get('/status', authMiddleware, async (req: AuthRequest, res, next) => {
  *                         type: string
  *                         enum: [pending, completed, failed]
  *                         description: Payment status
- *                       liqpay_order_id:
+ *                       order_id:
  *                         type: string
- *                         description: LiqPay order ID
- *                       liqpay_status:
- *                         type: string
- *                         description: LiqPay status
+ *                         description: Payment order ID
  *                       created_at:
  *                         type: string
  *                         format: date-time
@@ -409,7 +406,7 @@ router.get('/history', authMiddleware, async (req: AuthRequest, res, next) => {
           end_date: null,
           price: payment.amount,
           duration: payment.billing_period === 'month' ? 'місяць' : 'рік',
-          payment_method: 'LiqPay',
+          payment_method: 'Monobank',
           auto_renewal: payment.order_type === 'recurring',
           type: 'payment'
         });
@@ -435,7 +432,7 @@ router.get('/history', authMiddleware, async (req: AuthRequest, res, next) => {
           end_date: subscription.end_date,
           price: price,
           duration,
-          payment_method: 'LiqPay',
+          payment_method: 'Monobank',
           auto_renewal: subscription.auto_renew,
           type: 'subscription'
         });
@@ -460,7 +457,7 @@ router.get('/history', authMiddleware, async (req: AuthRequest, res, next) => {
  *   post:
  *     tags: [Subscriptions]
  *     summary: Create payment record
- *     description: Create a payment record after successful LiqPay payment
+ *     description: Create a payment record after successful payment
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -472,8 +469,8 @@ router.get('/history', authMiddleware, async (req: AuthRequest, res, next) => {
  *             required:
  *               - plan_id
  *               - amount
- *               - liqpay_order_id
- *               - liqpay_status
+ *               - order_id
+ *               - status
  *             properties:
  *               plan_id:
  *                 type: string
@@ -485,12 +482,12 @@ router.get('/history', authMiddleware, async (req: AuthRequest, res, next) => {
  *               currency:
  *                 type: string
  *                 description: Currency code
- *               liqpay_order_id:
+ *               order_id:
  *                 type: string
- *                 description: LiqPay order ID
- *               liqpay_status:
+ *                 description: Payment order ID
+ *               status:
  *                 type: string
- *                 description: LiqPay payment status
+ *                 description: Payment status
  *     responses:
  *       200:
  *         description: Payment record created successfully
@@ -521,12 +518,9 @@ router.get('/history', authMiddleware, async (req: AuthRequest, res, next) => {
  *                     status:
  *                       type: string
  *                       description: Payment status
- *                     liqpay_order_id:
+ *                     order_id:
  *                       type: string
- *                       description: LiqPay order ID
- *                     liqpay_status:
- *                       type: string
- *                       description: LiqPay status
+ *                       description: Payment order ID
  *                     created_at:
  *                       type: string
  *                       format: date-time
@@ -543,7 +537,7 @@ router.get('/history', authMiddleware, async (req: AuthRequest, res, next) => {
 router.post('/payments', authMiddleware, async (req: AuthRequest, res, next) => {
   try {
     const userId = req.user!.id;
-    const { plan_id, amount, currency, liqpay_order_id, liqpay_status } = req.body;
+    const { plan_id, amount, currency, order_id, status } = req.body;
 
     const { data: payment, error } = await supabase
       .from('payments')
@@ -552,9 +546,8 @@ router.post('/payments', authMiddleware, async (req: AuthRequest, res, next) => 
         plan_id,
         amount,
         currency: currency || 'UAH',
-        status: liqpay_status === 'success' ? 'completed' : 'pending',
-        liqpay_order_id,
-        liqpay_status
+        status: status === 'success' ? 'completed' : 'pending',
+        order_id
       })
       .select()
       .single();
@@ -564,7 +557,7 @@ router.post('/payments', authMiddleware, async (req: AuthRequest, res, next) => 
     }
 
     // If payment is successful, update user subscription
-    if (liqpay_status === 'success') {
+    if (status === 'success') {
       await updateUserSubscription(userId, plan_id);
     }
 

@@ -36,7 +36,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://www.googletagmanager.com", "https://googletagmanager.com", "https://accounts.google.com", "https://static.cloudflareinsights.com", "https://static.liqpay.ua", "https://www.google-analytics.com", "https://cdn.jsdelivr.net"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://www.googletagmanager.com", "https://googletagmanager.com", "https://accounts.google.com", "https://static.cloudflareinsights.com", "https://www.google-analytics.com", "https://cdn.jsdelivr.net"],
       connectSrc: ["'self'", "ws://localhost:8080", "wss://olimpxx.pp.ua:8080", "https://accounts.google.com", "https://olimpx-production.up.railway.app", "https://olimpxx-production.up.railway.app", "https://www.google-analytics.com", "http://localhost:3001"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
@@ -191,7 +191,7 @@ app.use('/api/code-execution', codeExecutionRoutes);
 app.use('/api/logs', authMiddleware, logRoutes);
 app.use('/api/admin', authMiddleware, adminRoutes);
 
-// Direct LiqPay callback route (without /api/v1 prefix)
+// Direct payment callback route (without /api/v1 prefix)
 app.use('/payment', paymentRoutes);
 
 // Swagger documentation routes (for API documentation only)

@@ -19,13 +19,13 @@ export interface Subscription {
   start_date: Date;
   end_date: Date;
   auto_renew: boolean;
-  // Legacy LiqPay fields
-  liqpay_payment_id?: string;
-  liqpay_rec_token?: string;
+  // Legacy payment fields
+  payment_id?: string;
+  rec_token?: string;
   // New Monobank fields
   monobank_invoice_id?: string;
   monobank_token?: string;
-  payment_gateway: 'liqpay' | 'monobank';
+  payment_gateway: 'monobank';
   created_at: Date;
   updated_at: Date;
 }
@@ -115,7 +115,7 @@ export interface MonobankCallbackData {
   signature: string;
 }
 
-export interface LiqPayCallbackData {
+export interface PaymentCallbackData {
   payment_id: string;
   status: string;
   transaction_id?: string;

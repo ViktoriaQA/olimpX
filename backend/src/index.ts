@@ -24,12 +24,11 @@ if (require('fs').existsSync(envPath)) {
 }
 
 // Verify critical environment variables are loaded
-const requiredEnvVars = ['LIQPAY_PUBLIC_KEY', 'LIQPAY_PRIVATE_KEY'];
+const requiredEnvVars: string[] = [];
 const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
 
 if (missingVars.length > 0) {
   console.error('❌ Missing required environment variables:', missingVars);
-  console.error('Available env vars:', Object.keys(process.env).filter(k => k.includes('LIQPAY')));
   process.exit(1);
 }
 

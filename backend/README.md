@@ -9,7 +9,7 @@ Backend API for the CodeArena programming tournament platform built with Node.js
 - 💳 Subscription Management
 - 🏆 Tournament System (Coming Soon)
 - 📝 Task Management (Coming Soon)
-- 💰 Payment Integration (LiqPay)
+- 💰 Payment Integration (Monobank)
 
 ## Tech Stack
 

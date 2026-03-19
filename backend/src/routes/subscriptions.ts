@@ -166,7 +166,7 @@ router.get('/history', authMiddleware, async (req: AuthRequest, res, next) => {
           end_date: null,
           price: payment.amount,
           duration: payment.billing_period === 'month' ? 'місяць' : 'рік',
-          payment_method: 'LiqPay',
+          payment_method: 'Monobank',
           auto_renewal: payment.order_type === 'recurring',
           type: 'payment'
         });
@@ -192,7 +192,7 @@ router.get('/history', authMiddleware, async (req: AuthRequest, res, next) => {
           end_date: subscription.end_date,
           price: price,
           duration,
-          payment_method: 'LiqPay',
+          payment_method: 'Monobank',
           auto_renewal: subscription.auto_renew,
           type: 'subscription'
         });
@@ -211,11 +211,11 @@ router.get('/history', authMiddleware, async (req: AuthRequest, res, next) => {
   }
 });
 
-// Create payment record (called after successful LiqPay payment)
+// Create payment record (called after successful payment)
 router.post('/payments', authMiddleware, async (req: AuthRequest, res, next) => {
   try {
     const userId = req.user!.id;
-    const { plan_id, amount, currency, liqpay_order_id, liqpay_status } = req.body;
+    const { plan_id, amount, currency, order_id, status } = req.body;
 
     const { data: payment, error } = await supabase
       .from('payments')
@@ -224,9 +224,8 @@ router.post('/payments', authMiddleware, async (req: AuthRequest, res, next) => 
         plan_id,
         amount,
         currency: currency || 'UAH',
-        status: liqpay_status === 'success' ? 'completed' : 'pending',
-        liqpay_order_id,
-        liqpay_status
+        status: status === 'success' ? 'completed' : 'pending',
+        order_id
       })
       .select()
       .single();
@@ -236,7 +235,7 @@ router.post('/payments', authMiddleware, async (req: AuthRequest, res, next) => 
     }
 
     // If payment is successful, update user subscription
-    if (liqpay_status === 'success') {
+    if (status === 'success') {
       await updateUserSubscription(userId, plan_id);
     }
 
