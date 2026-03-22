@@ -2,7 +2,7 @@
 
 ## Огляд
 
-Система обробляє платежі через LiqPay і зберігає дані в таблиці `payment_attempts`. Після успішної оплати створюється підписка для користувача.
+Система обробляє платежі через Monobank і зберігає дані в таблиці `payment_attempts`. Після успішної оплати створюється підписка для користувача.
 
 ## Основні таблиці
 
@@ -13,16 +13,16 @@
 - `id` - унікальний ID спроби платежу
 - `user_id` - ID користувача
 - `package_id` - ID пакету, який купується
-- `order_id` - ID замовлення (для LiqPay)
-- `payment_id` - ID платежу від LiqPay
-- `checkout_id` - LiqPay checkout ID
+- `order_id` - ID замовлення (для Monobank)
+- `payment_id` - ID платежу від Monobank
+- `checkout_id` - Monobank checkout ID
 - `checkout_url` - URL для перенаправлення на оплату
 - `amount` - сума платежу
 - `currency` - валюта (UAH, USD, EUR)
 - `billing_period` - період білінгу (month/year)
 - `status` - статус платежу (pending, processing, completed, failed, expired, refunded)
-- `payment_gateway` - тип шлюзу (liqpay)
-- `response_data` - деталі відповіді від LiqPay (JSONB)
+- `payment_gateway` - тип шлюзу (monobank)
+- `response_data` - деталі відповіді від Monobank (JSONB)
 - `payment_method` - спосіб оплати (card, googlepay, applepay тощо)
 - `subscription_id` - ID підписки (якщо створено)
 - `error_message` - повідомлення про помилку
@@ -61,14 +61,14 @@
 POST /api/v1/payment/initiate-subscription
 ```
 - Створюється запис в `payment_attempts` зі статусом 'pending'
-- Генерується URL для LiqPay checkout
+- Генерується URL для Monobank checkout
 - Користувач перенаправляється на сторінку оплати
 
-### 2. Callback від LiqPay
+### 2. Callback від Monobank
 ```
 POST /api/v1/payment/callback
 ```
-- LiqPay надсилає callback про статус платежу
+- Monobank надсилає callback про статус платежу
 - Оновлюється статус в `payment_attempts`
 - Зберігаються деталі відповіді в `response_data`
 
@@ -95,7 +95,7 @@ POST /api/v1/payment/callback
 
 ### Платежі
 - `POST /api/v1/payment/initiate-subscription` - Ініціювати платіж
-- `POST /api/v1/payment/callback` - Callback від LiqPay
+- `POST /api/v1/payment/callback` - Callback від Monobank
 - `GET /api/v1/payment/status/:orderId` - Перевірити статус
 - `GET /api/v1/payment/status/public/:orderId` - Публічний статус
 - `POST /api/v1/payment/verify-subscription` - Верифікація підписки

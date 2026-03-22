@@ -18,10 +18,18 @@ export interface SubscriptionResponse {
   data: SubscriptionPlan[];
 }
 
+export interface InitiateRecurringSubscriptionResponse {
+  checkout_url: string;
+  order_id: string;
+  subscription_id: string;
+  interval: string;
+  amount: number;
+}
+
 export interface SubscriptionHistory {
   id: string;
   plan_name: string;
-  status: 'active' | 'cancelled' | 'expired' | 'pending';
+  status: 'active' | 'cancelled' | 'expired' | 'pending' | 'initiated';
   start_date: string;
   end_date?: string;
   price: number;
@@ -251,6 +259,24 @@ class SubscriptionService {
     if (!response.ok) {
       throw new Error('Failed to delete subscription plan');
     }
+  }
+
+  async initiateRecurringSubscription(planId: string, billingCycle: 'monthly' | 'yearly' = 'monthly'): Promise<InitiateRecurringSubscriptionResponse> {
+    const response = await fetch(`${config.api.baseUrl}/api/v1/payment/initiate-recurring-subscription`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify({
+        package_id: planId,
+        billing_cycle: billingCycle,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to initiate recurring subscription');
+    }
+
+    return response.json();
   }
 
   async verifySubscription(sessionIdOrSubscriptionId: string): Promise<{ success: boolean; data?: SubscriptionHistory; error?: string }> {

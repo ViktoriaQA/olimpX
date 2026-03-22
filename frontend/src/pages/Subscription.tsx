@@ -59,28 +59,61 @@ const Subscription = () => {
   };
 
   const fetchSubscriptionHistory = async () => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      console.log('❌ [FRONTEND] User not authenticated, skipping history fetch');
+      return;
+    }
     
     console.log('📋 [FRONTEND] Fetching subscription history...');
+    console.log('👤 [FRONTEND] User ID:', user?.id);
+    console.log('⏰ [FRONTEND] Fetch timestamp:', new Date().toISOString());
+    
     setHistoryLoading(true);
     try {
+      console.log('📡 [FRONTEND] Sending request to backend for history...');
       const response = await subscriptionService.getSubscriptionHistory();
       console.log('✅ [FRONTEND] Subscription history response:', response);
+      console.log('📊 [FRONTEND] History data:', response.data);
+      console.log('📈 [FRONTEND] Number of subscriptions:', response.data?.length || 0);
+      
+      // Log each subscription details
+      if (response.data && response.data.length > 0) {
+        response.data.forEach((sub, index) => {
+          console.log(`📋 [FRONTEND] Subscription ${index + 1}:`, {
+            id: sub.id,
+            plan_name: sub.plan_name,
+            status: sub.status,
+            start_date: sub.start_date,
+            end_date: sub.end_date,
+            price: sub.price,
+            auto_renewal: sub.auto_renewal
+          });
+        });
+      }
+      
       setSubscriptionHistory(response.data);
+      console.log('✅ [FRONTEND] Subscription history updated in state');
     } catch (error) {
       console.error('❌ [FRONTEND] Failed to fetch subscription history:', error);
+      console.error('❌ [FRONTEND] Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack trace',
+        userId: user?.id
+      });
       toast({
         title: "Помилка",
         description: "Не вдалося завантажити історію підписок",
         variant: "destructive",
       });
     } finally {
+      console.log('🏁 [FRONTEND] History fetch completed');
       setHistoryLoading(false);
     }
   };
 
   const handleSubscribe = async (planId: string) => {
     if (!isAuthenticated) {
+      console.log('❌ [FRONTEND] User not authenticated, redirecting to auth');
       toast({
         title: "Необхідна авторизація",
         description: "Будь ласка, увійдіть в акаунт для оформлення підписки",
@@ -90,13 +123,20 @@ const Subscription = () => {
     }
 
     try {
-      console.log('🚀 [FRONTEND] Initiating subscription...');
+      console.log('🚀 [FRONTEND] Initiating subscription process...');
+      console.log('👤 [FRONTEND] User info:', { id: user?.id, email: user?.email, nickname: user?.nickname });
       console.log('📦 [FRONTEND] Plan ID:', planId);
+      console.log('⏰ [FRONTEND] Start time:', new Date().toISOString());
       
       setProcessing(planId);
-      const response = await subscriptionService.initiateSubscription(planId);
+      console.log('⏳ [FRONTEND] Set processing state for plan:', planId);
       
-      console.log('✅ [FRONTEND] Payment initiation response:', response);
+      console.log('📡 [FRONTEND] Sending request to backend...');
+      const response = await subscriptionService.initiateSubscription(planId);
+      console.log('✅ [FRONTEND] Backend response received:', response);
+      console.log('🔗 [FRONTEND] Checkout URL:', response.checkout_url);
+      console.log('🆔 [FRONTEND] Order ID:', response.order_id);
+      console.log('💳 [FRONTEND] Payment ID:', response.payment_id);
       
       // Store order_id and payment_id in sessionStorage for success page
       if (response.order_id) {
@@ -109,10 +149,26 @@ const Subscription = () => {
       }
       
       if (response.checkout_url) {
-        console.log('🔗 [FRONTEND] Redirecting to checkout:', response.checkout_url);
-        window.location.href = response.checkout_url;
+        console.log('🔗 [FRONTEND] Redirecting to Monobank checkout...');
+        console.log('🌐 [FRONTEND] Checkout URL:', response.checkout_url);
+        console.log('📋 [FRONTEND] SessionStorage contents:', {
+          last_order_id: sessionStorage.getItem('last_order_id'),
+          last_payment_id: sessionStorage.getItem('last_payment_id')
+        });
+        
+        // Show toast before redirect
+        toast({
+          title: "Перенаправлення на оплату",
+          description: "Вас буде перенаправлено на сторінку оплати Monobank",
+        });
+        
+        // Small delay to show toast
+        setTimeout(() => {
+          window.location.href = response.checkout_url;
+        }, 1000);
       } else {
         console.log('❌ [FRONTEND] No checkout URL in response');
+        console.log('❌ [FRONTEND] Full response:', JSON.stringify(response, null, 2));
         toast({
           title: "Помилка",
           description: "Не вдалося створити платіж",
@@ -120,13 +176,20 @@ const Subscription = () => {
         });
       }
     } catch (error) {
-      console.error('Subscription error:', error);
+      console.error('💥 [FRONTEND] Subscription error:', error);
+      console.error('💥 [FRONTEND] Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack trace',
+        planId,
+        userId: user?.id
+      });
       toast({
         title: "Помилка підписки",
         description: error instanceof Error ? error.message : "Не вдалося оформити підписку",
         variant: "destructive",
       });
     } finally {
+      console.log('🏁 [FRONTEND] Subscription process finished, clearing processing state');
       setProcessing(null);
     }
   };
@@ -146,6 +209,8 @@ const Subscription = () => {
         return 'bg-gray-100 text-gray-800';
       case 'pending':
         return 'bg-yellow-100 text-yellow-800';
+      case 'initiated':
+        return 'bg-blue-100 text-blue-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -161,6 +226,8 @@ const Subscription = () => {
         return 'Завершена';
       case 'pending':
         return 'Очікує';
+      case 'initiated':
+        return 'Ініційовано';
       default:
         return status;
     }
@@ -319,20 +386,18 @@ const Subscription = () => {
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
                 <p className="text-muted-foreground font-mono">Завантаження історії...</p>
               </div>
-            ) : subscriptionHistory.length === 0 || !subscriptionHistory.some(s => s.status === 'active') ? (
+            ) : subscriptionHistory.length === 0 ? (
               <div className="text-center py-12">
                 <History className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground font-mono">
-                  У вас немає активних підписок
+                  У вас немає підписок
                 </p>
               </div>
             ) : (
               <div className="space-y-4">
-                <h2 className="text-xl font-bold font-mono text-card-foreground mb-6">Ваша активна підписка</h2>
+                <h2 className="text-xl font-bold font-mono text-card-foreground mb-6">Ваша історія підписок</h2>
                 {subscriptionHistory
-                  .filter(subscription => subscription.status === 'active')
                   .sort((a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime())
-                  .slice(0, 1)
                   .map((subscription) => (
                   <div key={subscription.id} className="rounded-lg border border-border bg-card p-6 space-y-4">
                     <div className="flex justify-between items-start">

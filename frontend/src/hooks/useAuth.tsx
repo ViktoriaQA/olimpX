@@ -69,12 +69,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (storedToken && storedUser) {
         // Verify token is still valid
+        console.log('🔄 [AUTH] Restoring session with token...');
         const response = await AuthService.getCurrentUser(storedToken);
+        console.log('✅ [AUTH] Session restored, user data:', response.user);
         setUser(response.user);
         setToken(storedToken);
       }
     } catch (error) {
-      console.error('Failed to restore session:', error);
+      console.error('❌ [AUTH] Failed to restore session:', error);
       clearAuthData();
     } finally {
       setLoading(false);
@@ -171,10 +173,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!token) return;
     
     try {
+      console.log('🔄 [AUTH] Refreshing user profile...');
       const response = await AuthService.getCurrentUser(token);
+      console.log('✅ [AUTH] Profile refreshed, new user data:', response.user);
       setUser(response.user);
     } catch (error) {
-      console.error('Failed to refresh profile:', error);
+      console.error('❌ [AUTH] Failed to refresh profile:', error);
     }
   };
 

@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Users, X, RefreshCw, Shield, Calendar, CreditCard, Search, Filter } from "lucide-react";
+import { ArrowLeft, Users, X, RefreshCw, Shield, Calendar, CreditCard, Search, Filter, Trash2, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { UserManagementService, User } from "@/services/userManagementService";
 
@@ -138,6 +138,30 @@ const AdminUsers = () => {
       toast({
         title: "Помилка",
         description: "Не вдалося скасувати підписку",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleCleanupSubscriptions = async (userId: string, userName: string) => {
+    try {
+      setActionLoading(userId);
+      const result = await UserManagementService.cleanupUserSubscriptions(userId, true);
+      
+      // Refresh users to get updated subscription info
+      await fetchUsers();
+      
+      toast({
+        title: "Успіх",
+        description: `Очищено підписки для ${userName}. Видалено: ${result.results.deletedSubscriptions} підписок, ${result.results.deletedPaymentAttempts} платежів, ${result.results.deletedRecurringSubscriptions} автоподовжень.`,
+      });
+    } catch (error) {
+      console.error('Failed to cleanup subscriptions:', error);
+      toast({
+        title: "Помилка",
+        description: "Не вдалося очистити підписки",
         variant: "destructive",
       });
     } finally {
@@ -439,6 +463,43 @@ const AdminUsers = () => {
                                 <Shield className="w-3 h-3 mr-1" />
                                 Профіль
                               </Button>
+                              {(user.subscription || user.role === 'admin') && (
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-6 text-xs"
+                                      disabled={actionLoading === user.id}
+                                    >
+                                      <Sparkles className="w-3 h-3 mr-1" />
+                                      Очистити
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Очистити підписки?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Ви впевнені, що хочете очистити всі тестові підписки для користувача {user.first_name} {user.last_name}?
+                                        <br /><br />
+                                        <strong>Буде збережено:</strong> остання активна підписка (якщо є)
+                                        <br />
+                                        <strong>Буде видалено:</strong> всі інші підписки, платежі та автоподовження
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Відміна</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => handleCleanupSubscriptions(user.id, `${user.first_name} ${user.last_name}`)}
+                                        className="bg-orange-600 hover:bg-orange-700"
+                                      >
+                                        <Sparkles className="w-4 h-4 mr-2" />
+                                        Очистити підписки
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>

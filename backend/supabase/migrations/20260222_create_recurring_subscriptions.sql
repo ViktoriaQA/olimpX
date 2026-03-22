@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS recurring_subscriptions (
     user_id UUID NOT NULL REFERENCES custom_users(id) ON DELETE CASCADE,
     package_id UUID NOT NULL REFERENCES subscription_plans(id) ON DELETE CASCADE,
     subscription_id UUID REFERENCES user_subscriptions(id) ON DELETE CASCADE,
-    liqpay_payment_id TEXT NOT NULL,
-    liqpay_rec_token TEXT NOT NULL,
+    payment_id TEXT NOT NULL,
+    rec_token TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'cancelled', 'paused', 'expired')),
     billing_period TEXT NOT NULL DEFAULT 'month' CHECK (billing_period IN ('month', 'year')),
     amount DECIMAL(10,2) NOT NULL,
@@ -27,7 +27,7 @@ CREATE INDEX IF NOT EXISTS idx_recurring_subscriptions_package_id ON recurring_s
 CREATE INDEX IF NOT EXISTS idx_recurring_subscriptions_subscription_id ON recurring_subscriptions(subscription_id);
 CREATE INDEX IF NOT EXISTS idx_recurring_subscriptions_status ON recurring_subscriptions(status);
 CREATE INDEX IF NOT EXISTS idx_recurring_subscriptions_next_payment_date ON recurring_subscriptions(next_payment_date);
-CREATE INDEX IF NOT EXISTS idx_recurring_subscriptions_liqpay_rec_token ON recurring_subscriptions(liqpay_rec_token);
+CREATE INDEX IF NOT EXISTS idx_recurring_subscriptions_rec_token ON recurring_subscriptions(rec_token);
 CREATE INDEX IF NOT EXISTS idx_recurring_subscriptions_is_active ON recurring_subscriptions(is_active);
 
 -- Увімкнення RLS
@@ -35,10 +35,12 @@ ALTER TABLE recurring_subscriptions ENABLE ROW LEVEL SECURITY;
 
 -- Створення RLS політик
 -- Користувачі можуть бачити свої рекурентні підписки
+DROP POLICY IF EXISTS "Users can view own recurring subscriptions" ON recurring_subscriptions;
 CREATE POLICY "Users can view own recurring subscriptions" ON recurring_subscriptions
     FOR SELECT USING (auth.uid()::text = user_id::text);
 
--- Service role може керувати всіми рекурентними підписками
+-- Service role може керувати всіма рекурентними підписками
+DROP POLICY IF EXISTS "Service role can manage recurring subscriptions" ON recurring_subscriptions;
 CREATE POLICY "Service role can manage recurring subscriptions" ON recurring_subscriptions
     FOR ALL USING (auth.role() IN ('authenticated', 'service_role'));
 
@@ -77,14 +79,15 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Створення функції для отримання активних рекурентних підписок для продовження
+DROP FUNCTION IF EXISTS get_recurring_subscriptions_for_renewal();
 CREATE OR REPLACE FUNCTION get_recurring_subscriptions_for_renewal()
 RETURNS TABLE (
     id TEXT,
     user_id UUID,
     package_id UUID,
     subscription_id UUID,
-    liqpay_payment_id TEXT,
-    liqpay_rec_token TEXT,
+    payment_id TEXT,
+    rec_token TEXT,
     amount DECIMAL(10,2),
     currency TEXT,
     billing_period TEXT
@@ -96,8 +99,8 @@ BEGIN
         rs.user_id,
         rs.package_id,
         rs.subscription_id,
-        rs.liqpay_payment_id,
-        rs.liqpay_rec_token,
+        rs.payment_id,
+        rs.rec_token,
         rs.amount,
         rs.currency,
         rs.billing_period
@@ -151,8 +154,8 @@ COMMENT ON COLUMN recurring_subscriptions.id IS 'Unique recurring subscription i
 COMMENT ON COLUMN recurring_subscriptions.user_id IS 'User who owns the recurring subscription';
 COMMENT ON COLUMN recurring_subscriptions.package_id IS 'Subscription plan package';
 COMMENT ON COLUMN recurring_subscriptions.subscription_id IS 'Related user subscription (UUID)';
-COMMENT ON COLUMN recurring_subscriptions.liqpay_payment_id IS 'Original LiqPay payment ID';
-COMMENT ON COLUMN recurring_subscriptions.liqpay_rec_token IS 'LiqPay recurring token for auto-payments';
+COMMENT ON COLUMN recurring_subscriptions.payment_id IS 'Original payment ID';
+COMMENT ON COLUMN recurring_subscriptions.rec_token IS 'Recurring token for auto-payments';
 COMMENT ON COLUMN recurring_subscriptions.status IS 'Status: active, cancelled, paused, expired';
 COMMENT ON COLUMN recurring_subscriptions.billing_period IS 'Billing period: month or year';
 COMMENT ON COLUMN recurring_subscriptions.last_payment_date IS 'Date of last successful payment';

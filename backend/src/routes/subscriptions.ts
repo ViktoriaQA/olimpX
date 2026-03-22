@@ -112,7 +112,7 @@ router.get('/history', authMiddleware, async (req: AuthRequest, res, next) => {
         subscription_plans(name, price_monthly, price_yearly, features)
       `)
       .eq('user_id', userId)
-      .eq('status', 'completed')
+      .in('status', ['completed', 'pending', 'processing'])
       .order('created_at', { ascending: false });
 
     console.log('💳 [HISTORY] Payment attempts result:', { data: paymentAttempts, error: paymentError });
@@ -142,31 +142,75 @@ router.get('/history', authMiddleware, async (req: AuthRequest, res, next) => {
     console.log('🔍 [HISTORY] Checking all payment attempts...');
     const { data: allPaymentAttempts, error: allPaymentError } = await supabase
       .from('payment_attempts')
-      .select('*')
+      .select(`
+        *,
+        subscription_plans(name, price_monthly, price_yearly, features)
+      `)
       .eq('user_id', userId);
 
     console.log('📊 [HISTORY] All payment attempts:', { data: allPaymentAttempts, error: allPaymentError });
 
+    // Get recurring subscriptions for auto-renewal info
+    console.log('🔍 [HISTORY] Fetching recurring subscriptions...');
+    const { data: recurringSubs, error: recurringError } = await supabase
+      .from('recurring_subscriptions')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('is_active', true);
+
+    console.log('🔄 [HISTORY] Recurring subscriptions:', { data: recurringSubs, error: recurringError });
+
+    // Create a map of subscription_id -> auto_renewal status
+    const autoRenewalMap = new Map();
+    if (recurringSubs) {
+      recurringSubs.forEach(rs => {
+        autoRenewalMap.set(rs.subscription_id, {
+          enabled: rs.status === 'active' && rs.is_active,
+          next_payment_date: rs.next_payment_date,
+          failed_attempts: rs.failed_attempts
+        });
+      });
+    }
+
     console.log('✅ [HISTORY] Found payment attempts:', paymentAttempts);
     console.log('✅ [HISTORY] Found subscriptions:', subscriptions);
+    console.log('🔄 [HISTORY] Auto-renewal map created for', autoRenewalMap.size, 'subscriptions');
 
     // Combine and transform data
     const historyItems: any[] = [];
     
-    // Add payment attempts
+    // Create a map of order_id -> subscription info for quick lookup
+    const subscriptionMap = new Map();
+    if (subscriptions) {
+      subscriptions.forEach(subscription => {
+        // Extract order_id from subscription if it exists, or use subscription_id
+        const key = subscription.order_id || subscription.id;
+        subscriptionMap.set(key, subscription);
+      });
+    }
+    
+    // Add payment attempts but check if they have corresponding subscriptions
     if (paymentAttempts) {
       paymentAttempts.forEach(payment => {
         const plan = payment.subscription_plans;
+        const existingSubscription = subscriptionMap.get(payment.order_id);
+        
+        // If there's a corresponding subscription, skip the payment record to avoid duplication
+        if (existingSubscription) {
+          console.log('🔄 [HISTORY] Skipping payment record due to existing subscription:', payment.order_id);
+          return;
+        }
+        
         historyItems.push({
           id: payment.id,
           order_id: payment.order_id,
           plan_name: plan?.name || 'Невідомий план',
-          status: 'completed',
+          status: payment.status, // Use actual payment status
           start_date: payment.created_at,
           end_date: null,
           price: payment.amount,
           duration: payment.billing_period === 'month' ? 'місяць' : 'рік',
-          payment_method: 'LiqPay',
+          payment_method: 'Monobank',
           auto_renewal: payment.order_type === 'recurring',
           type: 'payment'
         });
@@ -184,6 +228,14 @@ router.get('/history', authMiddleware, async (req: AuthRequest, res, next) => {
         const monthsDiff = endDate ? Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30)) : 1;
         const duration = monthsDiff >= 12 ? 'рік' : 'місяць';
         
+        // Check if this subscription has auto-renewal enabled
+        const autoRenewalInfo = autoRenewalMap.get(subscription.id);
+        const autoRenewal = autoRenewalInfo ? {
+          enabled: autoRenewalInfo.enabled,
+          next_payment_date: autoRenewalInfo.next_payment_date,
+          failed_attempts: autoRenewalInfo.failed_attempts
+        } : { enabled: false, next_payment_date: null, failed_attempts: 0 };
+        
         historyItems.push({
           id: subscription.id,
           plan_name: plan?.name || 'Невідомий план',
@@ -192,8 +244,10 @@ router.get('/history', authMiddleware, async (req: AuthRequest, res, next) => {
           end_date: subscription.end_date,
           price: price,
           duration,
-          payment_method: 'LiqPay',
-          auto_renewal: subscription.auto_renew,
+          payment_method: 'Monobank',
+          auto_renewal: autoRenewal.enabled,
+          next_payment_date: autoRenewal.next_payment_date,
+          failed_attempts: autoRenewal.failed_attempts,
           type: 'subscription'
         });
       });
@@ -211,11 +265,11 @@ router.get('/history', authMiddleware, async (req: AuthRequest, res, next) => {
   }
 });
 
-// Create payment record (called after successful LiqPay payment)
+// Create payment record (called after successful payment)
 router.post('/payments', authMiddleware, async (req: AuthRequest, res, next) => {
   try {
     const userId = req.user!.id;
-    const { plan_id, amount, currency, liqpay_order_id, liqpay_status } = req.body;
+    const { plan_id, amount, currency, order_id, status } = req.body;
 
     const { data: payment, error } = await supabase
       .from('payments')
@@ -224,9 +278,8 @@ router.post('/payments', authMiddleware, async (req: AuthRequest, res, next) => 
         plan_id,
         amount,
         currency: currency || 'UAH',
-        status: liqpay_status === 'success' ? 'completed' : 'pending',
-        liqpay_order_id,
-        liqpay_status
+        status: status === 'success' ? 'completed' : 'pending',
+        order_id
       })
       .select()
       .single();
@@ -236,7 +289,7 @@ router.post('/payments', authMiddleware, async (req: AuthRequest, res, next) => 
     }
 
     // If payment is successful, update user subscription
-    if (liqpay_status === 'success') {
+    if (status === 'success') {
       await updateUserSubscription(userId, plan_id);
     }
 
@@ -334,6 +387,119 @@ router.delete('/plans/:planId', async (req: AuthRequest, res, next) => {
 
     res.json({ plan });
   } catch (error) {
+    next(error);
+  }
+});
+
+// Update auto-renewal settings
+router.put('/auto-renewal/:subscriptionId', authMiddleware, async (req: AuthRequest, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const { subscriptionId } = req.params;
+    const { enabled } = req.body;
+
+    console.log('🔄 [AUTO-RENEWAL] Updating auto-renewal settings...');
+    console.log('👤 [AUTO-RENEWAL] User ID:', userId);
+    console.log('🆔 [AUTO-RENEWAL] Subscription ID:', subscriptionId);
+    console.log('🔘 [AUTO-RENEWAL] Enabled:', enabled);
+
+    // Validate input
+    if (typeof enabled !== 'boolean') {
+      console.log('❌ [AUTO-RENEWAL] Invalid enabled value:', enabled);
+      throw createError('enabled must be a boolean', 400);
+    }
+
+    // Get the recurring subscription
+    const { data: recurringSub, error: fetchError } = await supabase
+      .from('recurring_subscriptions')
+      .select('*')
+      .eq('subscription_id', subscriptionId)
+      .eq('user_id', userId)
+      .single();
+
+    if (fetchError) {
+      console.log('❌ [AUTO-RENEWAL] Recurring subscription not found:', fetchError);
+      throw createError('Recurring subscription not found', 404);
+    }
+
+    console.log('✅ [AUTO-RENEWAL] Found recurring subscription:', recurringSub.id);
+
+    // Update the recurring subscription
+    const updateData: any = {
+      is_active: enabled,
+      status: enabled ? 'active' : 'cancelled',
+      updated_at: new Date().toISOString()
+    };
+
+    if (!enabled) {
+      updateData.cancelled_at = new Date().toISOString();
+    }
+
+    const { data: updatedSub, error: updateError } = await supabase
+      .from('recurring_subscriptions')
+      .update(updateData)
+      .eq('id', recurringSub.id)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error('❌ [AUTO-RENEWAL] Error updating recurring subscription:', updateError);
+      throw createError('Failed to update auto-renewal settings', 500);
+    }
+
+    console.log('✅ [AUTO-RENEWAL] Auto-renewal settings updated successfully');
+    console.log('📊 [AUTO-RENEWAL] Updated subscription:', updatedSub);
+
+    res.json({
+      success: true,
+      message: enabled ? 'Auto-renewal enabled' : 'Auto-renewal disabled',
+      subscription: updatedSub
+    });
+
+  } catch (error) {
+    console.error('💥 [AUTO-RENEWAL] Error updating auto-renewal settings:', error);
+    next(error);
+  }
+});
+
+// Get auto-renewal status for a subscription
+router.get('/auto-renewal/:subscriptionId', authMiddleware, async (req: AuthRequest, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const { subscriptionId } = req.params;
+
+    console.log('🔍 [AUTO-RENEWAL] Getting auto-renewal status...');
+    console.log('👤 [AUTO-RENEWAL] User ID:', userId);
+    console.log('🆔 [AUTO-RENEWAL] Subscription ID:', subscriptionId);
+
+    // Get the recurring subscription
+    const { data: recurringSub, error: fetchError } = await supabase
+      .from('recurring_subscriptions')
+      .select('*')
+      .eq('subscription_id', subscriptionId)
+      .eq('user_id', userId)
+      .single();
+
+    if (fetchError) {
+      console.log('❌ [AUTO-RENEWAL] Recurring subscription not found:', fetchError);
+      return res.json({
+        enabled: false,
+        message: 'No auto-renewal setup found'
+      });
+    }
+
+    console.log('✅ [AUTO-RENEWAL] Found recurring subscription:', recurringSub.id);
+
+    res.json({
+      enabled: recurringSub.is_active && recurringSub.status === 'active',
+      next_payment_date: recurringSub.next_payment_date,
+      failed_attempts: recurringSub.failed_attempts,
+      status: recurringSub.status,
+      subscription: recurringSub
+    });
+
+  } catch (error) {
+    console.error('💥 [AUTO-RENEWAL] Error getting auto-renewal status:', error);
     next(error);
   }
 });

@@ -19,8 +19,13 @@ export interface Subscription {
   start_date: Date;
   end_date: Date;
   auto_renew: boolean;
-  liqpay_payment_id?: string;
-  liqpay_rec_token?: string;
+  // Legacy payment fields
+  payment_id?: string;
+  rec_token?: string;
+  // New Monobank fields
+  monobank_invoice_id?: string;
+  monobank_token?: string;
+  payment_gateway: 'monobank';
   created_at: Date;
   updated_at: Date;
 }
@@ -34,7 +39,7 @@ export interface PaymentAttempt {
   checkout_url?: string;
   amount: number;
   currency: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled' | 'initiated';
   order_type: 'one-time' | 'recurring';
   package_id?: string;
   subscription_id?: string;
@@ -75,7 +80,42 @@ export interface PaymentStatusResponse {
   error_message?: string;
 }
 
-export interface LiqPayCallbackData {
+export interface MonobankCallbackData {
+  invoiceId: string;
+  status: 'processing' | 'success' | 'failure' | 'expired' | 'reversed';
+  amount: number;
+  ccy: number;
+  finalAmount?: number;
+  commission?: {
+    commissionFee?: number;
+    commissionType?: string;
+  };
+  paymentMethod?: string;
+  paymentInfo?: {
+    ip?: string;
+    cardMask?: string;
+    cardType?: string;
+    cardBank?: string;
+    cardCountry?: string;
+    cardProduct?: string;
+    token?: string;
+  };
+  refund?: {
+    amount: number;
+    date: number;
+    comment?: string;
+  };
+  merchantPaymInfo: {
+    reference: string;
+    destination: string;
+    comment?: string;
+  };
+  customFields?: Record<string, any>;
+  timestamp: number;
+  signature: string;
+}
+
+export interface PaymentCallbackData {
   payment_id: string;
   status: string;
   transaction_id?: string;
@@ -181,7 +221,7 @@ export interface PaymentResponse {
   signature?: string;
   payment_id: string;
   order_id: string;
-  status: string;
+  status: 'completed' | 'failed' | 'processing' | 'pending' | string;
   amount: number;
   currency: string;
   description: string;

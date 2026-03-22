@@ -76,4 +76,20 @@ export class UserManagementService {
       method: 'POST',
     });
   }
+
+  static async cleanupUserSubscriptions(userId: string, keepLatest: boolean = true): Promise<{ 
+    message: string; 
+    results: {
+      deletedSubscriptions: number;
+      deletedPaymentAttempts: number;
+      deletedRecurringSubscriptions: number;
+      updatedProfiles: number;
+      errors: string[];
+    }
+  }> {
+    return this.apiCall<any>(`/api/admin/cleanup/subscriptions`, {
+      method: 'POST',
+      body: JSON.stringify({ userId, keepLatest }),
+    });
+  }
 }

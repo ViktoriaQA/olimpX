@@ -206,6 +206,46 @@ router.post('/cron/cleanup-now', requireRole(['admin']), async (req, res) => {
   }
 });
 
+// Clean up test subscriptions (Admin only)
+router.post('/cleanup/subscriptions', requireRole(['admin']), async (req, res) => {
+  try {
+    const { userId, keepLatest } = req.body; // Optional: specific user ID and keep latest flag
+    
+    console.log('🧹 [ADMIN] Starting subscription cleanup...');
+    console.log('👤 [ADMIN] Target user:', userId || 'ALL users');
+    console.log('🔄 [ADMIN] Keep latest active:', keepLatest || false);
+    
+    // Import the cleanup function
+    const { cleanupTestSubscriptions } = await import('../scripts/cleanupTestSubscriptions');
+    
+    const result = await cleanupTestSubscriptions(userId, keepLatest);
+    
+    console.log('📊 [ADMIN] Cleanup results:', result);
+    
+    if (result.errors.length > 0) {
+      console.error('❌ [ADMIN] Cleanup errors:', result.errors);
+      return res.status(500).json({
+        error: 'Cleanup completed with errors',
+        details: result
+      });
+    }
+    
+    res.json({
+      message: keepLatest 
+        ? 'Subscription cleanup completed (latest active kept)' 
+        : 'Subscription cleanup completed successfully',
+      results: result
+    });
+    
+  } catch (error) {
+    console.error('💥 [ADMIN] Error during subscription cleanup:', error);
+    res.status(500).json({ 
+      error: 'Failed to cleanup subscriptions',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 router.get('/cron/logs', requireRole(['admin']), async (req, res) => {
   try {
     const { data: logs, error } = await supabase

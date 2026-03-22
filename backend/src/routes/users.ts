@@ -12,7 +12,7 @@ router.get('/profile', async (req: AuthRequest, res, next) => {
 
     const { data: profile, error } = await supabase
       .from('custom_users')
-      .select('id, email, first_name, last_name, nickname, role, is_verified, phone_verified, created_at, updated_at')
+      .select('id, email, first_name, last_name, nickname, role, is_verified, phone_verified, created_at, updated_at, subscription_status, subscription_plan, subscription_expires_at')
       .eq('id', userId)
       .single();
 
@@ -40,7 +40,7 @@ router.put('/profile', async (req: AuthRequest, res, next) => {
         updated_at: new Date().toISOString()
       })
       .eq('id', userId)
-      .select('id, email, first_name, last_name, nickname, role, is_verified, phone_verified, created_at, updated_at')
+      .select('id, email, first_name, last_name, nickname, role, is_verified, phone_verified, created_at, updated_at, subscription_status, subscription_plan, subscription_expires_at')
       .single();
 
     if (error) {
@@ -242,12 +242,25 @@ router.get('/subscription', async (req: AuthRequest, res, next) => {
       .single();
 
     if (!error && subscription) {
+      // Check if this subscription has auto-renewal enabled
+      const { data: recurringSub, error: recurringError } = await supabase
+        .from('recurring_subscriptions')
+        .select('*')
+        .eq('subscription_id', subscription.id)
+        .eq('is_active', true)
+        .eq('status', 'active')
+        .single();
+
+      const autoRenewal = !recurringError && recurringSub ? true : false;
+
       // Return active subscription from user_subscriptions
       const subscriptionInfo = {
         plan: subscription.subscription_plans.name,
         status: subscription.status,
         expires_at: subscription.end_date,
-        features: subscription.subscription_plans.features || []
+        features: subscription.subscription_plans.features || [],
+        auto_renewal: autoRenewal,
+        subscription_id: subscription.id
       };
 
       res.json({ subscription: subscriptionInfo });
@@ -273,7 +286,8 @@ router.get('/subscription', async (req: AuthRequest, res, next) => {
         plan: paymentAttempt.subscription_plans.name,
         status: 'active',
         expires_at: null, // Could calculate based on payment date
-        features: paymentAttempt.subscription_plans.features || []
+        features: paymentAttempt.subscription_plans.features || [],
+        auto_renewal: false // No recurring subscription setup
       };
 
       res.json({ subscription: subscriptionInfo });
@@ -285,10 +299,12 @@ router.get('/subscription', async (req: AuthRequest, res, next) => {
       subscription: {
         plan: 'Free',
         status: 'active',
-        features: ['Basic tournaments', 'Limited tasks']
+        features: ['Basic tournaments', 'Limited tasks'],
+        auto_renewal: false
       }
     });
   } catch (error) {
+    console.error('Error fetching user subscription info:', error);
     next(error);
   }
 });
@@ -379,13 +395,27 @@ router.get('/admin/all', requireRole(['admin']), async (req: AuthRequest, res, n
           expires_at: subscription.end_date,
           features: subscription.subscription_plans?.features || [],
           subscription_id: subscription.id,
-          auto_renew: subscription.auto_renew
+          auto_renewal: false // Will be updated below
         } : paymentSubscription || {
           plan: 'Free',
           status: 'active',
           expires_at: null,
-          features: ['Basic tournaments', 'Limited tasks']
+          features: ['Basic tournaments', 'Limited tasks'],
+          auto_renewal: false
         };
+
+        // Check auto-renewal status if subscription exists
+        if (subscription) {
+          const { data: recurringSub, error: recurringError } = await supabase
+            .from('recurring_subscriptions')
+            .select('*')
+            .eq('subscription_id', subscription.id)
+            .eq('is_active', true)
+            .eq('status', 'active')
+            .single();
+
+          subscriptionInfo.auto_renewal = !recurringError && recurringSub ? true : false;
+        }
 
         return {
           ...user,
@@ -429,7 +459,6 @@ router.post('/admin/:userId/cancel-subscription', requireRole(['admin']), async 
       .from('user_subscriptions')
       .update({ 
         status: 'cancelled',
-        auto_renew: false,
         updated_at: new Date().toISOString()
       })
       .eq('user_id', userId)

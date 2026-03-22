@@ -82,7 +82,7 @@ const SubscriptionPage: React.FC = () => {
       sessionStorage.setItem('pending_order_id', data.order_id);
       setPendingOrderId(data.order_id);
 
-      // Redirect to LiqPay checkout
+      // Redirect to payment gateway checkout
       window.location.href = data.checkout_url;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to initiate subscription');
