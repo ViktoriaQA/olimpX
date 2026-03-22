@@ -57,9 +57,9 @@ export default function Profile() {
       console.log('📊 [PROFILE] Fetching user statistics...');
       console.log('👤 [PROFILE] User ID:', user?.id);
       
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/stats`, {
+      const response = await fetch(`${config.api.baseUrl}/api/users/stats`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -82,9 +82,9 @@ export default function Profile() {
       console.log('👤 [PROFILE] User ID:', user?.id);
       console.log('🔄 [PROFILE] Current subscription info:', subscriptionInfo);
       
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/subscription`, {
+      const response = await fetch(`${config.api.baseUrl}/api/users/subscription`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -94,13 +94,13 @@ export default function Profile() {
         console.log('✅ [PROFILE] Subscription info received:', data);
         console.log('🔄 [PROFILE] Subscription status change detected:', {
           oldPlan: subscriptionInfo?.plan,
-          newPlan: data.plan,
+          newPlan: data.subscription?.plan,
           oldStatus: subscriptionInfo?.status,
-          newStatus: data.status,
+          newStatus: data.subscription?.status,
           oldExpires: subscriptionInfo?.expires_at,
-          newExpires: data.expires_at
+          newExpires: data.subscription?.expires_at
         });
-        setSubscriptionInfo(data);
+        setSubscriptionInfo(data.subscription);
         console.log('🎯 [PROFILE] Subscription info updated in state');
       } else {
         console.error('❌ [PROFILE] Failed to fetch subscription info:', response.status, response.statusText);
