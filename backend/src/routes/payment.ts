@@ -68,12 +68,26 @@ router.get(
   paymentController.getWalletCards.bind(paymentController)
 );
 
-// Create recurring payment
+// Initiate recurring subscription payment
 router.post(
-  '/recurring',
+  '/initiate-recurring-subscription',
   authMiddleware,
   validateRequest,
-  paymentController.createRecurringPayment.bind(paymentController)
+  paymentController.initiateRecurringSubscription.bind(paymentController)
+);
+
+// Handle recurring charge webhook (Monobank)
+router.post(
+  '/recurring/charge',
+  validateRequest,
+  paymentController.handleRecurringChargeCallback.bind(paymentController)
+);
+
+// Handle recurring status webhook (Monobank)
+router.post(
+  '/recurring/status',
+  validateRequest,
+  paymentController.handleRecurringStatusCallback.bind(paymentController)
 );
 
 // Cancel subscription

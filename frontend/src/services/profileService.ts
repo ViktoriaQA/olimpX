@@ -22,6 +22,8 @@ export interface SubscriptionInfo {
   status: string;
   expires_at?: string;
   features: string[];
+  auto_renewal?: boolean;
+  subscription_id?: string;
 }
 
 export class ProfileService {

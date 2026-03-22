@@ -54,19 +54,73 @@ export default function Profile() {
 
   const loadUserStats = async () => {
     try {
-      const stats = await ProfileService.getUserStats();
-      setUserStats(stats);
+      console.log('📊 [PROFILE] Fetching user statistics...');
+      console.log('👤 [PROFILE] User ID:', user?.id);
+      
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/stats`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ [PROFILE] User stats received:', data);
+        setUserStats(data);
+      } else {
+        console.error('❌ [PROFILE] Failed to fetch user stats:', response.status, response.statusText);
+      }
     } catch (error) {
-      console.error('Failed to load user stats:', error);
+      console.error('💥 [PROFILE] Error fetching user stats:', error);
     }
   };
 
   const loadSubscriptionInfo = async () => {
     try {
-      const { subscription } = await ProfileService.getSubscriptionInfo();
-      setSubscriptionInfo(subscription);
+      console.log('📋 [PROFILE] Fetching subscription information...');
+      console.log('👤 [PROFILE] User ID:', user?.id);
+      console.log('🔄 [PROFILE] Current subscription info:', subscriptionInfo);
+      
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/subscription`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ [PROFILE] Subscription info received:', data);
+        console.log('🔄 [PROFILE] Subscription status change detected:', {
+          oldPlan: subscriptionInfo?.plan,
+          newPlan: data.plan,
+          oldStatus: subscriptionInfo?.status,
+          newStatus: data.status,
+          oldExpires: subscriptionInfo?.expires_at,
+          newExpires: data.expires_at
+        });
+        setSubscriptionInfo(data);
+        console.log('🎯 [PROFILE] Subscription info updated in state');
+      } else {
+        console.error('❌ [PROFILE] Failed to fetch subscription info:', response.status, response.statusText);
+        console.log('📋 [PROFILE] Setting default subscription info');
+        setSubscriptionInfo({ 
+          plan: 'Free', 
+          status: 'inactive',
+          features: [],
+          expires_at: null
+        });
+      }
     } catch (error) {
-      console.error('Failed to load subscription info:', error);
+      console.error('💥 [PROFILE] Error fetching subscription info:', error);
+      console.log('📋 [PROFILE] Setting default subscription info due to error');
+      setSubscriptionInfo({ 
+        plan: 'Free', 
+        status: 'inactive',
+        features: [],
+        expires_at: null
+      });
     }
   };
 
@@ -78,20 +132,47 @@ export default function Profile() {
   };
 
   const handleSaveProfile = async () => {
-    if (!token) return;
+    if (!token) {
+      console.log('❌ [PROFILE] No token available, cannot save profile');
+      return;
+    }
 
     try {
+      console.log('💾 [PROFILE] Saving user profile...');
+      console.log('📝 [PROFILE] Form data:', {
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        nickname: formData.nickname,
+        email: formData.email,
+        phone: formData.phone
+      });
+      
       setLoading(true);
+      
+      console.log('📡 [PROFILE] Sending profile update request...');
       await ProfileService.updateProfile({
         nickname: formData.nickname,
       });
+      
+      console.log('✅ [PROFILE] Profile update request successful');
+      console.log('🔄 [PROFILE] Refreshing profile data...');
       await refreshProfile();
+      
       setEditMode(false);
+      console.log('🎉 [PROFILE] Profile saved successfully');
+      
       toast({
         title: t('profile.profileUpdated'),
         description: t('profile.profileUpdatedDescription'),
       });
     } catch (error) {
+      console.error('💥 [PROFILE] Error saving profile:', error);
+      console.error('💥 [PROFILE] Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack trace',
+        formData
+      });
+      
       const message = error instanceof Error ? error.message : 'Failed to update profile';
       toast({
         title: t('profile.updateError'),
@@ -99,6 +180,7 @@ export default function Profile() {
         variant: "destructive",
       });
     } finally {
+      console.log('🏁 [PROFILE] Profile save process finished');
       setLoading(false);
     }
   };

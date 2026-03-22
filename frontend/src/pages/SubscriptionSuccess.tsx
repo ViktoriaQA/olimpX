@@ -87,24 +87,34 @@ const SubscriptionSuccess = () => {
       return;
     }
 
-    const verifySubscription = async () => {
+  const verifySubscription = async () => {
       try {
         console.log('🔍 [SUCCESS] Starting subscription verification...');
         console.log('👤 [SUCCESS] User authenticated:', isAuthenticated);
+        console.log('👤 [SUCCESS] User info:', { 
+          id: user?.id, 
+          email: user?.email, 
+          nickname: user?.nickname 
+        });
         console.log('🆔 [SUCCESS] Verifying payment identifier:', paymentIdentifier);
+        console.log('⏰ [SUCCESS] Verification start time:', new Date().toISOString());
         
         setLoading(true);
         
         // First try to verify with our backend
+        console.log('📡 [SUCCESS] Sending verification request to backend...');
         let response = await subscriptionService.verifySubscription(paymentIdentifier);
         console.log('📊 [SUCCESS] Backend verification response:', response);
+        console.log('✅ [SUCCESS] Verification successful?', response.success);
         
         // If backend verification fails, try to check payment status directly with payment gateway
         if (!response.success && response.error?.includes('Payment not found')) {
           console.log('🔄 [SUCCESS] Backend verification failed, trying direct payment gateway check...');
+          console.log('🔍 [SUCCESS] Error from backend:', response.error);
           
           try {
             // Check payment status directly with payment gateway
+            console.log('📡 [SUCCESS] Checking payment status directly with gateway...');
             const paymentResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/payment/check-status/${paymentIdentifier}`, {
               method: 'GET',
               headers: {
@@ -115,50 +125,92 @@ const SubscriptionSuccess = () => {
             
             const paymentData = await paymentResponse.json();
             console.log('🔍 [SUCCESS] Direct payment gateway check response:', paymentData);
+            console.log('📊 [SUCCESS] Gateway check successful?', paymentData.success);
+            console.log('📈 [SUCCESS] Payment status from gateway:', paymentData.status);
             
             if (paymentData.success && paymentData.status === 'completed') {
+              console.log('🎉 [SUCCESS] Gateway shows payment completed, retrying backend verification...');
               // If payment gateway shows completed, try backend verification again
               response = await subscriptionService.verifySubscription(paymentIdentifier);
               console.log('📊 [SUCCESS] Second backend verification response:', response);
+            } else {
+              console.log('⏳ [SUCCESS] Gateway shows payment not completed:', paymentData.status);
             }
           } catch (paymentError) {
             console.error('❌ [SUCCESS] Direct payment gateway check failed:', paymentError);
+            console.error('❌ [SUCCESS] Gateway error details:', {
+              message: paymentError instanceof Error ? paymentError.message : 'Unknown error',
+              stack: paymentError instanceof Error ? paymentError.stack : 'No stack trace'
+            });
           }
         }
         
         if (response.success) {
           console.log('🎉 [SUCCESS] Verification successful!');
+          console.log('📦 [SUCCESS] Subscription details:', response.data);
           setSubscriptionDetails(response.data);
           setIsVerified(true); // Mark as verified
+          
+          console.log('🧹 [SUCCESS] Clearing sessionStorage...');
+          const orderIdBefore = sessionStorage.getItem('last_order_id');
+          const paymentIdBefore = sessionStorage.getItem('last_payment_id');
+          
           // Clear sessionStorage after successful verification
           sessionStorage.removeItem('last_order_id');
           sessionStorage.removeItem('last_payment_id');
-          console.log('🧹 [SUCCESS] Cleared sessionStorage');
+          
+          console.log('🧹 [SUCCESS] Cleared sessionStorage:', {
+            removed_order_id: orderIdBefore,
+            removed_payment_id: paymentIdBefore
+          });
+          
+          // Small delay to ensure backend has updated the data
+          console.log('⏳ [SUCCESS] Waiting for backend sync...');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
           // Refresh user session to get updated subscription data
+          console.log('🔄 [SUCCESS] Restoring user session...');
           await restoreSession();
-          console.log('🔄 [SUCCESS] User session restored');
+          console.log('✅ [SUCCESS] User session restored');
+          console.log('👤 [SUCCESS] Updated user info:', { 
+            id: user?.id, 
+            subscription_status: user?.subscription_status,
+            subscription_plan: user?.subscription_plan 
+          });
+          
           toast({
             title: "Вітаємо!",
             description: "Підписку успішно оформлено!",
           });
+          console.log('🎉 [SUCCESS] Success toast shown to user');
         } else {
           console.log('❌ [SUCCESS] Verification failed');
+          console.log('❌ [SUCCESS] Error details:', response.error);
           toast({
             title: "Помилка",
             description: response.error || "Не вдалося підтвердити підписку",
             variant: "destructive",
           });
+          console.log('🔄 [SUCCESS] Redirecting to subscription page due to error...');
           navigate('/subscription');
         }
       } catch (error) {
         console.error('💥 [SUCCESS] Subscription verification error:', error);
+        console.error('💥 [SUCCESS] Error details:', {
+          message: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : 'No stack trace',
+          paymentIdentifier,
+          userId: user?.id
+        });
         toast({
           title: "Помилка",
           description: "Не вдалося підтвердити підписку. Будь ласка, зв'яжіться з підтримкою.",
           variant: "destructive",
         });
+        console.log('🔄 [SUCCESS] Redirecting to subscription page due to exception...');
         navigate('/subscription');
       } finally {
+        console.log('🏁 [SUCCESS] Verification process completed');
         setLoading(false);
       }
     };

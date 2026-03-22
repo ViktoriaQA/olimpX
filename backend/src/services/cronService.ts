@@ -1,5 +1,6 @@
 import * as cron from 'node-cron';
 import { supabase } from '../utils/supabase';
+import { AutomaticRenewalProcessor } from '../scripts/processAutomaticRenewals';
 
 class CronService {
   private tasks: Map<string, any> = new Map();
@@ -9,6 +10,21 @@ class CronService {
   }
 
   private initializeTasks() {
+    // Process automatic renewals every hour at minute 5
+    const renewalProcessor = cron.schedule('5 * * * *', async () => {
+      console.log('🔄 Starting automatic renewal processing...');
+      try {
+        const processor = new AutomaticRenewalProcessor();
+        await processor.processDueRenewals();
+      } catch (error) {
+        console.error('❌ Error in automatic renewal processing:', error);
+      }
+    }, {
+      timezone: 'Europe/Kiev'
+    });
+
+    this.tasks.set('renewal-processor', renewalProcessor);
+
     // Clean expired sessions on the 1st of every month at 2:00 AM
     const monthlyCleanup = cron.schedule('0 2 1 * *', async () => {
       console.log('🧹 Starting monthly session cleanup...');
@@ -112,6 +128,18 @@ class CronService {
   public runCleanupNow(days: number = 30) {
     console.log(`🚀 Running manual cleanup for ${days} days...`);
     return this.cleanupExpiredSessions(days);
+  }
+
+  public async runRenewalProcessorNow() {
+    console.log('🚀 Running manual renewal processing...');
+    try {
+      const processor = new AutomaticRenewalProcessor();
+      await processor.processDueRenewals();
+      console.log('✅ Manual renewal processing completed');
+    } catch (error) {
+      console.error('❌ Error in manual renewal processing:', error);
+      throw error;
+    }
   }
 
   public getTaskStatus() {

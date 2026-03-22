@@ -39,7 +39,7 @@ export interface PaymentAttempt {
   checkout_url?: string;
   amount: number;
   currency: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled' | 'initiated';
   order_type: 'one-time' | 'recurring';
   package_id?: string;
   subscription_id?: string;
