@@ -660,7 +660,7 @@ func main() {
                 </div>
                 {/* Кнопки запуску в редакторі */}
                 <div className="absolute bottom-2 right-2 flex gap-2">
-                  <Button
+                  {/* <Button
                     onClick={executeCode}
                     disabled={isLoading || isTestsLoading}
                     variant="outline"
@@ -669,7 +669,7 @@ func main() {
                   >
                     <Play className="w-4 h-4" />
                     RUN
-                  </Button>
+                  </Button> */}
                   <Button
                     onClick={runAllTestsAndSubmit}
                     disabled={isLoading || isTestsLoading}
