@@ -502,4 +502,48 @@ router.post('/admin/:userId/cancel-subscription', requireRole(['admin']), async 
   }
 });
 
+// Admin: Delete user (only student/trainer roles) with all related data
+router.delete('/admin/:userId', requireRole(['admin']), async (req: AuthRequest, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    // Check if user exists and get role
+    const { data: user, error: userError } = await supabase
+      .from('custom_users')
+      .select('id, email, role')
+      .eq('id', userId)
+      .single();
+
+    if (userError || !user) {
+      throw createError('User not found', 404);
+    }
+
+    // Only allow deletion of student and trainer roles
+    if (!['student', 'trainer'].includes(user.role)) {
+      throw createError('Cannot delete admin users', 403);
+    }
+
+    // Start a transaction to delete all related data
+    const { error: deleteError } = await supabase.rpc('delete_user_cascade', { 
+      target_user_id: userId 
+    });
+
+    if (deleteError) {
+      console.error('Cascade delete error:', deleteError);
+      throw createError('Failed to delete user and related data', 500);
+    }
+
+    res.json({ 
+      message: 'User and all related data deleted successfully',
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;

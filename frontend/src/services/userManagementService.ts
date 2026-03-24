@@ -92,4 +92,10 @@ export class UserManagementService {
       body: JSON.stringify({ userId, keepLatest }),
     });
   }
+
+  static async deleteUser(userId: string): Promise<{ message: string; user: { id: string; email: string; role: string } }> {
+    return this.apiCall<{ message: string; user: { id: string; email: string; role: string } }>(`/api/users/admin/${userId}`, {
+      method: 'DELETE',
+    });
+  }
 }

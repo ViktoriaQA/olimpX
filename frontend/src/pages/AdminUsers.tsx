@@ -169,6 +169,30 @@ const AdminUsers = () => {
     }
   };
 
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    try {
+      setActionLoading(userId);
+      await UserManagementService.deleteUser(userId);
+      
+      // Remove user from local state
+      setUsers(prev => prev.filter(u => u.id !== userId));
+      
+      toast({
+        title: "Успіх",
+        description: `Користувача ${userName} видалено разом з усіма даними`,
+      });
+    } catch (error) {
+      console.error('Failed to delete user:', error);
+      toast({
+        title: "Помилка",
+        description: "Не вдалося видалити користувача",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('uk-UA', {
       year: 'numeric',
@@ -463,6 +487,52 @@ const AdminUsers = () => {
                                 <Shield className="w-3 h-3 mr-1" />
                                 Профіль
                               </Button>
+                              
+                              {/* Delete button - only for student/trainer roles */}
+                              {(user.role === 'student' || user.role === 'trainer') && (
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      disabled={actionLoading === user.id}
+                                    >
+                                      <Trash2 className="w-3 h-3 mr-1" />
+                                      Видалити
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Видалити користувача?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Ви впевнені, що хочете видалити користувача <strong>{user.first_name} {user.last_name}</strong>?
+                                        <br /><br />
+                                        <span className="text-red-600">
+                                          <strong>Увага!</strong> Ця дія остаточно видалить користувача та всі пов'язані дані:
+                                        </span>
+                                        <ul className="list-disc list-inside mt-2 text-sm">
+                                          <li>Всі сесії та прогрес</li>
+                                          <li>Участь у турнірах</li>
+                                          <li>Результати та submissions</li>
+                                          <li>Підписки та платежі</li>
+                                          <li>Створені задачі (автор буде видалено)</li>
+                                        </ul>
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Відміна</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => handleDeleteUser(user.id, `${user.first_name} ${user.last_name}`)}
+                                        className="bg-red-600 hover:bg-red-700"
+                                      >
+                                        <Trash2 className="w-4 h-4 mr-2" />
+                                        Видалити назавжди
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              )}
+                              
                               {(user.subscription || user.role === 'admin') && (
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
