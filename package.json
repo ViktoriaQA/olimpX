@@ -8,10 +8,17 @@
     "install:frontend": "cd frontend && npm ci",
     "install:backend": "cd backend && npm ci",
     "build:frontend": "cd frontend && npm run build",
-    "build:backend": "cd backend && npm run build"
+    "build:backend": "cd backend && npm run build",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:install": "playwright install"
   },
   "devDependencies": {
-    "supabase": "^2.76.12",
-    "concurrently": "^8.2.2"
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.5.0",
+    "concurrently": "^8.2.2",
+    "supabase": "^2.76.12"
   }
 }
