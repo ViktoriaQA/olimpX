@@ -5,6 +5,7 @@ import { JWTService } from './jwtService';
 import { User, RegisterRequest, LoginRequest, AuthResponse, UserSession, SMSVerificationCode } from '../models/user';
 import { generateNicknameFromEmail, generateUniqueNickname } from '../utils/nicknameGenerator';
 import { OAuth2Client } from 'google-auth-library';
+import { TelegramService } from './telegramService';
 import axios from 'axios';
 
 const supabase = createClient(
@@ -91,6 +92,19 @@ export class AuthService {
 
     if (error || !user) {
       throw new Error('Failed to create user');
+    }
+
+    // Send Telegram notification about new user registration
+    try {
+      const telegramService = new TelegramService();
+      const displayName = user.first_name || user.nickname || user.email;
+      await telegramService.sendNewUserNotification(
+        user.email || 'N/A',
+        displayName
+      );
+      console.log('📢 [AUTH] New user notification sent to Telegram');
+    } catch (telegramError) {
+      console.error('❌ [AUTH] Failed to send new user notification to Telegram:', telegramError);
     }
 
     // Generate SMS verification code if phone provided
@@ -468,6 +482,19 @@ const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${process.env.FRONTEND_U
           throw new Error('Failed to create Google user');
         }
 
+        // Send Telegram notification about new Google user registration
+        try {
+          const telegramService = new TelegramService();
+          const displayName = newUser.first_name || newUser.nickname || newUser.email;
+          await telegramService.sendNewUserNotification(
+            newUser.email,
+            `${displayName} (Google OAuth)`
+          );
+          console.log('📢 [AUTH] New Google user notification sent to Telegram');
+        } catch (telegramError) {
+          console.error('❌ [AUTH] Failed to send new Google user notification to Telegram:', telegramError);
+        }
+
         user = newUser;
       } else {
         // Update existing user's Google info
@@ -611,6 +638,19 @@ const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${process.env.FRONTEND_U
 
         if (error || !newUser) {
           throw new Error('Failed to create Discord user');
+        }
+
+        // Send Telegram notification about new Discord user registration
+        try {
+          const telegramService = new TelegramService();
+          const displayName = newUser.nickname || newUser.email;
+          await telegramService.sendNewUserNotification(
+            newUser.email,
+            `${displayName} (Discord OAuth)`
+          );
+          console.log('📢 [AUTH] New Discord user notification sent to Telegram');
+        } catch (telegramError) {
+          console.error('❌ [AUTH] Failed to send new Discord user notification to Telegram:', telegramError);
         }
 
         user = newUser;

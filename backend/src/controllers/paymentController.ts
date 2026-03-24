@@ -480,6 +480,28 @@ export class PaymentController {
       );
       console.log('✅ [VERIFY] User subscription profile updated');
 
+      // Send Telegram notification about successful payment
+      try {
+        const packageDetails = await this.getPackageById(paymentAttempt.package_id!);
+        const { data: userData } = await supabase
+          .from('custom_users')
+          .select('email')
+          .eq('id', userId)
+          .single();
+        
+        if (userData && packageDetails) {
+          await this.telegramService.sendPaymentNotification(
+            userData.email,
+            packageDetails.name,
+            paymentAttempt.amount,
+            paymentAttempt.currency
+          );
+          console.log('📢 [VERIFY] Payment notification sent to Telegram');
+        }
+      } catch (telegramError) {
+        console.error('💥 [VERIFY] Failed to send payment notification to Telegram:', telegramError);
+      }
+
       // Get package details
       console.log('📦 [VERIFY] Getting package details...');
       const packageDetails = await this.getPackageById(paymentAttempt.package_id!);
@@ -805,15 +827,26 @@ export class PaymentController {
         
         console.log('✅ [RECURRING_CHARGE] Subscription extended successfully');
         
-        // Send notification to user
+        // Send Telegram notification about successful recurring payment
         try {
-          await this.telegramService.sendSubscriptionCancellationNotification(
-            paymentAttempt.user_id,
-            'Subscription renewed successfully'
-          );
-          console.log('📢 [RECURRING_CHARGE] Renewal notification sent');
+          const packageDetails = await this.getPackageById(paymentAttempt.package_id!);
+          const { data: userData } = await supabase
+            .from('custom_users')
+            .select('email')
+            .eq('id', paymentAttempt.user_id)
+            .single();
+          
+          if (userData && packageDetails) {
+            await this.telegramService.sendPaymentNotification(
+              userData.email,
+              `${packageDetails.name} (автоподовження)`,
+              paymentAttempt.amount,
+              paymentAttempt.currency
+            );
+            console.log('📢 [RECURRING_CHARGE] Recurring payment notification sent to Telegram');
+          }
         } catch (notificationError) {
-          console.error('❌ [RECURRING_CHARGE] Failed to send renewal notification:', notificationError);
+          console.error('❌ [RECURRING_CHARGE] Failed to send recurring payment notification:', notificationError);
         }
       } else {
         console.log('❌ [RECURRING_CHARGE] Recurring charge failed, status:', mappedStatus);
@@ -1059,6 +1092,28 @@ export class PaymentController {
             existingAttempt.order_id
           );
           console.log('✅ [SUCCESS] Subscription activated successfully');
+          
+          // Send Telegram notification about successful payment
+          try {
+            const packageDetails = await this.getPackageById(existingAttempt.package_id);
+            const { data: userData } = await supabase
+              .from('custom_users')
+              .select('email')
+              .eq('id', existingAttempt.user_id)
+              .single();
+            
+            if (userData && packageDetails) {
+              await this.telegramService.sendPaymentNotification(
+                userData.email,
+                packageDetails.name,
+                existingAttempt.amount,
+                existingAttempt.currency
+              );
+              console.log('📢 [SUCCESS] Payment notification sent to Telegram');
+            }
+          } catch (telegramError) {
+            console.error('💥 [SUCCESS] Failed to send payment notification to Telegram:', telegramError);
+          }
           
           // Create recurring subscription record for auto-renewal
           if (existingAttempt.order_type === 'recurring' && callbackData.paymentInfo?.token) {
