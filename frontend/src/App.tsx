@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AppLayout } from "@/components/AppLayout";
 import Auth from "@/pages/Auth";
 import AuthCallback from "@/pages/AuthCallback";
@@ -60,11 +61,12 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <AuthProvider>
-            <Routes>
+        <ThemeProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <AuthProvider>
+              <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
@@ -237,6 +239,7 @@ const App = () => {
             </Routes>
           </AuthProvider>
         </BrowserRouter>
+        </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

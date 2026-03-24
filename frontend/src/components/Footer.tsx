@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Mail, Clock } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface FooterProps {
   showLanguageSwitcher?: boolean;
@@ -63,6 +64,7 @@ export function Footer({
             >
               {t('footer.contract', 'Договір оферти')}
             </Link> |
+            <ThemeToggle /> |
             {showLanguageSwitcher && <LanguageSwitcher />}
           </div>
         </div>

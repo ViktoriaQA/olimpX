@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { config } from "@/config";
 import { Loader2 } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 type Difficulty = "easy" | "medium" | "hard";
 
@@ -49,6 +50,13 @@ const TaskSolve = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { tournamentId, taskId } = useParams<{ tournamentId: string; taskId: string }>();
+  const { theme } = useTheme();
+  
+  // Helper function to get the correct iframe URL based on theme
+  const getIframeUrl = () => {
+    const oneCompilerTheme = theme === 'dark' ? 'dark' : 'white';
+    return `https://onecompiler.com/embed/javascript?theme=${oneCompilerTheme}`;
+  };
   const isMobile = useIsMobile();
   const { token, session } = useAuth();
 
@@ -69,8 +77,8 @@ const TaskSolve = () => {
     console.log('✅ OneCompiler iframe loaded successfully');
     console.log('🔍 Iframe details:', {
       src: isMobile 
-        ? 'https://onecompiler.com/embed/javascript?theme=dark'
-        : 'https://onecompiler.com/embed/javascript?theme=dark',
+        ? getIframeUrl()
+        : getIframeUrl(),
       userAgent: navigator.userAgent,
       isMobile: isMobile,
       screen: `${window.screen.width}x${window.screen.height}`,
@@ -162,8 +170,8 @@ const TaskSolve = () => {
       body: JSON.stringify({
         event: 'iframe_loaded',
         url: isMobile 
-          ? 'https://onecompiler.com/embed/javascript?theme=dark'
-          : 'https://onecompiler.com/embed/javascript?theme=dark',
+          ? getIframeUrl()
+          : getIframeUrl(),
         userAgent: navigator.userAgent,
         isMobile: isMobile,
         timestamp: new Date().toISOString(),
@@ -196,7 +204,7 @@ const TaskSolve = () => {
       },
       body: JSON.stringify({
         event: 'iframe_error',
-        url: 'https://onecompiler.com/embed/javascript?theme=dark',
+        url: getIframeUrl(),
         userAgent: navigator.userAgent,
         isMobile: isMobile,
         timestamp: new Date().toISOString(),
@@ -221,7 +229,7 @@ const TaskSolve = () => {
       },
       body: JSON.stringify({
         event: 'tab_clicked',
-        url: 'https://onecompiler.com/embed/javascript?theme=dark',
+        url: getIframeUrl(),
         userAgent: navigator.userAgent,
         isMobile: isMobile,
         timestamp: new Date().toISOString(),
@@ -707,7 +715,7 @@ const TaskSolve = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => window.open('https://onecompiler.com/embed/javascript?theme=dark', '_blank')}
+                              onClick={() => window.open(getIframeUrl(), '_blank')}
                             >
                               Відкрити в новому вікні
                             </Button>
@@ -725,7 +733,7 @@ const TaskSolve = () => {
                       ) : (
                         <div className="h-full w-full rounded-lg overflow-hidden min-h-0">
                           <iframe
-                            src="https://onecompiler.com/embed/javascript?theme=dark"
+                            src={getIframeUrl()}
                             className="w-full h-full border-0"
                             style={{ 
                               height: 'calc(100vh - 200px)',
@@ -917,7 +925,7 @@ const TaskSolve = () => {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => window.open('https://onecompiler.com/embed/javascript?theme=dark', '_blank')}
+                                    onClick={() => window.open(getIframeUrl(), '_blank')}
                                   >
                                     Відкрити в новому вікні
                                   </Button>
@@ -935,7 +943,7 @@ const TaskSolve = () => {
                             ) : (
                               <div className="h-full w-full rounded-lg overflow-hidden min-h-0">
                                 <iframe
-                                  src="https://onecompiler.com/embed/javascript?theme=dark"
+                                  src={getIframeUrl()}
                                   className="w-full h-full border-0"
                                   style={{ 
                                     minHeight: '400px',
