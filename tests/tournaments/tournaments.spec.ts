@@ -60,10 +60,10 @@ test.describe('Tournaments', () => {
     await tournamentsPage.waitForTournamentsToLoad();
     
     await tournamentsPage.clickMyTournamentsTab();
-    await authenticatedPage.waitForTimeout(1000);
+    await authenticatedPage.waitForLoadState('networkidle');
     
     await tournamentsPage.clickAvailableTournamentsTab();
-    await authenticatedPage.waitForTimeout(1000);
+    await authenticatedPage.waitForLoadState('networkidle');
     
     expect(await tournamentsPage.verifyTournamentsListVisible()).toBe(true);
   });
