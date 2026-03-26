@@ -44,7 +44,7 @@ test.describe('Smoke Tests', () => {
     expect(title).toContain('Auth');
     
     // Check auth forms exist
-    const authForms = page.locator('form').count();
+    const authForms = await page.locator('form').count();
     expect(authForms).toBeGreaterThan(0);
   });
 
