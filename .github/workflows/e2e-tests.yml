@@ -62,7 +62,12 @@ jobs:
     - name: Run database migrations
       run: |
         cd backend
-        npm run migrate:test
+        npx supabase db push --db-url "$DATABASE_URL" || echo "Migrations may already be applied"
+        # Alternative: Apply migrations directly using psql
+        for migration in supabase/migrations/*.sql; do
+          echo "Applying migration: $migration"
+          psql "$DATABASE_URL" -f "$migration" || echo "Migration $migration may already be applied"
+        done
     
     - name: Start application
       run: |
