@@ -2,12 +2,12 @@ name: E2E Tests
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, stage ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, develop, stage ]
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -107,45 +107,4 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./playwright-report
         destination_dir: test-reports/${{ github.run_number }}
-        keep_files: true
-    
-    - name: Update Test Reports Index
-      if: always()
-      run: |
-        mkdir -p test-reports-index
-        cat > test-reports-index/index.html << 'EOF'
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Test Reports</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        h1 { color: #333; }
-        .report { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
-        .report a { text-decoration: none; color: #0066cc; }
-        .report a:hover { text-decoration: underline; }
-        .timestamp { color: #666; font-size: 0.9em; }
-    </style>
-</head>
-<body>
-    <h1>E2E Test Reports</h1>
-    <div class="report">
-        <a href="test-reports/${{ github.run_number }}/index.html">
-            Test Report #${{ github.run_number }} - ${{ github.sha }}
-        </a>
-        <div class="timestamp">Run on: $(date -u)</div>
-        <div class="timestamp">Branch: ${{ github.ref_name }}</div>
-        <div class="timestamp">Commit: ${{ github.sha }}</div>
-    </div>
-</body>
-</html>
-EOF
-    
-    - name: Publish Test Reports Index
-      if: always()
-      uses: peaceiris/actions-gh-pages@v4
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./test-reports-index
-        destination_dir: .
         keep_files: true
