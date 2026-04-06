@@ -145,6 +145,28 @@ npm run test:e2e:headed
 npm run test:e2e:debug
 ```
 
+## 🌐 Test Server
+
+The project includes automated testing on staging environment:
+
+```bash
+# Run tests against staging server
+npm run test:e2e:staging
+
+# Run tests against production server
+npm run test:e2e:prod
+```
+
+**Test Environments:**
+- **Staging**: https://olimpxx.pp.ua
+- **Production**: https://xcode24.com
+
+**Pre-push Checks:**
+- Automatic smoke tests run before pushing to stage branch
+- 4 core test scenarios verified
+- Tests run in parallel using 4 workers
+- ~8.5 seconds execution time
+
 ## 📦 Deployment
 
 1. Build the application:
@@ -168,8 +190,9 @@ npm run test:e2e:debug
 
 ## 👨‍💻 Authors
 
-- **Viktoria Frantsukh** - Project lead & full-stack developer
+- **Victoria Frantsukh** - Project lead & full-stack developer
 - **Contributors** - Open source community
+
 
 ## 📄 License
 
