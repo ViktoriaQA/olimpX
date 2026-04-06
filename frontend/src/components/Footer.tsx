@@ -37,9 +37,10 @@ export function Footer({
       <div className="container mx-auto">
         <div className="flex items-center justify-between gap-4 text-sm text-muted-foreground">
           <div className="flex-1 flex justify-start">
-            <span>{t('footer.copyright', { year: currentYear })}</span>
+            <span className="hidden md:inline">{t('footer.copyright', { year: currentYear })}</span>
+            <span className="md:hidden">© 2026 Xcode</span>
           </div>
-          <div className="flex items-center justify-center gap-4">
+          <div className="hidden md:flex items-center justify-center gap-4">
             {customContent || (
               <>
                 <a 
@@ -58,13 +59,15 @@ export function Footer({
             )}
           </div>
           <div className="flex-1 flex justify-end items-center gap-4">
-            | <Link 
+            <Link 
               to="/contract" 
-              className="hover:text-primary transition-colors"
+              className="hidden md:inline hover:text-primary transition-colors"
             >
               {t('footer.contract', 'Договір оферти')}
-            </Link> |
-            <ThemeToggle /> |
+            </Link>
+            <span className="hidden md:inline">|</span>
+            <ThemeToggle />
+            <span className="hidden md:inline">|</span>
             {showLanguageSwitcher && <LanguageSwitcher />}
           </div>
         </div>
